@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_client_sse/flutter_client_sse.dart';
+import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
 
 import '../models/task.dart';
 
