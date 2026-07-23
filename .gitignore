@@ -1,12 +1,51 @@
 # Python
-venv/
-__pycache__/
-*.pyc
-.env
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
 
-# Flutter
-client/.dart_tool/
-client/build/
-client/.flutter-plugins
-client/.flutter-plugins-dependencies
-client/pubspec.lock
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# JavaScript / Node.js
+**/node_modules/
+**/.npm/
+**/.yarn/
+**/.pnpm-store/
+
+# JavaScript build outputs
+**/dist/
+**/build/
+**/.next/
+**/.nuxt/
+**/.vite/
+**/coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
