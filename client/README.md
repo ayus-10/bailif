@@ -1,41 +1,42 @@
-# Client (Flutter — web now, desktop later)
+# Client (Vue 3 + Vite — web now, desktop later via Tauri if wanted)
 
 ## Setup
 
-Requires the Flutter SDK: https://docs.flutter.dev/get-started/install
-
 ```bash
-flutter pub get
+npm install
+cp .env.example .env
 ```
 
-## Run (web, pointing at your local backend)
+## Run (dev server, hot reload)
 
 ```bash
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8000
+npm run dev
 ```
 
-## Build for web (deployable demo)
+Opens at http://localhost:5173 by default. Make sure your FastAPI
+backend is running (see ../server/README.md) and reachable at whatever
+`VITE_API_BASE_URL` points to in `.env`.
+
+## Build for production (deployable demo)
 
 ```bash
-flutter build web --dart-define=API_BASE_URL=https://your-deployed-backend
+npm run build
 ```
 
-Output lands in `build/web/` — host it anywhere static (S3 + CloudFront,
-Netlify, Vercel, etc.) to satisfy the "functional demo app URL" requirement.
+Output lands in `dist/` — a plain static site. Host it anywhere
+(S3 + CloudFront, Netlify, Vercel, GitHub Pages) to satisfy the
+"functional demo app URL" requirement.
 
 ## Desktop later
 
-Once the web version works, enable a desktop target with zero code changes:
-
-```bash
-flutter config --enable-windows-desktop   # or macos-desktop / linux-desktop
-flutter create --platforms=windows,macos,linux .
-flutter run -d windows   # or macos / linux
-```
+If you ever want a desktop build without switching frameworks again,
+this same Vue/Vite frontend can be wrapped with Tauri (Rust) later —
+Tauri just points at your existing `dist/` build, no rewrite needed.
+Not set up yet; mentioning it since it was part of the original plan.
 
 ## Structure
 
-- `lib/models/` — plain data classes matching the FastAPI response shapes
-- `lib/services/api_service.dart` — all HTTP + SSE calls live here (single choke point)
-- `lib/screens/` — top-level screens
-- `lib/widgets/` — reusable UI pieces
+- `src/services/api.js` — all HTTP + SSE calls live here (single choke point)
+- `src/components/AgentBar.vue` — natural language query input + streamed agent response
+- `src/components/TaskCard.vue` — single task display
+- `src/App.vue` — ties it together: task list + agent bar

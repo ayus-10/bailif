@@ -5,7 +5,7 @@ CockroachDB as its persistent memory layer, deployed on AWS.
 
 ## Stack
 
-- **Client:** Flutter (web first, desktop later — same codebase)
+- **Client:** Vue 3 + Vite (web first; desktop later via Tauri wrapping the same build if needed)
 - **Server:** Python + FastAPI, REST + SSE
 - **Database:** CockroachDB
   - Distributed Vector Indexing → semantic recall ("find things related to X")
@@ -16,7 +16,7 @@ CockroachDB as its persistent memory layer, deployed on AWS.
 ## Architecture
 
 ```
-Flutter client  ──HTTP/SSE──>  FastAPI server  ──>  CockroachDB
+Vue client      ──HTTP/SSE──>  FastAPI server  ──>  CockroachDB
                                      │                  ├─ tasks table (CRUD)
                                      │                  ├─ vector index (semantic search)
                                      ├──> MCP Server ──>│
@@ -28,14 +28,14 @@ Flutter client  ──HTTP/SSE──>  FastAPI server  ──>  CockroachDB
 
 ```
 server/   FastAPI backend — see server/README.md
-client/   Flutter frontend — see client/README.md
+client/   Vue 3 + Vite frontend — see client/README.md
 ```
 
 ## Quickstart
 
 1. Spin up a CockroachDB cluster (local `cockroach demo` or CockroachDB Cloud).
 2. `cd server && pip install -r requirements.txt`, fill in `.env`, run `uvicorn app.main:app --reload`.
-3. `cd client && flutter pub get && flutter run -d chrome`.
+3. `cd client && npm install && npm run dev`.
 
 ## CockroachDB tools used
 
