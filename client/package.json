@@ -1,7 +1,7 @@
 {
-  "name": "client-vue",
+  "name": "vue-vuetify-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,10 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.39"
+    "@mdi/font": "^7.4.47",
+    "vue": "^3.4.0",
+    "vue-router": "^5.2.0",
+    "vuetify": "^3.6.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.7",
-    "vite": "^8.1.1"
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^5.2.0"
   }
 }
