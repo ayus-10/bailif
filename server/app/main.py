@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import tasks, agent
+from app.api.routes import agent, tasks
 
-app = FastAPI(title="Agentic Task Manager API", version="0.1.0")
+app = FastAPI(title="Bailif Server", version="0.1.0")
 
-# Allow the Flutter web/desktop client to call this API during dev.
-# Tighten this before you ship (specific origins, not "*").
+# TODO: allow specific origins, not "*"
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

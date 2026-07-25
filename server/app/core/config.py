@@ -2,21 +2,18 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # CockroachDB connection (Postgres wire protocol)
-    database_url: str = "postgresql+asyncpg://user:password@localhost:26257/defaultdb"
+    database_url: str = (
+        "cockroachdb+psycopg2://root@localhost:26257/defaultdb?sslmode=disable"
+    )
 
-    # LLM backend switch: "local" (Ollama/Mistral) or "bedrock"
     llm_provider: str = "local"
 
-    # Local dev model (via Ollama)
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "mistral"
+    ollama_model: str = "qwen2.5:7b"
 
-    # AWS Bedrock (used once you swap off local dev)
     aws_region: str = "us-east-1"
-    bedrock_model_id: str = "mistral.mistral-7b-instruct-v0:2"
+    bedrock_model_id: str = ""
 
-    # CockroachDB MCP server endpoint
     mcp_server_url: str = "https://cockroachlabs.cloud/mcp"
     mcp_api_key: str = ""
 

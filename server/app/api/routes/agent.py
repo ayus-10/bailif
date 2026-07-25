@@ -5,8 +5,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.agent.llm_client import get_llm_client
-from app.agent.tools.vector_search import semantic_task_search
 from app.agent.tools.mcp_client import run_structured_query
+from app.agent.tools.vector_search import semantic_task_search
 
 router = APIRouter()
 
@@ -34,11 +34,26 @@ async def agent_query(payload: AgentQuery):
         # (mcp_client). For now we do a dumb keyword check as a stand-in
         # so you have something end-to-end to demo while you wire up
         # real tool-calling.
-        if any(word in payload.message.lower() for word in ["overdue", "assigned", "status", "tag"]):
-            yield _sse({"stage": "tool_call", "tool": "mcp_server", "message": "Running structured query..."})
+        if any(
+            word in payload.message.lower()
+            for word in ["overdue", "assigned", "status", "tag"]
+        ):
+            yield _sse(
+                {
+                    "stage": "tool_call",
+                    "tool": "mcp_server",
+                    "message": "Running structured query...",
+                }
+            )
             result = await run_structured_query(payload.message)
         else:
-            yield _sse({"stage": "tool_call", "tool": "vector_search", "message": "Searching memory..."})
+            yield _sse(
+                {
+                    "stage": "tool_call",
+                    "tool": "vector_search",
+                    "message": "Searching memory...",
+                }
+            )
             result = await semantic_task_search(payload.message)
 
         yield _sse({"stage": "tool_result", "data": result})
