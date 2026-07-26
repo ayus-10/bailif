@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum as EnumBase
+from typing import TYPE_CHECKING
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
@@ -8,6 +9,11 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from app.db.database import Base
+from app.db.models.shared import AgentPermissionLevel
+
+if TYPE_CHECKING:
+    from app.db.models.project import Project
+
 
 # NOTE: CockroachDB's vector type/index syntax is versioned — check your
 # cluster's docs for the exact column type (e.g. VECTOR(3584)) and whether
@@ -46,12 +52,6 @@ class ApprovalStatus(str, EnumBase):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
-
-
-class AgentPermissionLevel(str, EnumBase):
-    PROPOSE_ONLY = "propose_only"
-    ACT_FREELY = "act_freely"
-    ACT_WITH_NOTIFY = "act_with_notify"
 
 
 class DependencyType(str, EnumBase):
@@ -113,6 +113,12 @@ class Task(Base):
         back_populates="task",
         cascade="all, delete-orphan",
     )
+
+    # Project link
+    project_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True
+    )
+    project: Mapped[Project | None] = relationship("Project", back_populates="tasks")
 
     # Agentic layer
     created_by: Mapped[CreatedBy] = mapped_column(
