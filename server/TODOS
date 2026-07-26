@@ -1,0 +1,33 @@
+Tasks
+
+POST /tasks — create
+GET /tasks — list, with query params: ?project_id=&status=&priority=&type=&assignee=&tag=&due_before=&due_after=&parent_id= — this is the "filtering" half of CRUD, not optional, since your Task Board/filters already assume it
+GET /tasks/{id} — single task
+PATCH /tasks/{id} — partial update
+DELETE /tasks/{id} — delete
+GET /tasks/{id}/subtasks — children by parent_id (still just a filtered list, but worth its own route since the UI needs it constantly)
+
+Projects
+
+POST /projects
+GET /projects — ?status=&agent_enabled=
+GET /projects/{id}
+PATCH /projects/{id}
+DELETE /projects/{id}
+GET /projects/{id}/tasks — same idea as subtasks, a filtered task list scoped to one project
+
+Task Dependencies
+
+POST /tasks/{id}/dependencies — add an edge (depends_on_id, dependency_type)
+GET /tasks/{id}/dependencies — list edges for a task
+DELETE /tasks/{id}/dependencies/{dependency_id} — remove an edge
+
+That's the whole CRUD surface. Everything below is what I'd build after, in the order I'd build it — same list as before, just sequenced now that CRUD is the known starting point:
+
+Dependency cycle detection — bolt this onto the POST /tasks/{id}/dependencies route the moment it exists; a naive version of that endpoint will let someone create A→B→C→A and quietly break your Gantt chart. This isn't really a "new feature," it's CRUD's missing safety check.
+Bulk update (PATCH /tasks/bulk) — the thing your command-bar/natural-language layer will actually call. Nothing agentic can move fast without this existing first.
+Project summary rollup (GET /projects/{id}/summary) — task counts by status, completion %, overdue count. Unblocks your Dashboard from mock data.
+Agent actions + approval flow — POST /tasks/{id}/agent-actions, /approve, /reject, POST /tasks/decompose. This is the actual point of the app, so I wouldn't push it too far down the list even though it's not "core" CRUD.
+Semantic search (POST /tasks/search) — needs embeddings actually populated on write first (decide inline-on-write vs. background job before building this one, not after).
+Recurrence job — scheduled worker that spawns real Task rows from recurrence_rule templates.
+Event/outbox emission — internal events on task/project changes, so Slack/Calendar sync (whenever you get to it) subscribes instead of requiring you to rewrite core logic later.
