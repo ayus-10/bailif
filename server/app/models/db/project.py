@@ -1,24 +1,17 @@
 import uuid
 from datetime import datetime
-from enum import Enum as EnumBase
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, Enum, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.database import Base
-from app.db.models.shared import AgentPermissionLevel
+from app.core.database import Base
+from app.models.enums.project import ProjectStatus
+from app.models.enums.shared import AgentPermissionLevel
 
 if TYPE_CHECKING:
-    from app.db.models.task import Task
-
-
-class ProjectStatus(str, EnumBase):
-    ACTIVE = "active"
-    ON_HOLD = "on_hold"
-    COMPLETED = "completed"
-    ARCHIVED = "archived"
+    from app.models.db.task import Task
 
 
 class Project(Base):
