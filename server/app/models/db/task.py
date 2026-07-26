@@ -1,6 +1,5 @@
 import uuid
 from datetime import datetime
-from enum import Enum as EnumBase
 from typing import TYPE_CHECKING
 
 from pgvector.sqlalchemy import Vector
@@ -8,11 +7,21 @@ from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
-from app.db.database import Base
-from app.db.models.shared import AgentPermissionLevel
+from app.core.database import Base
+from app.models.enums.shared import (
+    AgentPermissionLevel,
+    ApprovalStatus,
+    CreatedBy,
+    Priority,
+    Status,
+)
+from app.models.enums.task import (
+    DependencyType,
+    TaskType,
+)
 
 if TYPE_CHECKING:
-    from app.db.models.project import Project
+    from app.models.db.project import Project
 
 
 # NOTE: CockroachDB's vector type/index syntax is versioned — check your
@@ -21,43 +30,6 @@ if TYPE_CHECKING:
 # 3584 = Qwen2.5-7B hidden size, correct if you're pulling raw hidden-state
 # embeddings rather than a dedicated embedding-head model.
 EMBEDDING_DIM = 3584
-
-
-class Status(str, EnumBase):
-    OPEN = "open"
-    IN_PROGRESS = "in_progress"
-    DONE = "done"
-
-
-class Priority(str, EnumBase):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-
-
-class TaskType(str, EnumBase):
-    TASK = "task"
-    SUBTASK = "subtask"
-    EPIC = "epic"
-    BUG = "bug"
-
-
-class CreatedBy(str, EnumBase):
-    HUMAN = "human"
-    AGENT = "agent"
-
-
-class ApprovalStatus(str, EnumBase):
-    NONE = "none"
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
-
-
-class DependencyType(str, EnumBase):
-    BLOCKS = "blocks"
-    BLOCKED_BY = "blocked_by"
-    RELATES_TO = "relates_to"
 
 
 class Task(Base):
