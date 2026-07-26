@@ -15,7 +15,7 @@ cluster's syntax uses) once your schema is finalized.
 
 from sqlalchemy import text
 
-from app.db.database import SessionLocal
+from app.core.database import SessionLocal
 
 
 def semantic_task_search(query: str, limit: int = 5) -> list[dict]:
