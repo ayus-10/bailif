@@ -7,6 +7,7 @@ from app.features.tasks.dependencies import get_task_by_id
 from app.features.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
+    TaskListResponse,
     TaskRead,
     TaskUpdate,
 )
@@ -20,10 +21,10 @@ def create_task(payload: TaskCreate, db: Session = Depends(get_db)) -> Task:
     return service.create_task(db, payload)
 
 
-@router.get("", response_model=list[TaskRead])
+@router.get("", response_model=TaskListResponse)
 def list_tasks(
     filters: TaskFilterParams = Depends(), db: Session = Depends(get_db)
-) -> list[Task]:
+) -> TaskListResponse:
     return service.list_tasks(db, filters)
 
 
