@@ -81,6 +81,14 @@ class TaskFilterParams(BaseModel):
     status: Status | None = None
     priority: Priority | None = None
     type: TaskType | None = None
+    tag: str | None = None
     parent_id: UUID | None = None
+    due_before: datetime | None = None
+    due_after: datetime | None = None
+    cursor: str | None = None
     limit: int = Field(default=50, ge=1, le=200)
-    offset: int = Field(default=0, ge=0)
+
+
+class TaskListResponse(BaseModel):
+    items: list[TaskRead]
+    next_cursor: str | None = None

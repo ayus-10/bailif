@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.models
 from app.features import tasks
 
 app = FastAPI(title="Bailif Server", version="0.1.0")
