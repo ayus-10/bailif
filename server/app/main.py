@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.models
-from app.features import tasks
+from app.features import projects, tasks
 
 app = FastAPI(title="Bailif Server", version="0.1.0")
 
@@ -15,8 +15,10 @@ app.add_middleware(
 )
 
 app.include_router(tasks.router)
+app.include_router(projects.router)
 
 tasks.register_error_handlers(app)
+projects.register_error_handlers(app)
 
 
 @app.get("/health")
