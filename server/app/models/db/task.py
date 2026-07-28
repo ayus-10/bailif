@@ -3,8 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import JSON, UUID, DateTime, Enum, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from app.core.database import Base
@@ -24,12 +23,8 @@ if TYPE_CHECKING:
     from app.models.db.project import Project
 
 
-# NOTE: CockroachDB's vector type/index syntax is versioned — check your
-# cluster's docs for the exact column type (e.g. VECTOR(3584)) and whether
-# you need pgvector's SQLAlchemy type or a raw Column(Text) + migration.
-# 3584 = Qwen2.5-7B hidden size, correct if you're pulling raw hidden-state
-# embeddings rather than a dedicated embedding-head model.
-EMBEDDING_DIM = 3584
+# 2560 = qwen3-embedding-4b's output dimension (confirmed via `ollama show`).
+EMBEDDING_DIM = 2560
 
 
 class Task(Base):
@@ -40,7 +35,7 @@ class Task(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(Text, default="")
+    description: Mapped[str] = mapped_column(String, default="")
     status: Mapped[Status] = mapped_column(
         Enum(Status, name="status_enum"),
         default=Status.OPEN,
@@ -107,8 +102,8 @@ class Task(Base):
         Enum(AgentPermissionLevel, name="agent_permission_level_enum"),
         nullable=True,
     )
-    agent_activity_log: Mapped[list[dict]] = mapped_column(JSONB, default=list)
-    reasoning_trace: Mapped[str | None] = mapped_column(Text, nullable=True)
+    agent_activity_log: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    reasoning_trace: Mapped[str | None] = mapped_column(String, nullable=True)
 
     # Embedding
     # Populate at insert/update time

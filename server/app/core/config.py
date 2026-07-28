@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen2.5:7b"
+    ollama_embedding_model: str = "qwen3-embedding:4b"
 
     aws_region: str = "us-east-1"
     bedrock_model_id: str = ""

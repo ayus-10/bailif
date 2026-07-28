@@ -3,7 +3,7 @@ from logging.config import fileConfig
 
 from dotenv import load_dotenv
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import TIMESTAMP, DateTime, engine_from_config, pool
 
 from alembic import context
 
@@ -36,6 +36,19 @@ def render_item(type_, obj, autogen_context):
     return False
 
 
+def compare_type(
+    _context,
+    _inspected_column,
+    _metadata_column,
+    inspected_type,
+    metadata_type,
+):
+    if isinstance(metadata_type, DateTime) and isinstance(inspected_type, TIMESTAMP):
+        return False
+
+    return None
+
+
 def run_migrations_offline() -> None:
     """Run migrations without a live DB connection (generates raw SQL)."""
     url = config.get_main_option("sqlalchemy.url")
@@ -45,6 +58,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         render_item=render_item,
+        compare_type=compare_type,
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -63,6 +77,7 @@ def run_migrations_online() -> None:
             connection=connection,
             target_metadata=target_metadata,
             render_item=render_item,
+            compare_type=compare_type,
         )
         with context.begin_transaction():
             context.run_migrations()
