@@ -1,6 +1,7 @@
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
+from app.core.embeddings import get_embedding
 from app.core.pagination import decode_cursor, encode_cursor
 from app.features.tasks.schemas import (
     TaskCreate,
@@ -14,6 +15,8 @@ from app.models.db.task import Task
 
 def create_task(db: Session, payload: TaskCreate) -> Task:
     task = Task(**payload.model_dump())
+    # TODO: make use of bg workers for this
+    task.embedding = get_embedding(f"{task.title}\n{task.description}")
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -70,6 +73,11 @@ def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
     updates = payload.model_dump(exclude_unset=True)
     for field, value in updates.items():
         setattr(task, field, value)
+
+    # TODO: make use of bg workers for this
+    if "title" in updates or "description" in updates:
+        task.embedding = get_embedding(f"{task.title}\n{task.description}")
+
     db.commit()
     db.refresh(task)
     return task

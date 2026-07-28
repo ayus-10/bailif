@@ -1,0 +1,57 @@
+[
+  {
+    "title": "Design authentication flow",
+    "description": "Create login, signup, password reset and session management flows.",
+    "status": "in_progress",
+    "priority": "high",
+    "type": "task",
+    "tags": "backend,auth",
+    "due_date": "2026-07-30T18:00:00Z",
+    "parent_id": null,
+    "project_id": null
+  },
+  {
+    "title": "Implement JWT middleware",
+    "description": "Protect API routes using JWT authentication.",
+    "status": "open",
+    "priority": "high",
+    "type": "task",
+    "tags": "backend,security",
+    "due_date": "2026-07-31T12:00:00Z",
+    "parent_id": null,
+    "project_id": null
+  },
+  {
+    "title": "Write database migrations",
+    "description": "Generate and verify Alembic migrations for all new tables.",
+    "status": "done",
+    "priority": "medium",
+    "type": "task",
+    "tags": "database,alembic",
+    "due_date": "2026-07-26T17:00:00Z",
+    "parent_id": null,
+    "project_id": null
+  },
+  {
+    "title": "Prepare weekly sprint planning",
+    "description": "Organize backlog and prepare sprint board.",
+    "status": "open",
+    "priority": "medium",
+    "type": "task",
+    "tags": "planning,sprint",
+    "due_date": "2026-08-01T10:00:00Z",
+    "parent_id": null,
+    "project_id": null
+  },
+  {
+    "title": "Review pull requests",
+    "description": "Review open PRs before merge.",
+    "status": "open",
+    "priority": "medium",
+    "type": "task",
+    "tags": "git,review",
+    "due_date": "2026-07-29T16:00:00Z",
+    "parent_id": null,
+    "project_id": null
+  }
+]
