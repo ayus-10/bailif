@@ -1,7 +1,7 @@
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
-from app.core.embeddings import get_embedding
+from app.agent.llm.embeddings import get_embedding
 from app.core.pagination import decode_cursor, encode_cursor
 from app.features.tasks.schemas import (
     TaskCreate,
