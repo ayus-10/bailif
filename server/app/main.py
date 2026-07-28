@@ -6,7 +6,6 @@ from app.api.v1 import ai, projects, tasks
 
 app = FastAPI(title="Bailif Server", version="0.1.0")
 
-# TODO: allow specific origins, not "*"
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,7 +13,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TODO: figure out error handling
 
 app.include_router(
     tasks.router,

@@ -15,7 +15,6 @@ from app.models.db.task import Task
 
 def create_task(db: Session, payload: TaskCreate) -> Task:
     task = Task(**payload.model_dump())
-    # TODO: make use of bg workers for this
     task.embedding = get_embedding(f"{task.title}\n{task.description}")
     db.add(task)
     db.commit()
@@ -74,7 +73,6 @@ def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
     for field, value in updates.items():
         setattr(task, field, value)
 
-    # TODO: make use of bg workers for this
     if "title" in updates or "description" in updates:
         task.embedding = get_embedding(f"{task.title}\n{task.description}")
 
