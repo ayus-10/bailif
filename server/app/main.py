@@ -2,11 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.models
-from app.features import projects, tasks
+from app.api.v1 import ai, projects, tasks
 
 app = FastAPI(title="Bailif Server", version="0.1.0")
 
-# TODO: allow specific origins, not "*"
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,11 +13,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(tasks.router)
-app.include_router(projects.router)
 
-tasks.register_error_handlers(app)
-projects.register_error_handlers(app)
+app.include_router(
+    tasks.router,
+    prefix="/api/v1",
+)
+app.include_router(
+    projects.router,
+    prefix="/api/v1",
+)
+app.include_router(
+    ai.router,
+    prefix="/api/v1",
+)
 
 
 @app.get("/health")
