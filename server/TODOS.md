@@ -1,16 +1,5 @@
 # AI / Agent Roadmap
 
-## Retrieval
-
-- Implement semantic task search using stored embeddings.
-- Validate retrieval quality with real project data.
-- Tune top-k results and similarity metric if needed.
-
-## Context-aware Suggestions
-
-- Include semantically similar tasks in the LLM prompt before generating suggestions.
-- Use retrieved context to reduce duplicate or redundant suggestions.
-
 ## Suggestion Metadata
 
 - Return metadata explaining why a suggestion was generated.

@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.tasks.exceptions import TaskNotFoundError
+from app.repositories.tasks.exceptions import TaskNotFoundError
 from app.models.db.task import Task
 
 
