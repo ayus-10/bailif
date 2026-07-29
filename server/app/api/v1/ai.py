@@ -16,8 +16,17 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 @router.post("/task-suggestions", response_model=TaskSuggestionResponse)
 async def suggest_tasks(
     payload: TaskSuggestionRequest,
+    db: Session = Depends(get_db),
 ) -> TaskSuggestionResponse:
-    return await generate_task_suggestions(payload)
+    similar_tasks = await semantic_task_search(
+        db=db,
+        query=payload.title,
+        top_k=5,
+    )
+    return await generate_task_suggestions(
+        payload=payload,
+        similar_tasks=similar_tasks,
+    )
 
 
 @router.post("/task-search")
