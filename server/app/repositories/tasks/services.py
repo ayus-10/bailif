@@ -3,19 +3,41 @@ from sqlalchemy.orm import Session
 
 from app.agent.llm.embeddings import get_embedding
 from app.core.pagination import decode_cursor, encode_cursor
-from app.features.tasks.schemas import (
+from app.models.db.task import Task
+from app.repositories.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
     TaskListResponse,
     TaskRead,
     TaskUpdate,
 )
-from app.models.db.task import Task
 
 
-def create_task(db: Session, payload: TaskCreate) -> Task:
+async def generate_task_embedding(task: Task) -> list[float]:
+    embedding_text = f"""
+    Title: {task.title}
+
+    Description:
+    {task.description}
+
+    Tags:
+    {" ".join(task.tags)}
+
+    Status:
+    {task.status}
+
+    Priority:
+    {task.priority}
+    """.strip()
+
+    return await get_embedding(embedding_text)
+
+
+async def create_task(db: Session, payload: TaskCreate) -> Task:
     task = Task(**payload.model_dump())
-    task.embedding = get_embedding(f"{task.title}\n{task.description}")
+
+    task.embedding = await generate_task_embedding(task)
+
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -68,13 +90,13 @@ def list_tasks(db: Session, filters: TaskFilterParams) -> TaskListResponse:
     )
 
 
-def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
+async def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
     updates = payload.model_dump(exclude_unset=True)
     for field, value in updates.items():
         setattr(task, field, value)
 
     if "title" in updates or "description" in updates:
-        task.embedding = get_embedding(f"{task.title}\n{task.description}")
+        task.embedding = await generate_task_embedding(task)
 
     db.commit()
     db.refresh(task)

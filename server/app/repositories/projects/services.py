@@ -2,14 +2,14 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.pagination import decode_cursor, encode_cursor
-from app.features.projects.schemas import (
+from app.models.db.project import Project
+from app.repositories.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
     ProjectListResponse,
     ProjectRead,
     ProjectUpdate,
 )
-from app.models.db.project import Project
 
 
 def create_project(db: Session, payload: ProjectCreate) -> Project:

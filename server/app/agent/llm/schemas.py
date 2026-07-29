@@ -15,6 +15,11 @@ class TaskSuggestionResponse(BaseModel):
     suggestions: list[SuggestedTask] = Field(min_length=1, max_length=7)
 
 
+class SearchTasksRequest(BaseModel):
+    query: str
+    top_k: int = 5
+
+
 class OllamaGenerateResponse(BaseModel):
     model: str
     created_at: str
