@@ -1,6 +1,7 @@
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
+from app.agent.llm.embeddings import get_embedding
 from app.core.pagination import decode_cursor, encode_cursor
 from app.models.db.project import Project
 from app.repositories.projects.schemas import (
@@ -12,11 +13,32 @@ from app.repositories.projects.schemas import (
 )
 
 
-def create_project(db: Session, payload: ProjectCreate) -> Project:
+async def generate_project_embedding(project: Project) -> list[float]:
+    embedding_text = f"""
+    Name: {project.name}
+
+    Description:
+    {project.description}
+
+    Status:
+    {project.status}
+    """.strip()
+
+    return await get_embedding(embedding_text)
+
+
+async def create_project(
+    db: Session,
+    payload: ProjectCreate,
+) -> Project:
     project = Project(**payload.model_dump())
+
+    project.embedding = await generate_project_embedding(project)
+
     db.add(project)
     db.commit()
     db.refresh(project)
+
     return project
 
 
@@ -79,7 +101,7 @@ def list_projects(db: Session, filters: ProjectFilterParams) -> ProjectListRespo
     )
 
 
-def update_project(
+async def update_project(
     db: Session,
     project: Project,
     payload: ProjectUpdate,
@@ -89,8 +111,19 @@ def update_project(
     for field, value in updates.items():
         setattr(project, field, value)
 
+    if any(
+        field in updates
+        for field in [
+            "name",
+            "description",
+            "status",
+        ]
+    ):
+        project.embedding = await generate_project_embedding(project)
+
     db.commit()
     db.refresh(project)
+
     return project
 
 
