@@ -2,10 +2,11 @@ import asyncio
 import json
 
 from pydantic import ValidationError
+from sqlalchemy.orm import Session
 
 from app.agent.llm.generation import complete
 from app.agent.llm.parsing import parse_json_raw
-from app.agent.services.schemas import ActionPlan, ActionType
+from app.agent.schemas.planning import ActionPlan, ActionType
 from app.models.db import Project, Task
 
 VALID_TYPES = ", ".join(f'"{t.value}"' for t in ActionType)
@@ -77,7 +78,7 @@ def _parse_plan(raw_text: str) -> ActionPlan:
     return ActionPlan(**data)
 
 
-async def generate_action_plan(db, payload) -> ActionPlan:
+async def generate_action_plan(db: Session, payload) -> ActionPlan:
     context = _build_context(db, getattr(payload, "project_id", None))
     system_prompt = _build_system_prompt(context)
     full_prompt = (

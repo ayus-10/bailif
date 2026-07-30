@@ -1,17 +1,16 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import Any, Literal
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from app.agent.services.plan_generation import generate_action_plan
-from app.agent.services.schemas import (
-    ActionStatus,
+from app.agent.schemas.api_schemas import (
     ChatRequest,
     ChatResponse,
-    SearchTasksRequest,
-    TaskSuggestionRequest,
-    TaskSuggestionResponse,
 )
+from app.agent.schemas.enums import ActionStatus
+from app.agent.services.action_execution import execute_action
+from app.agent.services.plan_generation import generate_action_plan
 from app.agent.services.task_suggestion import generate_task_suggestions
 from app.agent.services.vector_search import semantic_task_search
 from app.core.database import get_db
@@ -20,56 +19,65 @@ from app.models.db.action import Action
 router = APIRouter(prefix="/ai", tags=["AI"])
 
 
-@router.post("/task-suggestions", response_model=TaskSuggestionResponse)
-async def suggest_tasks(
-    payload: TaskSuggestionRequest,
-    db: Session = Depends(get_db),
-) -> TaskSuggestionResponse:
-    similar_tasks = await semantic_task_search(
-        db=db,
-        query=payload.title,
-        top_k=5,
-    )
-    return await generate_task_suggestions(
-        payload=payload,
-        similar_tasks=similar_tasks,
-    )
-
-
-@router.post("/task-search")
-async def search_tasks(
-    request: SearchTasksRequest,
-    db: Session = Depends(get_db),
-):
-    return await semantic_task_search(
-        db=db,
-        query=request.query,
-        top_k=request.top_k,
-    )
-
-
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     payload: ChatRequest,
+    mode: Literal["suggest_tasks", "search_tasks"] | None = Query(
+        default=None,
+        description="Bypass the LLM planner and hit a single action directly.",
+    ),
     db: Session = Depends(get_db),
     # current_user: User = Depends(get_current_user),
-):
+) -> ChatResponse:
+    if mode == "search_tasks":
+        if not payload.query:
+            raise HTTPException(422, "query is required when mode=search_tasks")
+        hits = await semantic_task_search(
+            db=db, query=payload.query, top_k=payload.top_k
+        )
+        results = [{"task": task, "score": score} for task, score in hits]
+        return ChatResponse(reply="", actions=[], results=results)
+
+    if mode == "suggest_tasks":
+        if not payload.title:
+            raise HTTPException(422, "title is required when mode=suggest_tasks")
+        similar_tasks = await semantic_task_search(db=db, query=payload.title, top_k=5)
+        suggestions = await generate_task_suggestions(
+            payload=payload, similar_tasks=similar_tasks
+        )
+        return ChatResponse(reply="", actions=[], results=suggestions)
+
+    if not payload.message:
+        raise HTTPException(422, "message is required")
+
     plan = await generate_action_plan(
         db=db,
         # user=current_user,
         payload=payload,
     )
 
+    results: list[dict[str, Any]] | None = None
+    status = ActionStatus.PENDING
+
+    if not plan.requires_confirmation:
+        results = []
+        for item in plan.actions:
+            try:
+                result = await execute_action(db, item.type, item.data)
+                results.append({"type": item.type, "ok": True, "result": result})
+            except Exception as e:
+                results.append({"type": item.type, "ok": False, "error": str(e)})
+        status = ActionStatus.COMPLETED
+
     action = Action(
         # user_id=current_user.id,
         project_id=payload.project_id,
         prompt=payload.message,
         reply=plan.reply,
-        plan=plan.actions,
-        status=ActionStatus.PENDING,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        plan=[a.model_dump(mode="json") for a in plan.actions],
+        status=status,
+        expires_at=datetime.now(UTC) + timedelta(minutes=15),
     )
-
     db.add(action)
     db.commit()
     db.refresh(action)
@@ -78,4 +86,5 @@ async def chat(
         action_id=str(action.id),
         reply=plan.reply,
         actions=plan.actions,
+        results=results,
     )

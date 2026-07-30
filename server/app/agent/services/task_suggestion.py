@@ -1,6 +1,6 @@
 from app.agent.llm.generation import complete
 from app.agent.llm.parsing import parse_json
-from app.agent.services.schemas import (
+from app.agent.schemas.api_schemas import (
     TaskSuggestionRequest,
     TaskSuggestionResponse,
 )
