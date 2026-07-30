@@ -2,9 +2,13 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import TypeAdapter, ValidationError
 from sqlalchemy.orm import Session
 
+from app.agent.schemas.action_items import ActionItemUnion
 from app.agent.schemas.api_schemas import (
+    AcceptActionResponse,
+    ActionExecutionResult,
     ChatRequest,
     ChatResponse,
     TaskSuggestionRequest,
@@ -93,5 +97,60 @@ async def chat(
         action_id=str(action.id),
         reply=plan.reply,
         actions=plan.actions,
+        results=results,
+    )
+
+
+@router.post("/chat/actions/{action_id}/accept", response_model=AcceptActionResponse)
+async def accept_action(
+    action_id: str,
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(get_current_user),
+) -> AcceptActionResponse:
+    action = db.query(Action).filter(Action.id == action_id).first()
+    if action is None:
+        raise HTTPException(404, "Action not found")
+
+    if action.status != ActionStatus.PENDING:
+        raise HTTPException(409, f"Action is not pending (status={action.status})")
+
+    if action.expires_at < datetime.now(UTC):
+        raise HTTPException(409, "Action has expired and can no longer be confirmed")
+
+    try:
+        items = [
+            TypeAdapter(ActionItemUnion).validate_python(item) for item in action.plan
+        ]
+    except ValidationError as e:
+        raise HTTPException(500, "Stored action plan failed re-validation") from e
+
+    results: list[ActionExecutionResult] = []
+    failed_count = 0
+
+    for item in items:
+        try:
+            result = await execute_action(db, item.type, item.data)
+            results.append(
+                ActionExecutionResult(type=item.type, ok=True, result=result)
+            )
+        except Exception as e:
+            failed_count += 1
+            results.append(
+                ActionExecutionResult(type=item.type, ok=False, error=str(e))
+            )
+
+    action.status = (
+        ActionStatus.FAILED
+        if failed_count == len(items)
+        else ActionStatus.PARTIALLY_FAILED
+        if failed_count > 0
+        else ActionStatus.COMPLETED
+    )
+    db.commit()
+    db.refresh(action)
+
+    return AcceptActionResponse(
+        action_id=str(action.id),
+        status=ActionStatus(action.status),
         results=results,
     )

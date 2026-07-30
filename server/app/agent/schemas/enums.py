@@ -5,6 +5,8 @@ class ActionStatus(str, Enum):
     PENDING = "pending"
     COMPLETED = "completed"
     REJECTED = "rejected"
+    PARTIALLY_FAILED = "partially_failed"
+    FAILED = "failed"
 
 
 class ActionType(str, Enum):

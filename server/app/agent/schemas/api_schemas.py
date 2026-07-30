@@ -3,6 +3,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from app.agent.schemas.action_items import ActionItemUnion
+from app.agent.schemas.enums import ActionStatus, ActionType
 
 
 class SuggestedTask(BaseModel):
@@ -40,3 +41,16 @@ class ChatResponse(BaseModel):
     reply: str
     actions: list[ActionItemUnion] = []
     results: Any | None = None
+
+
+class ActionExecutionResult(BaseModel):
+    type: ActionType
+    ok: bool
+    result: Any | None = None
+    error: str | None = None
+
+
+class AcceptActionResponse(BaseModel):
+    action_id: str
+    status: ActionStatus
+    results: list[ActionExecutionResult]
