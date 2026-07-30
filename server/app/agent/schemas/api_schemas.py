@@ -12,7 +12,7 @@ class SuggestedTask(BaseModel):
 
 class TaskSuggestionRequest(BaseModel):
     title: str = Field(min_length=1)
-    description: str = ""
+    description: str | None = ""
 
 
 class TaskSuggestionResponse(BaseModel):
@@ -30,6 +30,7 @@ class ChatRequest(BaseModel):
 
     # bypass-mode only
     title: str | None = None  # mode=suggest_tasks
+    description: str | None = None  # mode=suggest_tasks
     query: str | None = None  # mode=search_tasks
     top_k: int = 5  # mode=search_tasks
 

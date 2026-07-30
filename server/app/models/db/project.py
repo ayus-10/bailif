@@ -2,10 +2,12 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, UUID, Boolean, DateTime, Enum, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+from app.models.db.task import EMBEDDING_DIM
 from app.models.enums.project import ProjectStatus
 from app.models.enums.shared import AgentPermissionLevel
 
@@ -59,6 +61,12 @@ class Project(Base):
 
     # Relations
     tasks: Mapped[list[Task]] = relationship("Task", back_populates="project")
+
+    # Embedding
+    # Populate at insert/update time
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(EMBEDDING_DIM), nullable=True
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

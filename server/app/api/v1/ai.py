@@ -7,13 +7,15 @@ from sqlalchemy.orm import Session
 from app.agent.schemas.api_schemas import (
     ChatRequest,
     ChatResponse,
+    TaskSuggestionRequest,
 )
 from app.agent.schemas.enums import ActionStatus
 from app.agent.services.action_execution import execute_action
 from app.agent.services.plan_generation import generate_action_plan
 from app.agent.services.task_suggestion import generate_task_suggestions
-from app.agent.services.vector_search import semantic_task_search
+from app.agent.services.vector_search import semantic_search
 from app.core.database import get_db
+from app.models.db import Task
 from app.models.db.action import Action
 
 router = APIRouter(prefix="/ai", tags=["AI"])
@@ -32,8 +34,8 @@ async def chat(
     if mode == "search_tasks":
         if not payload.query:
             raise HTTPException(422, "query is required when mode=search_tasks")
-        hits = await semantic_task_search(
-            db=db, query=payload.query, top_k=payload.top_k
+        hits = await semantic_search(
+            db=db, query=payload.query, model=Task, top_k=payload.top_k
         )
         results = [{"task": task, "score": score} for task, score in hits]
         return ChatResponse(reply="", actions=[], results=results)
@@ -41,9 +43,14 @@ async def chat(
     if mode == "suggest_tasks":
         if not payload.title:
             raise HTTPException(422, "title is required when mode=suggest_tasks")
-        similar_tasks = await semantic_task_search(db=db, query=payload.title, top_k=5)
+        similar_tasks = await semantic_search(
+            db=db, query=payload.title, model=Task, top_k=5
+        )
         suggestions = await generate_task_suggestions(
-            payload=payload, similar_tasks=similar_tasks
+            payload=TaskSuggestionRequest(
+                title=payload.title, description=payload.description
+            ),
+            similar_tasks=similar_tasks,
         )
         return ChatResponse(reply="", actions=[], results=suggestions)
 

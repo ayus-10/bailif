@@ -1,19 +1,16 @@
 from typing import Any
 
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.agent.schemas.enums import ActionType
 from app.agent.services.task_suggestion import generate_task_suggestions
-from app.agent.services.vector_search import semantic_task_search
+from app.agent.services.vector_search import semantic_search
+from app.models.db import Project, Task
 
 
-async def execute_action(db: Session, action_type: ActionType, data: BaseModel) -> Any:
-    """Dispatch a single validated action to its executor. Returns whatever
-    result is relevant to hand back to the client. Raises on failure —
-    caller records per-action success/failure rather than aborting the
-    whole plan."""
-
+async def execute_action(
+    db: Session, action_type: ActionType, data: dict[str, Any]
+) -> Any:
     match action_type:
         case ActionType.CREATE_TASK:
             # TODO: return task_service.create_task(db, **data.model_dump())
@@ -52,18 +49,32 @@ async def execute_action(db: Session, action_type: ActionType, data: BaseModel) 
             raise NotImplementedError("delete_project executor not wired up")
 
         case ActionType.SEARCH_TASKS:
-            return await semantic_task_search(db=db, query=data.query, top_k=10)
+            return await semantic_search(
+                db=db,
+                model=Task,
+                query=data.query,
+                top_k=10,
+            )
 
         case ActionType.SEARCH_PROJECTS:
-            # Not implemented — projects have no embeddings/search infra yet.
-            return {"error": "search_projects is not implemented yet"}
+            return await semantic_search(
+                db=db,
+                model=Project,
+                query=data.query,
+                top_k=10,
+            )
 
         case ActionType.SUGGEST_TASKS:
-            similar_tasks = await semantic_task_search(
-                db=db, query=data.project_id or "", top_k=5
+            similar_tasks = await semantic_search(
+                db=db,
+                model=Task,
+                query=data.query,
+                top_k=5,
             )
+
             return await generate_task_suggestions(
-                payload=data, similar_tasks=similar_tasks
+                payload=data,
+                similar_tasks=similar_tasks,
             )
 
         case ActionType.RECOMMEND_NEXT_TASK:

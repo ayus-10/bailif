@@ -95,7 +95,16 @@ async def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
     for field, value in updates.items():
         setattr(task, field, value)
 
-    if "title" in updates or "description" in updates:
+    if any(
+        field in updates
+        for field in [
+            "title",
+            "description",
+            "tags",
+            "status",
+            "priority",
+        ]
+    ):
         task.embedding = await generate_task_embedding(task)
 
     db.commit()
