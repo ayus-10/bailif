@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.agent.services.plan_generation import generate_action_plan
 from app.agent.services.schemas import (
     ActionStatus,
     ChatRequest,
