@@ -8,5 +8,5 @@
 </template>
 
 <script setup>
-import Sidebar from "./components/Sidebar.vue";
+import Sidebar from "./shared/layout/Sidebar.vue";
 </script>

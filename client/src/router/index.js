@@ -8,43 +8,43 @@ const routes = [
   {
     path: "/dashboard",
     name: "dashboard",
-    component: () => import("../components/Dashboard.vue"),
+    component: () => import("../pages/dashboard/page.vue"),
   },
   {
     path: "/projects/:id?",
     name: "projects",
-    component: () => import("../components/ProjectDetail.vue"),
+    component: () => import("../pages/projects/page.vue"),
     props: true,
   },
   {
     path: "/tasks",
     name: "tasks",
-    component: () => import("../components/TaskBoard.vue"),
+    component: () => import("../pages/tasks/page.vue"),
   },
   {
     path: "/calendar",
     name: "calendar",
-    component: () => import("../components/CalendarView.vue"),
+    component: () => import("../pages/calendar/page.vue"),
   },
   {
     path: "/documents",
     name: "documents",
-    component: () => import("../components/DocumentSection.vue"),
+    component: () => import("../pages/documents/page.vue"),
   },
   {
     path: "/gantt",
     name: "gantt",
-    component: () => import("../components/GanttChart.vue"),
+    component: () => import("../pages/gantt/page.vue"),
   },
   {
     path: "/notifications",
     name: "notifications",
-    component: () => import("../components/Notifications.vue"),
+    component: () => import("../pages/notifications/page.vue"),
   },
   {
     path: "/settings",
     name: "settings",
-    component: () => import("../components/Settings.vue"),
+    component: () => import("../pages/settings/page.vue"),
   },
 ];
 

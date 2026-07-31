@@ -4,9 +4,16 @@
             <!-- Document list -->
             <v-col cols="12" md="3" class="border-e fill-height">
                 <div class="d-flex align-center pa-4">
-                    <span class="text-subtitle-1 font-weight-medium">Documents</span>
+                    <span class="text-subtitle-1 font-weight-medium"
+                        >Documents</span
+                    >
                     <v-spacer />
-                    <v-btn icon="mdi-plus" size="small" variant="text" @click="createDocument" />
+                    <v-btn
+                        icon="mdi-plus"
+                        size="small"
+                        variant="text"
+                        @click="createDocument"
+                    />
                 </div>
                 <v-divider />
                 <v-list density="comfortable" nav>
@@ -34,11 +41,21 @@
                     />
                     <v-spacer />
                     <v-avatar-group class="mr-3">
-                        <v-avatar v-for="c in activeDoc.collaborators" :key="c" color="primary" size="26">
+                        <v-avatar
+                            v-for="c in activeDoc.collaborators"
+                            :key="c"
+                            color="primary"
+                            size="26"
+                        >
                             <span class="text-caption">{{ c }}</span>
                         </v-avatar>
                     </v-avatar-group>
-                    <v-chip size="small" color="success" variant="tonal" prepend-icon="mdi-circle-medium">
+                    <v-chip
+                        size="small"
+                        color="success"
+                        variant="tonal"
+                        prepend-icon="mdi-circle-medium"
+                    >
                         Saved
                     </v-chip>
                 </div>
@@ -46,14 +63,44 @@
 
                 <!-- Formatting toolbar -->
                 <div class="d-flex align-center pa-2">
-                    <v-btn icon="mdi-format-bold" variant="text" size="small" @click="format('bold')" />
-                    <v-btn icon="mdi-format-italic" variant="text" size="small" @click="format('italic')" />
-                    <v-btn icon="mdi-format-underline" variant="text" size="small" @click="format('underline')" />
+                    <v-btn
+                        icon="mdi-format-bold"
+                        variant="text"
+                        size="small"
+                        @click="format('bold')"
+                    />
+                    <v-btn
+                        icon="mdi-format-italic"
+                        variant="text"
+                        size="small"
+                        @click="format('italic')"
+                    />
+                    <v-btn
+                        icon="mdi-format-underline"
+                        variant="text"
+                        size="small"
+                        @click="format('underline')"
+                    />
                     <v-divider vertical class="mx-2" />
-                    <v-btn icon="mdi-format-list-bulleted" variant="text" size="small" @click="format('insertUnorderedList')" />
-                    <v-btn icon="mdi-format-list-numbered" variant="text" size="small" @click="format('insertOrderedList')" />
+                    <v-btn
+                        icon="mdi-format-list-bulleted"
+                        variant="text"
+                        size="small"
+                        @click="format('insertUnorderedList')"
+                    />
+                    <v-btn
+                        icon="mdi-format-list-numbered"
+                        variant="text"
+                        size="small"
+                        @click="format('insertOrderedList')"
+                    />
                     <v-divider vertical class="mx-2" />
-                    <v-btn icon="mdi-link-variant" variant="text" size="small" @click="insertLink" />
+                    <v-btn
+                        icon="mdi-link-variant"
+                        variant="text"
+                        size="small"
+                        @click="insertLink"
+                    />
                 </div>
                 <v-divider />
 
@@ -90,7 +137,9 @@ const documents = ref([
 ]);
 
 const activeDocId = ref(documents.value[0].id);
-const activeDoc = computed(() => documents.value.find((d) => d.id === activeDocId.value));
+const activeDoc = computed(() =>
+    documents.value.find((d) => d.id === activeDocId.value),
+);
 const editorRef = ref(null);
 
 function onInput(event) {

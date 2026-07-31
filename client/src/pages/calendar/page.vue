@@ -3,12 +3,25 @@
         <div class="d-flex align-center mb-4">
             <h1 class="text-h5 font-weight-medium">Calendar</h1>
             <v-spacer />
-            <v-btn icon="mdi-chevron-left" variant="text" @click="shiftMonth(-1)" />
-            <span class="text-subtitle-1 mx-2" style="min-width: 160px; text-align: center;">
+            <v-btn
+                icon="mdi-chevron-left"
+                variant="text"
+                @click="shiftMonth(-1)"
+            />
+            <span
+                class="text-subtitle-1 mx-2"
+                style="min-width: 160px; text-align: center"
+            >
                 {{ monthLabel }}
             </span>
-            <v-btn icon="mdi-chevron-right" variant="text" @click="shiftMonth(1)" />
-            <v-btn variant="outlined" class="ml-4" @click="goToday">Today</v-btn>
+            <v-btn
+                icon="mdi-chevron-right"
+                variant="text"
+                @click="shiftMonth(1)"
+            />
+            <v-btn variant="outlined" class="ml-4" @click="goToday"
+                >Today</v-btn
+            >
         </div>
 
         <v-card variant="outlined">
@@ -21,7 +34,10 @@
                     v-for="cell in calendarCells"
                     :key="cell.key"
                     class="calendar-cell"
-                    :class="{ 'calendar-cell--muted': !cell.inMonth, 'calendar-cell--today': cell.isToday }"
+                    :class="{
+                        'calendar-cell--muted': !cell.inMonth,
+                        'calendar-cell--today': cell.isToday,
+                    }"
                 >
                     <span class="text-caption">{{ cell.day }}</span>
                     <div class="calendar-events">
@@ -32,7 +48,7 @@
                             size="x-small"
                             variant="tonal"
                             class="mb-1"
-                            style="width: 100%;"
+                            style="width: 100%"
                         >
                             {{ event.title }}
                         </v-chip>
@@ -62,11 +78,18 @@ const today = new Date();
 const viewDate = ref(new Date(today.getFullYear(), today.getMonth(), 1));
 
 const monthLabel = computed(() =>
-    viewDate.value.toLocaleDateString(undefined, { month: "long", year: "numeric" })
+    viewDate.value.toLocaleDateString(undefined, {
+        month: "long",
+        year: "numeric",
+    }),
 );
 
 function shiftMonth(delta) {
-    viewDate.value = new Date(viewDate.value.getFullYear(), viewDate.value.getMonth() + delta, 1);
+    viewDate.value = new Date(
+        viewDate.value.getFullYear(),
+        viewDate.value.getMonth() + delta,
+        1,
+    );
 }
 
 function goToday() {
@@ -87,7 +110,11 @@ const calendarCells = computed(() => {
 
     const cells = [];
     for (let i = 0; i < 42; i++) {
-        const date = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+        const date = new Date(
+            gridStart.getFullYear(),
+            gridStart.getMonth(),
+            gridStart.getDate() + i,
+        );
         const iso = toISODate(date);
         cells.push({
             key: iso,
@@ -101,7 +128,10 @@ const calendarCells = computed(() => {
 });
 
 function priorityColor(priority) {
-    return { low: "success", medium: "warning", high: "error" }[priority] ?? "default";
+    return (
+        { low: "success", medium: "warning", high: "error" }[priority] ??
+        "default"
+    );
 }
 </script>
 

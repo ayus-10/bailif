@@ -3,7 +3,9 @@
         <div class="d-flex align-center mb-4">
             <div>
                 <h1 class="text-h5 font-weight-medium">Gantt Chart</h1>
-                <span class="text-body-2 text-medium-emphasis">{{ project.name }} schedule</span>
+                <span class="text-body-2 text-medium-emphasis"
+                    >{{ project.name }} schedule</span
+                >
             </div>
             <v-spacer />
             <v-select
@@ -14,7 +16,7 @@
                 density="compact"
                 variant="outlined"
                 hide-details
-                style="max-width: 240px;"
+                style="max-width: 240px"
             />
         </div>
 
@@ -33,13 +35,19 @@
                     </div>
 
                     <!-- Task rows -->
-                    <template v-for="(task, rowIndex) in project.tasks" :key="task.id">
+                    <template
+                        v-for="(task, rowIndex) in project.tasks"
+                        :key="task.id"
+                    >
                         <div class="gantt-row-label text-body-2">
                             {{ task.title }}
                         </div>
                         <div
                             class="gantt-bar-track"
-                            :style="{ gridColumn: `2 / span ${days.length}`, gridRow: rowIndex + 2 }"
+                            :style="{
+                                gridColumn: `2 / span ${days.length}`,
+                                gridRow: rowIndex + 2,
+                            }"
                         >
                             <div
                                 class="gantt-bar"
@@ -55,17 +63,35 @@
             </div>
 
             <div class="d-flex align-center mt-4">
-                <span class="text-caption text-medium-emphasis mr-4">Priority:</span>
-                <v-chip color="error" size="x-small" variant="tonal" class="mr-2">High</v-chip>
-                <v-chip color="warning" size="x-small" variant="tonal" class="mr-2">Medium</v-chip>
-                <v-chip color="success" size="x-small" variant="tonal">Low</v-chip>
+                <span class="text-caption text-medium-emphasis mr-4"
+                    >Priority:</span
+                >
+                <v-chip
+                    color="error"
+                    size="x-small"
+                    variant="tonal"
+                    class="mr-2"
+                    >High</v-chip
+                >
+                <v-chip
+                    color="warning"
+                    size="x-small"
+                    variant="tonal"
+                    class="mr-2"
+                    >Medium</v-chip
+                >
+                <v-chip color="success" size="x-small" variant="tonal"
+                    >Low</v-chip
+                >
             </div>
         </v-card>
 
         <!-- Dependency list, since arrows across a scrollable grid get messy -->
         <v-card variant="outlined" class="mt-4">
             <v-card-item>
-                <v-card-title class="text-subtitle-1 font-weight-medium">Dependencies</v-card-title>
+                <v-card-title class="text-subtitle-1 font-weight-medium"
+                    >Dependencies</v-card-title
+                >
             </v-card-item>
             <v-divider />
             <v-list density="compact">
@@ -75,7 +101,11 @@
                     prepend-icon="mdi-arrow-right-thin"
                 >
                     <v-list-item-title class="text-body-2">
-                        {{ dep.fromTitle }} <span class="text-medium-emphasis">must finish before</span> {{ dep.toTitle }}
+                        {{ dep.fromTitle }}
+                        <span class="text-medium-emphasis"
+                            >must finish before</span
+                        >
+                        {{ dep.toTitle }}
                     </v-list-item-title>
                 </v-list-item>
                 <v-list-item v-if="dependencyList.length === 0">
@@ -98,9 +128,29 @@ const projects = [
         rangeStart: "2026-07-20",
         rangeEnd: "2026-08-10",
         tasks: [
-            { id: 1, title: "Wireframes", start: "2026-07-20", end: "2026-07-25", priority: "high" },
-            { id: 2, title: "Component library", start: "2026-07-24", end: "2026-07-31", priority: "medium", dependsOn: 1 },
-            { id: 3, title: "QA pass", start: "2026-08-01", end: "2026-08-05", priority: "low", dependsOn: 2 },
+            {
+                id: 1,
+                title: "Wireframes",
+                start: "2026-07-20",
+                end: "2026-07-25",
+                priority: "high",
+            },
+            {
+                id: 2,
+                title: "Component library",
+                start: "2026-07-24",
+                end: "2026-07-31",
+                priority: "medium",
+                dependsOn: 1,
+            },
+            {
+                id: 3,
+                title: "QA pass",
+                start: "2026-08-01",
+                end: "2026-08-05",
+                priority: "low",
+                dependsOn: 2,
+            },
         ],
     },
     {
@@ -109,16 +159,37 @@ const projects = [
         rangeStart: "2026-07-22",
         rangeEnd: "2026-08-12",
         tasks: [
-            { id: 4, title: "API contract", start: "2026-07-22", end: "2026-07-27", priority: "medium" },
-            { id: 5, title: "Auth flow", start: "2026-07-27", end: "2026-08-03", priority: "high", dependsOn: 4 },
-            { id: 6, title: "Staging setup", start: "2026-07-25", end: "2026-07-29", priority: "medium" },
+            {
+                id: 4,
+                title: "API contract",
+                start: "2026-07-22",
+                end: "2026-07-27",
+                priority: "medium",
+            },
+            {
+                id: 5,
+                title: "Auth flow",
+                start: "2026-07-27",
+                end: "2026-08-03",
+                priority: "high",
+                dependsOn: 4,
+            },
+            {
+                id: 6,
+                title: "Staging setup",
+                start: "2026-07-25",
+                end: "2026-07-29",
+                priority: "medium",
+            },
         ],
     },
 ];
 
 const selectedProjectId = ref(projects[0].id);
 const projectOptions = projects.map((p) => ({ id: p.id, name: p.name }));
-const project = computed(() => projects.find((p) => p.id === selectedProjectId.value));
+const project = computed(() =>
+    projects.find((p) => p.id === selectedProjectId.value),
+);
 
 function toDate(iso) {
     return new Date(`${iso}T00:00:00`);
@@ -132,7 +203,10 @@ const days = computed(() => {
         const iso = d.toISOString().slice(0, 10);
         list.push({
             iso,
-            label: d.toLocaleDateString(undefined, { day: "numeric", month: "short" }),
+            label: d.toLocaleDateString(undefined, {
+                day: "numeric",
+                month: "short",
+            }),
             isWeekend: d.getDay() === 0 || d.getDay() === 6,
         });
     }
@@ -163,9 +237,10 @@ const dependencyList = computed(() =>
         .map((t) => ({
             from: t.dependsOn,
             to: t.id,
-            fromTitle: project.value.tasks.find((p) => p.id === t.dependsOn)?.title,
+            fromTitle: project.value.tasks.find((p) => p.id === t.dependsOn)
+                ?.title,
             toTitle: t.title,
-        }))
+        })),
 );
 </script>
 

@@ -8,7 +8,12 @@
                 </span>
             </div>
             <v-spacer />
-            <v-btn variant="text" size="small" :disabled="unreadCount === 0" @click="markAllRead">
+            <v-btn
+                variant="text"
+                size="small"
+                :disabled="unreadCount === 0"
+                @click="markAllRead"
+            >
                 Mark all as read
             </v-btn>
         </div>
@@ -28,30 +33,52 @@
                 @click="markRead(notification.id)"
             >
                 <template #prepend>
-                    <v-badge :model-value="!notification.read" color="error" dot location="top end">
+                    <v-badge
+                        :model-value="!notification.read"
+                        color="error"
+                        dot
+                        location="top end"
+                    >
                         <v-avatar color="primary" size="36">
-                            <span class="text-body-2">{{ notification.actorInitials }}</span>
+                            <span class="text-body-2">{{
+                                notification.actorInitials
+                            }}</span>
                         </v-avatar>
                     </v-badge>
                 </template>
 
                 <v-list-item-title class="text-body-2">
-                    <strong>{{ notification.actor }}</strong> {{ notification.action }}
+                    <strong>{{ notification.actor }}</strong>
+                    {{ notification.action }}
                 </v-list-item-title>
-                <v-list-item-subtitle>{{ notification.context }}</v-list-item-subtitle>
+                <v-list-item-subtitle>{{
+                    notification.context
+                }}</v-list-item-subtitle>
 
                 <template #append>
                     <div class="d-flex flex-column align-end">
-                        <v-icon :icon="typeIcon(notification.type)" size="16" class="mb-1" />
-                        <span class="text-caption text-medium-emphasis">{{ notification.time }}</span>
+                        <v-icon
+                            :icon="typeIcon(notification.type)"
+                            size="16"
+                            class="mb-1"
+                        />
+                        <span class="text-caption text-medium-emphasis">{{
+                            notification.time
+                        }}</span>
                     </div>
                 </template>
             </v-list-item>
         </v-list>
 
         <v-sheet v-else class="pa-8 text-center" border rounded>
-            <v-icon icon="mdi-bell-check-outline" size="32" class="mb-2 text-medium-emphasis" />
-            <div class="text-body-2 text-medium-emphasis">You're all caught up</div>
+            <v-icon
+                icon="mdi-bell-check-outline"
+                size="32"
+                class="mb-2 text-medium-emphasis"
+            />
+            <div class="text-body-2 text-medium-emphasis">
+                You're all caught up
+            </div>
         </v-sheet>
     </v-container>
 </template>
@@ -65,7 +92,7 @@ const notifications = ref([
         actor: "Maya Chen",
         actorInitials: "MC",
         action: "commented on Homepage wireframes",
-        context: "Website Redesign · \"Can we try a lighter hero image?\"",
+        context: 'Website Redesign · "Can we try a lighter hero image?"',
         time: "10 min ago",
         type: "comment",
         read: false,
@@ -85,7 +112,7 @@ const notifications = ref([
         actor: "Priya Nair",
         actorInitials: "PN",
         action: "mentioned you in Sprint Retro Notes",
-        context: "\"@jordan can you confirm the release date?\"",
+        context: '"@jordan can you confirm the release date?"',
         time: "3 hr ago",
         type: "mention",
         read: false,
@@ -115,12 +142,16 @@ const notifications = ref([
 const filter = ref("all");
 
 const filteredNotifications = computed(() => {
-    if (filter.value === "unread") return notifications.value.filter((n) => !n.read);
-    if (filter.value === "mentions") return notifications.value.filter((n) => n.type === "mention");
+    if (filter.value === "unread")
+        return notifications.value.filter((n) => !n.read);
+    if (filter.value === "mentions")
+        return notifications.value.filter((n) => n.type === "mention");
     return notifications.value;
 });
 
-const unreadCount = computed(() => notifications.value.filter((n) => !n.read).length);
+const unreadCount = computed(
+    () => notifications.value.filter((n) => !n.read).length,
+);
 
 function markRead(id) {
     const notification = notifications.value.find((n) => n.id === id);
@@ -132,11 +163,13 @@ function markAllRead() {
 }
 
 function typeIcon(type) {
-    return {
-        comment: "mdi-comment-outline",
-        task: "mdi-checkbox-marked-outline",
-        mention: "mdi-at",
-        assignment: "mdi-account-arrow-right-outline",
-    }[type] ?? "mdi-bell-outline";
+    return (
+        {
+            comment: "mdi-comment-outline",
+            task: "mdi-checkbox-marked-outline",
+            mention: "mdi-at",
+            assignment: "mdi-account-arrow-right-outline",
+        }[type] ?? "mdi-bell-outline"
+    );
 }
 </script>
