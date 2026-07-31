@@ -1,57 +1,131 @@
-[
-  {
-    "title": "Design authentication flow",
-    "description": "Create login, signup, password reset and session management flows.",
-    "status": "in_progress",
-    "priority": "high",
-    "type": "task",
-    "tags": "backend,auth",
-    "due_date": "2026-07-30T18:00:00Z",
-    "parent_id": null,
-    "project_id": null
-  },
-  {
-    "title": "Implement JWT middleware",
-    "description": "Protect API routes using JWT authentication.",
-    "status": "open",
-    "priority": "high",
-    "type": "task",
-    "tags": "backend,security",
-    "due_date": "2026-07-31T12:00:00Z",
-    "parent_id": null,
-    "project_id": null
-  },
-  {
-    "title": "Write database migrations",
-    "description": "Generate and verify Alembic migrations for all new tables.",
-    "status": "done",
-    "priority": "medium",
-    "type": "task",
-    "tags": "database,alembic",
-    "due_date": "2026-07-26T17:00:00Z",
-    "parent_id": null,
-    "project_id": null
-  },
-  {
-    "title": "Prepare weekly sprint planning",
-    "description": "Organize backlog and prepare sprint board.",
-    "status": "open",
-    "priority": "medium",
-    "type": "task",
-    "tags": "planning,sprint",
-    "due_date": "2026-08-01T10:00:00Z",
-    "parent_id": null,
-    "project_id": null
-  },
-  {
-    "title": "Review pull requests",
-    "description": "Review open PRs before merge.",
-    "status": "open",
-    "priority": "medium",
-    "type": "task",
-    "tags": "git,review",
-    "due_date": "2026-07-29T16:00:00Z",
-    "parent_id": null,
-    "project_id": null
-  }
-]
+{
+  "projects": [
+    {
+      "id": "a1a1a1a1-0001-4000-8000-000000000001",
+      "name": "Website Redesign",
+      "description": "Refresh the marketing site with the new brand system.",
+      "icon": "mdi-web",
+      "color": "#4F46E5",
+      "status": "active"
+    },
+    {
+      "id": "a1a1a1a1-0002-4000-8000-000000000002",
+      "name": "Mobile App",
+      "description": "Native iOS/Android companion app.",
+      "icon": "mdi-cellphone",
+      "color": "#059669",
+      "status": "active"
+    },
+    {
+      "id": "a1a1a1a1-0003-4000-8000-000000000003",
+      "name": "Core Platform",
+      "description": "Shared backend infrastructure: auth, security, and internal tooling.",
+      "icon": "mdi-server",
+      "color": "#DC2626",
+      "status": "active"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "b2b2b2b2-0001-4000-8000-000000000001",
+      "title": "Design authentication flow",
+      "description": "Design and document end-to-end user authentication architecture. Define user workflows for secure login, registration, email verification, password reset, and session management. Outline token strategies (access/refresh tokens) and account lockout mechanisms to protect against brute-force attacks.",
+      "status": "in_progress",
+      "priority": "high",
+      "type": "task",
+      "tags": "backend,auth",
+      "due_date": "2026-07-30T18:00:00Z",
+      "parent_id": null,
+      "project_id": "a1a1a1a1-0003-4000-8000-000000000003"
+    },
+    {
+      "id": "b2b2b2b2-0002-4000-8000-000000000002",
+      "title": "Implement JWT middleware",
+      "description": "Develop and integrate custom middleware to intercept incoming HTTP requests, extract bearer tokens from request headers, and validate JSON Web Tokens (JWT). Handle signature validation, token expiration, payload decoding, and return appropriate HTTP error responses (401 Unauthorized, 403 Forbidden) when tokens are invalid or expired.",
+      "status": "open",
+      "priority": "high",
+      "type": "task",
+      "tags": "backend,security",
+      "due_date": "2026-07-31T12:00:00Z",
+      "parent_id": "b2b2b2b2-0001-4000-8000-000000000001",
+      "project_id": "a1a1a1a1-0003-4000-8000-000000000003"
+    },
+    {
+      "id": "b2b2b2b2-0003-4000-8000-000000000003",
+      "title": "Write database migrations",
+      "description": "Create, test, and apply Alembic migration scripts to accommodate recent schema changes, including new core tables, foreign key constraints, and performance indexes. Verify both upgrade and rollback operations against a staging database instance to prevent data loss or schema drift.",
+      "status": "done",
+      "priority": "medium",
+      "type": "task",
+      "tags": "database,alembic",
+      "due_date": "2026-07-26T17:00:00Z",
+      "parent_id": null,
+      "project_id": "a1a1a1a1-0003-4000-8000-000000000003"
+    },
+    {
+      "id": "b2b2b2b2-0004-4000-8000-000000000004",
+      "title": "Prepare weekly sprint planning",
+      "description": "Review the product backlog, refine story points, and prioritize user stories based on stakeholder input and team velocity. Populate and structure the active sprint board, assign tasks to team members, and prepare key discussion points for the upcoming sprint planning meeting.",
+      "status": "open",
+      "priority": "medium",
+      "type": "task",
+      "tags": "planning,sprint",
+      "due_date": "2026-08-01T10:00:00Z",
+      "parent_id": null,
+      "project_id": null
+    },
+    {
+      "id": "b2b2b2b2-0005-4000-8000-000000000005",
+      "title": "Review pull requests",
+      "description": "Conduct thorough peer code reviews on open pull requests. Inspect code for correctness, adherence to team coding standards, test coverage, potential security vulnerabilities, and performance bottlenecks prior to approving merges into the target branch.",
+      "status": "open",
+      "priority": "medium",
+      "type": "task",
+      "tags": "git,review",
+      "due_date": "2026-07-29T16:00:00Z",
+      "parent_id": null,
+      "project_id": "a1a1a1a1-0003-4000-8000-000000000003"
+    },
+    {
+      "id": "b2b2b2b2-0006-4000-8000-000000000006",
+      "title": "Design onboarding screens",
+      "description": "Create low- and high-fidelity wireframes for the first-run user onboarding experience. Focus on highlighting core product features, collecting initial user preferences, and minimizing friction during initial application setup to boost conversion and retention rates.",
+      "status": "open",
+      "priority": "medium",
+      "type": "task",
+      "tags": "design,ux",
+      "due_date": "2026-08-03T15:00:00Z",
+      "parent_id": null,
+      "project_id": "a1a1a1a1-0001-4000-8000-000000000001"
+    },
+    {
+      "id": "b2b2b2b2-0007-4000-8000-000000000007",
+      "title": "Set up push notifications",
+      "description": "Configure Firebase Cloud Messaging (FCM) and Apple Push Notification service (APNs) integration for mobile clients. Set up event triggers to dispatch automated notifications for approaching task deadlines, direct messages, and system alerts.",
+      "status": "open",
+      "priority": "low",
+      "type": "task",
+      "tags": "mobile,notifications",
+      "due_date": "2026-08-05T12:00:00Z",
+      "parent_id": null,
+      "project_id": "a1a1a1a1-0002-4000-8000-000000000002"
+    }
+  ],
+  "task_dependencies": [
+    {
+      "task_id": "b2b2b2b2-0001-4000-8000-000000000001",
+      "depends_on_id": "b2b2b2b2-0002-4000-8000-000000000002",
+      "dependency_type": "blocks"
+    },
+    {
+      "task_id": "b2b2b2b2-0002-4000-8000-000000000002",
+      "depends_on_id": "b2b2b2b2-0003-4000-8000-000000000003",
+      "dependency_type": "blocks"
+    },
+    {
+      "task_id": "b2b2b2b2-0006-4000-8000-000000000006",
+      "depends_on_id": "b2b2b2b2-0001-4000-8000-000000000001",
+      "dependency_type": "relates_to"
+    }
+  ]
+}
