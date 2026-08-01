@@ -7,7 +7,6 @@
         permanent
         class="app-sidebar"
     >
-        <!-- Header: brand + collapse toggle -->
         <div class="d-flex align-center px-2 py-3">
             <v-avatar color="primary" size="32" class="ml-1">
                 <span class="text-subtitle-2 font-weight-bold">P</span>
@@ -40,14 +39,12 @@
         <v-divider />
 
         <v-list density="compact" nav>
-            <!-- Dashboard -->
             <v-list-item
                 to="/dashboard"
                 prepend-icon="mdi-view-dashboard-outline"
                 title="Dashboard"
             />
 
-            <!-- Projects: expandable, icon per project -->
             <v-list-group value="projects">
                 <template #activator="{ props: activatorProps }">
                     <v-list-item
@@ -66,7 +63,6 @@
                 />
             </v-list-group>
 
-            <!-- Tasks: filterable by status / priority -->
             <v-list-group value="tasks">
                 <template #activator="{ props: activatorProps }">
                     <v-list-item
@@ -107,14 +103,12 @@
                 </v-list-item>
             </v-list-group>
 
-            <!-- Calendar -->
             <v-list-item
                 to="/calendar"
                 prepend-icon="mdi-calendar-blank-outline"
                 title="Calendar"
             />
 
-            <!-- Notifications, with unread badge -->
             <v-list-item
                 to="/notifications"
                 prepend-icon="mdi-bell-outline"
@@ -135,7 +129,6 @@
 
         <v-divider />
 
-        <!-- Settings pinned to the bottom -->
         <v-list density="compact" nav>
             <v-list-item
                 to="/settings"
@@ -144,7 +137,6 @@
             />
         </v-list>
 
-        <!-- Drag handle for resizing (hidden in rail mode) -->
         <div v-if="!isRail" class="resize-handle" @mousedown="startResize" />
     </v-navigation-drawer>
 </template>
@@ -162,6 +154,29 @@ const router = useRouter();
  * @property {string} icon
  */
 
+/** @typedef {'todo' | 'in-progress' | 'done'} TaskStatusValue */
+/** @typedef {'low' | 'medium' | 'high'} TaskPriorityValue */
+
+/**
+ * @typedef {Object} TaskStatusOption
+ * @property {TaskStatusValue} value
+ * @property {string} label
+ * @property {string} icon
+ */
+
+/**
+ * @typedef {Object} TaskPriorityOption
+ * @property {TaskPriorityValue} value
+ * @property {string} label
+ * @property {string} color
+ */
+
+/**
+ * @typedef {Object} TaskFilters
+ * @property {TaskStatusValue | null} status
+ * @property {TaskPriorityValue | null} priority
+ */
+
 /** @type {Project[]} */
 const projects = [
     { id: 1, name: "Website Redesign", icon: "mdi-web" },
@@ -169,12 +184,14 @@ const projects = [
     { id: 3, name: "Marketing Campaign", icon: "mdi-bullhorn-outline" },
 ];
 
+/** @type {TaskStatusOption[]} */
 const taskStatuses = [
     { value: "todo", label: "To Do", icon: "mdi-circle-outline" },
     { value: "in-progress", label: "In Progress", icon: "mdi-progress-clock" },
     { value: "done", label: "Done", icon: "mdi-check-circle-outline" },
 ];
 
+/** @type {TaskPriorityOption[]} */
 const taskPriorities = [
     { value: "low", label: "Low", color: "success" },
     { value: "medium", label: "Medium", color: "warning" },
@@ -185,25 +202,24 @@ const isOpen = ref(true);
 const isRail = ref(false);
 const unreadNotifications = ref(4);
 
+/** @type {TaskFilters} */
 const taskFilters = reactive({
     status: null,
     priority: null,
 });
 
-// Filters live in the sidebar but drive the /tasks route via query params,
-// so TaskBoard.vue can read them with `useRoute().query` and the filter
-// state survives a page refresh / is shareable via URL.
+/** @param {TaskStatusValue} value */
 function setStatusFilter(value) {
     taskFilters.status = taskFilters.status === value ? null : value;
     router.push({ path: "/tasks", query: { ...taskFilters } });
 }
 
+/** @param {TaskPriorityValue} value */
 function setPriorityFilter(value) {
     taskFilters.priority = taskFilters.priority === value ? null : value;
     router.push({ path: "/tasks", query: { ...taskFilters } });
 }
 
-/* --- Resizable drawer --- */
 const MIN_WIDTH = 220;
 const MAX_WIDTH = 440;
 const drawerWidth = ref(280);
@@ -211,6 +227,7 @@ const drawerWidth = ref(280);
 let startX = 0;
 let startWidth = 0;
 
+/** @param {MouseEvent} event */
 function startResize(event) {
     startX = event.clientX;
     startWidth = drawerWidth.value;
@@ -218,6 +235,7 @@ function startResize(event) {
     window.addEventListener("mouseup", stopResize);
 }
 
+/** @param {MouseEvent} event */
 function handleResize(event) {
     const delta = event.clientX - startX;
     const next = startWidth + delta;
