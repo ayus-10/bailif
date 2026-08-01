@@ -1,5 +1,5 @@
 /**
- * @typedef {import('./project.js').Project} Project
+ * @typedef {'open' | 'in_progress' | 'done'} TaskStatus
  */
 
 /**
@@ -7,84 +7,95 @@
  */
 
 /**
- * @typedef {'open' | 'in_progress' | 'done'} TaskStatus
- */
-
-/**
  * @typedef {'task' | 'subtask' | 'epic' | 'bug'} TaskType
  */
 
 /**
- * @typedef {'human' | 'agent'} CreatedBy
- */
-
-/**
- * @typedef {'none' | 'pending' | 'approved' | 'rejected'} ApprovalStatus
- */
-
-/**
- * @typedef {'propose_only' | 'act_freely' | 'act_with_notify'} AgentPermissionLevel
- */
-
-/**
- * @typedef {'blocks' | 'blocked_by' | 'relates_to'} DependencyType
- */
-
-/**
- * @typedef {Object} Task
- * @property {string} id UUID
  *
- * // Core attributes
+ @typedef {'blocks' | 'blocked_by' | 'relates_to'} DependencyType
+ */
+
+/**
+ * @typedef {Object} TaskRead
+ * @property {string} id UUID
  * @property {string} title
  * @property {string} description
  * @property {TaskStatus} status
  * @property {TaskPriority} priority
  * @property {TaskType} type
- * @property {string} tags Comma-separated tags
- *
- * // Scheduling
- * @property {string | null} start_date ISO datetime string
- * @property {string | null} due_date ISO datetime string
- * @property {number | null} estimated_duration_minutes
- * @property {string | null} timezone
- * @property {string | null} recurrence_rule RRULE string
- *
- * // Hierarchy
- * @property {string | null} parent_id UUID of parent task
- * @property {Task[]} subtasks
- *
- * // Dependencies
- * @property {TaskDependency[]} outgoing_dependencies
- *
- * // Project
+ * @property {string} tags
  * @property {string | null} project_id UUID
- * @property {Project | null} project
- *
- * // Agentic layer
- * @property {CreatedBy} created_by
- * @property {ApprovalStatus} approval_status
- * @property {AgentPermissionLevel | null} agent_permission_level
- * @property {Object[]} agent_activity_log
- * @property {string | null} reasoning_trace
- *
- * // Embedding
- * @property {number[] | null} embedding
- *
- * // Timestamps
- * @property {string} created_at ISO datetime string
- * @property {string} updated_at ISO datetime string
+ * @property {string | null} parent_id UUID
+ * @property {string | null} start_date ISO datetime
+ * @property {string | null} due_date ISO datetime
+ * @property {number | null} estimated_duration_minutes
+ * @property {string} created_at ISO datetime
+ * @property {string} updated_at ISO datetime
  */
 
 /**
- * @typedef {Object} TaskDependency
+ * @typedef {Object} TaskCreate
+ * @property {string} title
+ * @property {string} [description]
+ * @property {TaskStatus} [status]
+ * @property {TaskPriority} [priority]
+ * @property {TaskType} [type]
+ * @property {string} [tags]
+ * @property {string | null} [project_id]
+ * @property {string | null} [parent_id]
+ * @property {string | null} [start_date] ISO datetime
+ * @property {string | null} [due_date] ISO datetime
+ * @property {number | null} [estimated_duration_minutes]
+ */
+
+/**
+ * @typedef {Object} TaskUpdate
+ * @property {string} [title]
+ * @property {string | null} [description]
+ * @property {TaskStatus} [status]
+ * @property {TaskPriority} [priority]
+ * @property {TaskType} [type]
+ * @property {string} [tags]
+ * @property {string | null} [project_id]
+ * @property {string | null} [parent_id]
+ * @property {string | null} [start_date]
+ * @property {string | null} [due_date]
+ * @property {number | null} [estimated_duration_minutes]
+ */
+
+/**
+ * @typedef {Object} TaskListResponse
+ * @property {TaskRead[]} items
+ * @property {string | null} next_cursor
+ */
+
+/**
+ * @typedef {Object} TaskListParams
+ * @property {string} [project_id]
+ * @property {TaskStatus} [status]
+ * @property {TaskPriority} [priority]
+ * @property {TaskType} [type]
+ * @property {string} [tag]
+ * @property {string} [parent_id]
+ * @property {string} [due_before]
+ * @property {string} [due_after]
+ * @property {string} [cursor]
+ * @property {number} [limit]
+ */
+
+/**
+ * @typedef {Object} TaskDependencyRead
  * @property {string} id UUID
  * @property {string} task_id UUID
  * @property {string} depends_on_id UUID
  * @property {DependencyType} dependency_type
- *
- * // Relations
- * @property {Task} task
- * @property {Task} depends_on
+ */
+
+/**
+ * @typedef {Object} TaskDependencyCreate
+ * @property {string} task_id UUID
+ * @property {string} depends_on_id UUID
+ * @property {DependencyType} [dependency_type]
  */
 
 export {};

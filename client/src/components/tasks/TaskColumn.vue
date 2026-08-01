@@ -1,7 +1,7 @@
 <script setup>
 import TaskCard from "./TaskCard.vue";
 
-/** @typedef {import('@/types/task').Task} Task */
+/** @typedef {import('@/types/task').TaskRead} TaskRead */
 
 defineProps({
     column: {
@@ -9,7 +9,7 @@ defineProps({
         required: true,
     },
     tasks: {
-        /** @type {import('vue').PropType<Task[]>} */
+        /** @type {import('vue').PropType<TaskRead[]>} */
         type: Array,
         required: true,
     },

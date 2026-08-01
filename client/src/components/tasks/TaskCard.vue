@@ -1,11 +1,11 @@
 <script setup>
 import { PRIORITY_COLORS } from "@/constants/tasks";
 
-/** @typedef {import('@/types/task').Task} Task */
+/** @typedef {import('@/types/task').TaskRead} TaskRead */
 
 const props = defineProps({
     task: {
-        /** @type {import('vue').PropType<Task>} */
+        /** @type {import('vue').PropType<TaskRead>} */
         type: Object,
         required: true,
     },
