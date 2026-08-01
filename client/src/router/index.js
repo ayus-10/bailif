@@ -1,56 +1,73 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
-  {
-    path: "/",
-    redirect: "/dashboard",
-  },
-  {
-    path: "/dashboard",
-    name: "dashboard",
-    component: () => import("../pages/dashboard/page.vue"),
-  },
-  {
-    path: "/projects/:id?",
-    name: "projects",
-    component: () => import("../pages/projects/page.vue"),
-    props: true,
-  },
-  {
-    path: "/tasks",
-    name: "tasks",
-    component: () => import("../pages/tasks/page.vue"),
-  },
-  {
-    path: "/calendar",
-    name: "calendar",
-    component: () => import("../pages/calendar/page.vue"),
-  },
-  {
-    path: "/documents",
-    name: "documents",
-    component: () => import("../pages/documents/page.vue"),
-  },
-  {
-    path: "/gantt",
-    name: "gantt",
-    component: () => import("../pages/gantt/page.vue"),
-  },
-  {
-    path: "/notifications",
-    name: "notifications",
-    component: () => import("../pages/notifications/page.vue"),
-  },
-  {
-    path: "/settings",
-    name: "settings",
-    component: () => import("../pages/settings/page.vue"),
-  },
+    {
+        path: "/",
+        redirect: {
+            name: "dashboard",
+        },
+    },
+
+    {
+        path: "/dashboard",
+        name: "dashboard",
+        component: () => import("@/views/Dashboard.vue"),
+    },
+
+    {
+        path: "/projects/:id?",
+        name: "projects",
+        component: () => import("@/views/ProjectDetail.vue"),
+        props: true,
+    },
+
+    {
+        path: "/tasks",
+        name: "tasks",
+        component: () => import("@/views/TaskBoard.vue"),
+    },
+
+    {
+        path: "/calendar",
+        name: "calendar",
+        component: () => import("@/views/Calendar.vue"),
+    },
+
+    {
+        path: "/documents",
+        name: "documents",
+        component: () => import("@/views/Documents.vue"),
+    },
+
+    {
+        path: "/gantt",
+        name: "gantt",
+        component: () => import("@/views/Gantt.vue"),
+    },
+
+    {
+        path: "/notifications",
+        name: "notifications",
+        component: () => import("@/views/Notifications.vue"),
+    },
+
+    {
+        path: "/settings",
+        name: "settings",
+        component: () => import("@/views/Settings.vue"),
+    },
+
+    {
+        path: "/:pathMatch(.*)*",
+        redirect: {
+            name: "dashboard",
+        },
+    },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes,
+    history: createWebHistory(),
+    routes,
 });
 
 export default router;
