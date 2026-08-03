@@ -1,3 +1,5 @@
+import { API_URL } from "@/config";
+
 /** @typedef {import('@/types/project').ProjectRead} ProjectRead */
 /** @typedef {import('@/types/project').ProjectCreate} ProjectCreate */
 /** @typedef {import('@/types/project').ProjectUpdate} ProjectUpdate */
@@ -30,7 +32,7 @@ export async function listProjects(params = {}, signal) {
         }
     }
 
-    const response = await fetch(`/api/v1/projects?${search}`, {
+    const response = await fetch(`${API_URL}/projects?${search}`, {
         signal,
     });
 
@@ -43,7 +45,7 @@ export async function listProjects(params = {}, signal) {
  * @returns {Promise<ProjectRead>}
  */
 export async function getProject(id, signal) {
-    const response = await fetch(`/api/v1/projects/${id}`, {
+    const response = await fetch(`${API_URL}/projects/${id}`, {
         signal,
     });
 
@@ -55,7 +57,7 @@ export async function getProject(id, signal) {
  * @returns {Promise<ProjectRead>}
  */
 export async function createProject(payload) {
-    const response = await fetch("/api/v1/projects", {
+    const response = await fetch(`${API_URL}/projects`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -72,7 +74,7 @@ export async function createProject(payload) {
  * @returns {Promise<ProjectRead>}
  */
 export async function updateProject(id, payload) {
-    const response = await fetch(`/api/v1/projects/${id}`, {
+    const response = await fetch(`${API_URL}/projects/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -88,7 +90,7 @@ export async function updateProject(id, payload) {
  * @returns {Promise<void>}
  */
 export async function deleteProject(id) {
-    const response = await fetch(`/api/v1/projects/${id}`, {
+    const response = await fetch(`${API_URL}/projects/${id}`, {
         method: "DELETE",
     });
 

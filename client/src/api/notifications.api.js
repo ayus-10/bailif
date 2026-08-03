@@ -1,3 +1,5 @@
+import { API_URL } from "@/config";
+
 /** @typedef {import('@/types/notification').Notification} Notification */
 
 /**
@@ -6,7 +8,7 @@
  * @returns {Promise<Notification[]>}
  */
 export async function fetchNotifications(scopeId, signal) {
-    const response = await fetch(`/api/v1/notifications/${scopeId}`, {
+    const response = await fetch(`${API_URL}/notifications/${scopeId}`, {
         signal,
     });
 

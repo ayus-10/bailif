@@ -1,3 +1,5 @@
+import { API_URL } from "@/config";
+
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskListResponse} TaskListResponse */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
@@ -32,7 +34,7 @@ export async function listTasks(params = {}, signal) {
         }
     }
 
-    const response = await fetch(`/api/v1/tasks?${search.toString()}`, {
+    const response = await fetch(`${API_URL}/tasks?${search.toString()}`, {
         signal,
     });
 
@@ -45,7 +47,7 @@ export async function listTasks(params = {}, signal) {
  * @returns {Promise<TaskRead>}
  */
 export async function getTask(id, signal) {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+    const response = await fetch(`${API_URL}/tasks/${id}`, {
         signal,
     });
 
@@ -57,7 +59,7 @@ export async function getTask(id, signal) {
  * @returns {Promise<TaskRead>}
  */
 export async function createTask(payload) {
-    const response = await fetch("/api/v1/tasks", {
+    const response = await fetch(`${API_URL}/tasks`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -74,7 +76,7 @@ export async function createTask(payload) {
  * @returns {Promise<TaskRead>}
  */
 export async function updateTask(id, payload) {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+    const response = await fetch(`${API_URL}/tasks/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -90,7 +92,7 @@ export async function updateTask(id, payload) {
  * @returns {Promise<void>}
  */
 export async function deleteTask(id) {
-    const response = await fetch(`/api/v1/tasks/${id}`, {
+    const response = await fetch(`${API_URL}/tasks/${id}`, {
         method: "DELETE",
     });
 
@@ -104,7 +106,7 @@ export async function deleteTask(id) {
  * @returns {Promise<TaskDependencyRead[]>}
  */
 export async function listDependencies(signal) {
-    const response = await fetch("/api/v1/task-dependencies", {
+    const response = await fetch(`${API_URL}/task-dependencies`, {
         signal,
     });
 
@@ -117,7 +119,7 @@ export async function listDependencies(signal) {
  * @returns {Promise<TaskDependencyRead>}
  */
 export async function getDependency(id, signal) {
-    const response = await fetch(`/api/v1/task-dependencies/${id}`, {
+    const response = await fetch(`${API_URL}/task-dependencies/${id}`, {
         signal,
     });
 
@@ -129,7 +131,7 @@ export async function getDependency(id, signal) {
  * @returns {Promise<TaskDependencyRead>}
  */
 export async function createDependency(payload) {
-    const response = await fetch("/api/v1/task-dependencies", {
+    const response = await fetch(`${API_URL}/task-dependencies`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -145,7 +147,7 @@ export async function createDependency(payload) {
  * @returns {Promise<void>}
  */
 export async function deleteDependency(id) {
-    const response = await fetch(`/api/v1/task-dependencies/${id}`, {
+    const response = await fetch(`${API_URL}/task-dependencies/${id}`, {
         method: "DELETE",
     });
 
