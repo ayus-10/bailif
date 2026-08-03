@@ -84,7 +84,7 @@
  * @property {string} [parent_id]
  * @property {string} [due_before]
  * @property {string} [due_after]
- * @property {string} [cursor]
+ * @property {?string} [cursor]
  * @property {number} [limit]
  */
 
