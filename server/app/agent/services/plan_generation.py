@@ -85,7 +85,7 @@ async def generate_action_plan(db: Session, payload) -> ActionPlan:
         f"{system_prompt}\n\nUser request: {payload.message}\n\nJSON response:"
     )
 
-    raw = await asyncio.to_thread(complete, full_prompt)
+    raw = await complete(full_prompt)
 
     try:
         return _parse_plan(str(raw))
@@ -99,7 +99,7 @@ async def generate_action_plan(db: Session, payload) -> ActionPlan:
         f"Your previous response was not valid JSON matching the schema:\n{raw}\n\n"
         f"Respond again with ONLY the corrected raw JSON object, nothing else:"
     )
-    raw_retry = await asyncio.to_thread(complete, fix_prompt)
+    raw_retry = await complete(fix_prompt)
 
     try:
         return _parse_plan(str(raw_retry))
