@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 from pydantic import ValidationError
@@ -6,42 +5,25 @@ from sqlalchemy.orm import Session
 
 from app.agent.llm.generation import complete
 from app.agent.llm.parsing import parse_json_raw
-from app.agent.schemas.planning import ActionPlan, ActionType
+from app.agent.schemas.planning import ActionPlan
+from app.agent.services.intent_classification import classify_intent
 from app.models.db import Project, Task
 
-VALID_TYPES = ", ".join(f'"{t.value}"' for t in ActionType)
-
-
-def _build_system_prompt(context: str) -> str:
-    return f"""You are an assistant embedded in a project management app. You convert the user's natural language request into a JSON action plan.
-
-            You MUST respond with ONLY a single JSON object. No markdown, no code fences, no explanation before or after. Just raw JSON.
-
-            Output JSON schema:
-            {{
-            "message": "<short natural language reply to the user, 1-3 sentences>",
-            "requires_confirmation": <true|false>,
-            "actions": [
-                {{
-                "type": "<one of: {VALID_TYPES}>",
-                "data": {{ ... action-specific fields ... }}
-                }}
-            ]
-            }}
-
-            Rules:
-            - "actions" can be an empty list [] if the user is just asking a question or you are only searching/recommending (still fill "actions" for search/suggest/recommend types if applicable, otherwise []).
-            - "requires_confirmation" must be true for any action that creates, updates, deletes, archives, completes, or reopens something. It must be false for read-only actions (search_tasks, search_projects, suggest_tasks, recommend_next_task) or if there are no actions.
-            - For actions on existing tasks/projects (update_task, delete_task, complete_task, reopen_task, update_project, archive_project, delete_project), you MUST use a real "id" from the context below in "data". Never invent an id.
-            - For "priority" use one of: "LOW", "MEDIUM", "HIGH".
-            - Keep "message" conversational and specific to what you're proposing.
-            - If the request is ambiguous or you cannot find a matching task/project in context, set "actions" to [] and use "message" to ask a clarifying question, with "requires_confirmation": false.
-            - Do not include any keys other than "message", "requires_confirmation", and "actions".
-            - Do not wrap the JSON in ```json or any other formatting.
-
-            Context (existing project/task data you can reference):
-            {context}
-            """
+ACTION_DATA_SCHEMAS = {
+    "create_project": '{"name": str (required), "description": str|null}',
+    "update_project": '{"id": str (required, real id from context), "name": str|null, "description": str|null}',
+    "archive_project": '{"id": str (required, real id from context)}',
+    "delete_project": '{"id": str (required, real id from context)}',
+    "create_task": '{"title": str (required), "description": str|null, "priority": "LOW"|"MEDIUM"|"HIGH", "project_id": str|null}',
+    "update_task": '{"id": str (required, real id from context), "title": str|null, "description": str|null, "priority": "LOW"|"MEDIUM"|"HIGH"|null}',
+    "delete_task": '{"id": str (required, real id from context)}',
+    "complete_task": '{"id": str (required, real id from context)}',
+    "reopen_task": '{"id": str (required, real id from context)}',
+    "search_tasks": '{"query": str|null, "project_id": str|null, "status": str|null, "priority": "LOW"|"MEDIUM"|"HIGH"|null}',
+    "search_projects": '{"query": str|null}',
+    "suggest_tasks": '{"project_id": str|null, "count": int|null}',
+    "recommend_next_task": '{"project_id": str|null}',
+}
 
 
 def _build_context(db, project_id: str | None) -> str:
@@ -73,6 +55,48 @@ def _build_context(db, project_id: str | None) -> str:
     return "\n".join(lines)
 
 
+def _build_generation_prompt(
+    context: str, message: str, action_types: list[str]
+) -> str:
+    if not action_types:
+        schemas_block = "(no actions — just answer conversationally)"
+    else:
+        schemas_block = "\n".join(
+            f"- {t}: {ACTION_DATA_SCHEMAS[t]}" for t in action_types
+        )
+
+    return f"""You are an assistant embedded in a project management app. Generate the final JSON action plan for the user's request.
+
+            You MUST respond with ONLY a single JSON object. No markdown, no code fences, no explanation.
+
+            Output JSON schema:
+            {{
+            "reply": "<short natural language reply to the user, 1-3 sentences>",
+            "requires_confirmation": <true|false>,
+            "actions": [
+                {{"type": "<action type>", "data": {{ ... }}}}
+            ]
+            }}
+
+            Only use these action types (already decided) and their exact "data" fields:
+            {schemas_block}
+
+            Important: projects use "name" for their title field. Tasks use "title" for their title field. Never mix these up.
+
+            Rules:
+            - For actions on existing tasks/projects, you MUST use a real "id" from the context below. Never invent an id.
+            - If a task belongs to a project also being created in this same plan, omit "project_id" (leave null); mention the linkage in "reply" instead.
+            - Do not include any keys other than "reply", "requires_confirmation", and "actions".
+            - Do not wrap the JSON in ```json or any other formatting.
+
+            Context:
+            {context}
+
+            User request: {message}
+
+            JSON response:"""
+
+
 def _parse_plan(raw_text: str) -> ActionPlan:
     data = parse_json_raw(raw_text)
     return ActionPlan(**data)
@@ -80,22 +104,20 @@ def _parse_plan(raw_text: str) -> ActionPlan:
 
 async def generate_action_plan(db: Session, payload) -> ActionPlan:
     context = _build_context(db, getattr(payload, "project_id", None))
-    system_prompt = _build_system_prompt(context)
-    full_prompt = (
-        f"{system_prompt}\n\nUser request: {payload.message}\n\nJSON response:"
-    )
 
-    raw = await complete(full_prompt)
+    intent = await classify_intent(context, payload.message)
+    action_types = intent["action_types"]
+
+    gen_prompt = _build_generation_prompt(context, payload.message, action_types)
+    raw = await complete(gen_prompt)
 
     try:
         return _parse_plan(str(raw))
     except json.JSONDecodeError, ValueError, ValidationError:
         pass  # fall through to retry
 
-    # One retry with a stricter corrective prompt
     fix_prompt = (
-        f"{system_prompt}\n\n"
-        f"User request: {payload.message}\n\n"
+        f"{gen_prompt}\n\n"
         f"Your previous response was not valid JSON matching the schema:\n{raw}\n\n"
         f"Respond again with ONLY the corrected raw JSON object, nothing else:"
     )
