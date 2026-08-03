@@ -16,6 +16,10 @@
  */
 
 /**
+ * @typedef {import("@/api/projects.api").ProjectRead} ProjectRead
+ */
+
+/**
  * @typedef {Object} TaskRead
  * @property {string} id UUID
  * @property {string} title
@@ -31,6 +35,7 @@
  * @property {number | null} estimated_duration_minutes
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
+ * @property {ProjectRead} project
  */
 
 /**

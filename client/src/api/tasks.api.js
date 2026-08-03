@@ -100,18 +100,6 @@ export async function deleteTask(id) {
 }
 
 /**
- * @param {Response} response
- * @returns {Promise<any>}
- */
-async function parseJson(response) {
-    if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
-    }
-
-    return response.json();
-}
-
-/**
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskDependencyRead[]>}
  */

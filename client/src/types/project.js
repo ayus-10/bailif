@@ -23,7 +23,6 @@
  *
  * @property {boolean} agent_enabled
  * @property {AgentPermissionLevel} default_agent_permission_level
- * @property {Object[]} agent_activity_log
  * @property {Object} external_refs
  *
  * @property {string} created_at ISO datetime

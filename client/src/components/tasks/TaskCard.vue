@@ -31,13 +31,13 @@ const props = defineProps({
         <div class="text-caption text-medium-emphasis mt-2 d-flex align-center">
             <v-icon icon="mdi-folder-outline" size="14" class="mr-1" />
 
-            {{ task.project }}
+            {{ task.project.name }}
 
             <v-spacer />
 
             <v-icon icon="mdi-calendar-blank-outline" size="14" class="mr-1" />
 
-            {{ task.due }}
+            {{ task.due_date }}
         </div>
     </v-card>
 </template>

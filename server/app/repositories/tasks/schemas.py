@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.models.enums.shared import Priority, Status
 from app.models.enums.task import TaskType
+from app.repositories.projects.schemas import ProjectRead
 
 
 class TaskCreate(BaseModel):
@@ -106,6 +107,7 @@ class TaskRead(BaseModel):
     updated_at: datetime
     start_date: datetime | None
     estimated_duration_minutes: int | None
+    project: ProjectRead | None = None
 
     model_config = {"from_attributes": True}
 

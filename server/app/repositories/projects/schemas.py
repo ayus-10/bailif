@@ -75,7 +75,6 @@ class ProjectRead(BaseModel):
 
     agent_enabled: bool
     default_agent_permission_level: AgentPermissionLevel
-    agent_activity_log: list[dict]
     external_refs: dict
 
     created_at: datetime
