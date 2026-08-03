@@ -4,17 +4,20 @@ from app.core.config import settings
 
 
 class LocalOllamaClient:
-    async def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str, model: str | None = None) -> str:
+        model_name = model or settings.ollama_model_primary
+
         async with httpx.AsyncClient(timeout=60) as client:
             resp = await client.post(
                 f"{settings.ollama_base_url}/api/generate",
                 json={
-                    "model": settings.ollama_model,
+                    "model": model_name,
                     "prompt": prompt,
                     "stream": False,
                 },
             )
             resp.raise_for_status()
+
             return resp.json()["response"]
 
 
@@ -24,7 +27,7 @@ class BedrockClient:
 
         self._client = boto3.client("bedrock-runtime", region_name=settings.aws_region)
 
-    async def generate(self, prompt: str) -> str:
+    async def generate(self, prompt: str, model: str | None = None) -> str:
         import json as _json
 
         # NOTE: request/response shape depends on the specific Bedrock model.

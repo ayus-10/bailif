@@ -1,10 +1,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.models.enums.shared import Priority, Status
 from app.models.enums.task import TaskType
+from app.repositories.projects.schemas import ProjectRead
 
 
 class TaskCreate(BaseModel):
@@ -16,7 +17,12 @@ class TaskCreate(BaseModel):
     tags: str = ""
     project_id: UUID | None = None
     parent_id: UUID | None = None
+    start_date: datetime | None = None
     due_date: datetime | None = None
+    estimated_duration_minutes: int | None = Field(
+        default=None,
+        ge=1,
+    )
 
     @field_validator("title")
     @classmethod
@@ -31,6 +37,17 @@ class TaskCreate(BaseModel):
     def sanitize_description(cls, v: str) -> str:
         return v.strip()
 
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if (
+            self.start_date is not None
+            and self.due_date is not None
+            and self.start_date > self.due_date
+        ):
+            raise ValueError("start_date cannot be after due_date")
+
+        return self
+
 
 class TaskUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=255)
@@ -41,7 +58,12 @@ class TaskUpdate(BaseModel):
     tags: str | None = None
     project_id: UUID | None = None
     parent_id: UUID | None = None
+    start_date: datetime | None = None
     due_date: datetime | None = None
+    estimated_duration_minutes: int | None = Field(
+        default=None,
+        ge=1,
+    )
 
     @field_validator("title")
     @classmethod
@@ -58,6 +80,17 @@ class TaskUpdate(BaseModel):
     def sanitize_description(cls, v: str | None) -> str | None:
         return v.strip() if v is not None else v
 
+    @model_validator(mode="after")
+    def validate_dates(self):
+        if (
+            self.start_date is not None
+            and self.due_date is not None
+            and self.start_date > self.due_date
+        ):
+            raise ValueError("start_date cannot be after due_date")
+
+        return self
+
 
 class TaskRead(BaseModel):
     id: UUID
@@ -72,6 +105,9 @@ class TaskRead(BaseModel):
     due_date: datetime | None
     created_at: datetime
     updated_at: datetime
+    start_date: datetime | None
+    estimated_duration_minutes: int | None
+    project: ProjectRead | None = None
 
     model_config = {"from_attributes": True}
 

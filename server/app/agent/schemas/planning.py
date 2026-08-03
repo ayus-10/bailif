@@ -2,25 +2,14 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.agent.schemas.action_items import ActionItemUnion
 from app.agent.schemas.enums import ActionType
-
-
-class ActionItem(BaseModel):
-    type: str
-    data: dict[str, Any] = Field(default_factory=dict)
-
-    model_config = {"extra": "ignore"}
-
-    @field_validator("data", mode="before")
-    @classmethod
-    def default_missing_data(cls, v):
-        return v if isinstance(v, dict) else {}
 
 
 class ActionPlan(BaseModel):
     reply: str = Field(validation_alias="message")
     requires_confirmation: bool = True
-    actions: list[ActionItem] = Field(default_factory=list)
+    actions: list[ActionItemUnion] = Field(default_factory=list)
 
     model_config = {"extra": "ignore", "populate_by_name": True}
 

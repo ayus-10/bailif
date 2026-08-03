@@ -85,7 +85,9 @@ class Task(Base):
     project_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True
     )
-    project: Mapped[Project | None] = relationship("Project", back_populates="tasks")
+    project: Mapped[Project | None] = relationship(
+        "Project", back_populates="tasks", lazy="joined"
+    )
 
     # Agentic layer
     created_by: Mapped[CreatedBy] = mapped_column(

@@ -6,7 +6,7 @@ import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTasksStore } from "@/stores/tasks.store";
 
-/** @typedef {import('@/types/task').Task} Task */
+/** @typedef {import('@/types/task').TaskRead} TaskRead */
 
 const route = useRoute();
 const router = useRouter();
@@ -44,7 +44,7 @@ const tasksByStatus = computed(() => {
         (acc[task.status] ??= []).push(task);
 
         return acc;
-    }, /** @type {Record<string, Task[]>} */ ({}));
+    }, /** @type {Record<string, TaskRead[]>} */ ({}));
 });
 
 function retry() {
@@ -53,6 +53,7 @@ function retry() {
     });
 }
 
+/** @param {string} key */
 function clearFilter(key) {
     const query = { ...route.query };
 
