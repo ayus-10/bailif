@@ -67,6 +67,45 @@ function clearFilter(key) {
     });
 }
 
+const draggedTask = ref(/** @type {TaskRead | null} */ (null));
+
+/**
+ * @param {TaskRead} task
+ */
+function startDrag(task) {
+    draggedTask.value = task;
+}
+
+/**
+ * @param {string} targetStatus
+ */
+async function dropTask(targetStatus) {
+    if (!draggedTask.value) return;
+
+    const task = draggedTask.value;
+
+    if (task.status === targetStatus) {
+        draggedTask.value = null;
+        return;
+    }
+
+    // optimistic update
+    const oldStatus = task.status;
+    task.status = targetStatus;
+
+    try {
+        // await store.update(boardId.value, task.id, {
+        //     status: targetStatus,
+        // });
+    } catch (err) {
+        // rollback
+        task.status = oldStatus;
+        console.error(err);
+    } finally {
+        draggedTask.value = null;
+    }
+}
+
 const showNewTask = ref(false);
 
 function openNewTask() {
@@ -148,6 +187,8 @@ function createTask(task) {
                 :key="column.status"
                 :column="column"
                 :tasks="tasksByStatus[column.status] ?? []"
+                @drag-start="startDrag"
+                @drop="dropTask"
             />
         </v-row>
     </v-container>
