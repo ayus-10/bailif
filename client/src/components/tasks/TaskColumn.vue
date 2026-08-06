@@ -3,7 +3,7 @@ import TaskCard from "./TaskCard.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
-defineProps({
+const props = defineProps({
     column: {
         type: Object,
         required: true,
@@ -14,6 +14,19 @@ defineProps({
         required: true,
     },
 });
+
+const emit = defineEmits(["drag-start", "drop"]);
+
+/**
+ * @param {TaskRead} task
+ */
+function handleDragStart(task) {
+    emit("drag-start", task);
+}
+
+function handleDrop() {
+    emit("drop", props.column.status);
+}
 </script>
 
 <template>
@@ -30,11 +43,23 @@ defineProps({
             </v-chip>
         </div>
 
-        <TaskCard v-for="task in tasks" :key="task.id" :task="task" />
+        <div
+            class="d-flex flex-column ga-3"
+            @dragover.prevent
+            @drop="handleDrop"
+        >
+            <TaskCard
+                v-for="task in tasks"
+                :key="task.id"
+                :task="task"
+                draggable="true"
+                @dragstart="handleDragStart(task)"
+            />
+        </div>
 
         <v-sheet
             v-if="tasks.length === 0"
-            class="pa-4 text-center text-caption text-medium-emphasis"
+            class="pa-4 mt-3 text-center text-caption text-medium-emphasis"
             border
             rounded
         >

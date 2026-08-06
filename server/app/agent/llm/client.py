@@ -14,6 +14,7 @@ class LocalOllamaClient:
                     "model": model_name,
                     "prompt": prompt,
                     "stream": False,
+                    "keep_alive": -1,
                 },
             )
             resp.raise_for_status()

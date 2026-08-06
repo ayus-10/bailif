@@ -1,11 +1,11 @@
 export const TASK_COLUMNS = [
     {
-        status: "todo",
+        status: "open",
         label: "To Do",
         icon: "mdi-circle-outline",
     },
     {
-        status: "in-progress",
+        status: "in_progress",
         label: "In Progress",
         icon: "mdi-progress-clock",
     },
