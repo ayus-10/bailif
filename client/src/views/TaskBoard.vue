@@ -1,12 +1,14 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
+import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskRead} TaskCreate*/
 
 const route = useRoute();
 const router = useRouter();
@@ -64,6 +66,21 @@ function clearFilter(key) {
         query,
     });
 }
+
+const showNewTask = ref(false);
+
+function openNewTask() {
+    showNewTask.value = !showNewTask.value;
+}
+
+/** @param {TaskCreate} task */
+function createTask(task) {
+    console.log(task);
+
+    // await store.create(boardId.value, task)
+
+    showNewTask.value = false;
+}
 </script>
 
 <template>
@@ -81,8 +98,13 @@ function clearFilter(key) {
                 </span>
             </div>
             <v-spacer />
-            <v-btn color="primary" prepend-icon="mdi-plus" variant="flat">
-                New Task
+            <v-btn
+                color="primary"
+                prepend-icon="mdi-plus"
+                variant="flat"
+                @click="openNewTask"
+            >
+                {{ showNewTask ? "Cancel" : "New Task" }}
             </v-btn>
         </div>
 
@@ -117,6 +139,8 @@ function clearFilter(key) {
                 <v-btn size="small" @click="retry"> Retry </v-btn>
             </template>
         </v-alert>
+
+        <PendingTaskCard v-if="showNewTask" class="mb-6" @submit="createTask" />
 
         <v-row v-else>
             <TaskColumn
