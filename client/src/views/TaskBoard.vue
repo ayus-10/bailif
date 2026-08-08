@@ -7,7 +7,7 @@ import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskRead} TaskCreate*/
+/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 
 const route = useRoute();
 const router = useRouter();
@@ -76,7 +76,7 @@ function startDrag(task) {
 }
 
 /**
- * @param {string} targetStatus
+ * @param {TaskRead["status"]} targetStatus
  */
 async function dropTask(targetStatus) {
     if (!draggedTask.value) return;
@@ -88,16 +88,14 @@ async function dropTask(targetStatus) {
         return;
     }
 
-    // optimistic update
     const oldStatus = task.status;
     task.status = targetStatus;
 
     try {
-        // await store.update(boardId.value, task.id, {
-        //     status: targetStatus,
-        // });
+        await store.update(boardId.value, task.id, {
+            status: targetStatus,
+        });
     } catch (err) {
-        // rollback
         task.status = oldStatus;
         console.error(err);
     } finally {
@@ -105,21 +103,18 @@ async function dropTask(targetStatus) {
     }
 }
 
+/** @type {import('vue').Ref<TaskCreate | null>} */
 const pendingTask = ref(null);
 
 function openNewTask() {
     pendingTask.value = {
+        title: "",
         status: "open",
     };
 }
 
-/** @param {TaskCreate} task */
-function createTask(task) {
-    console.log(task);
-
-    // await store.create(boardId.value, task)
-
-    showNewTask.value = false;
+function handleClear() {
+    pendingTask.value = null;
 }
 </script>
 
@@ -188,6 +183,7 @@ function createTask(task) {
                 :pendingTask="pendingTask"
                 @drag-start="startDrag"
                 @drop="dropTask"
+                @clear-pending-task="handleClear"
             />
         </v-row>
     </v-container>

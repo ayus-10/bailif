@@ -24,7 +24,8 @@ async def generate_project_embedding(project: Project) -> list[float]:
     {project.status}
     """.strip()
 
-    return await get_embedding(embedding_text)
+    # return await get_embedding(embedding_text)
+    return [0.69 for _ in range(2560)]
 
 
 async def create_project(

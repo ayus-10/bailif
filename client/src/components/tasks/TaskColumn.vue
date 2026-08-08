@@ -1,8 +1,11 @@
 <script setup>
+import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
+/** @typedef {import('@/types/project').ProjectRead} ProjectRead */
 
 const props = defineProps({
     column: {
@@ -15,14 +18,18 @@ const props = defineProps({
         required: true,
     },
     pendingTask: {
+        /** @type {import('vue').PropType<TaskCreate | null>} */
         type: Object,
         required: false,
     },
 });
 
-console.log(props.pendingTask);
+const store = useTasksStore();
 
-const emit = defineEmits(["drag-start", "drop"]);
+const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
+
+/** @type {ProjectRead[]} */
+const projects = [];
 
 /**
  * @param {TaskRead} task
@@ -35,13 +42,14 @@ function handleDrop() {
     emit("drop", props.column.status);
 }
 
-async function handleCreate() {
-    // await store.create(boardId.value, task);
-    // pendingTask.value = null;
+/** @param {TaskCreate} task */
+async function handleCreate(task) {
+    await store.create("default", task);
+    emit("clear-pending-task");
 }
 
 function handleCancel() {
-    // pendingTask.value = null;
+    emit("clear-pending-task");
 }
 </script>
 
@@ -77,15 +85,15 @@ function handleCancel() {
                 draggable="true"
                 @dragstart="handleDragStart(task)"
             />
-        </div>
 
-        <v-sheet
-            v-if="tasks.length === 0"
-            class="pa-4 mt-3 text-center text-caption text-medium-emphasis"
-            border
-            rounded
-        >
-            No tasks here
-        </v-sheet>
+            <v-sheet
+                v-if="tasks.length === 0"
+                class="pa-4 mt-3 text-center text-caption text-medium-emphasis"
+                border
+                rounded
+            >
+                No tasks here
+            </v-sheet>
+        </div>
     </v-col>
 </template>
