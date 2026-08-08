@@ -1,5 +1,6 @@
 <script setup>
 import TaskCard from "./TaskCard.vue";
+import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
@@ -13,7 +14,13 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    pendingTask: {
+        type: Object,
+        required: false,
+    },
 });
+
+console.log(props.pendingTask);
 
 const emit = defineEmits(["drag-start", "drop"]);
 
@@ -26,6 +33,15 @@ function handleDragStart(task) {
 
 function handleDrop() {
     emit("drop", props.column.status);
+}
+
+async function handleCreate() {
+    // await store.create(boardId.value, task);
+    // pendingTask.value = null;
+}
+
+function handleCancel() {
+    // pendingTask.value = null;
 }
 </script>
 
@@ -48,6 +64,12 @@ function handleDrop() {
             @dragover.prevent
             @drop="handleDrop"
         >
+            <PendingTaskCard
+                v-if="pendingTask && pendingTask.status === column.status"
+                :projects="projects"
+                @submit="handleCreate"
+                @cancel="handleCancel"
+            />
             <TaskCard
                 v-for="task in tasks"
                 :key="task.id"

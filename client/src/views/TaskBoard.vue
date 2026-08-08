@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
-import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTasksStore } from "@/stores/tasks.store";
 
@@ -106,10 +105,12 @@ async function dropTask(targetStatus) {
     }
 }
 
-const showNewTask = ref(false);
+const pendingTask = ref(null);
 
 function openNewTask() {
-    showNewTask.value = !showNewTask.value;
+    pendingTask.value = {
+        status: "open",
+    };
 }
 
 /** @param {TaskCreate} task */
@@ -142,8 +143,7 @@ function createTask(task) {
                 prepend-icon="mdi-plus"
                 variant="flat"
                 @click="openNewTask"
-            >
-                {{ showNewTask ? "Cancel" : "New Task" }}
+                >New Task
             </v-btn>
         </div>
 
@@ -179,14 +179,13 @@ function createTask(task) {
             </template>
         </v-alert>
 
-        <PendingTaskCard v-if="showNewTask" class="mb-6" @submit="createTask" />
-
         <v-row v-else>
             <TaskColumn
                 v-for="column in TASK_COLUMNS"
                 :key="column.status"
                 :column="column"
                 :tasks="tasksByStatus[column.status] ?? []"
+                :pendingTask="pendingTask"
                 @drag-start="startDrag"
                 @drop="dropTask"
             />

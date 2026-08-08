@@ -1,7 +1,9 @@
 <script setup>
 import { computed } from "vue";
 import { PRIORITY_COLORS } from "@/constants/tasks";
+
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskType} TaskType */
 
 const props = defineProps({
     task: {
@@ -28,13 +30,14 @@ const STATUS_META = {
     },
 };
 
-const TYPE_ICONS = {
-    bug: "mdi-bug-outline",
-    feature: "mdi-star-outline",
-    task: "mdi-checkbox-marked-circle-outline",
-    chore: "mdi-broom",
-    epic: "mdi-flag-outline",
-};
+const TYPE_ICONS =
+    /** @type {Record<TaskType, string>} */
+    ({
+        bug: "mdi-bug-outline",
+        task: "mdi-star-outline",
+        subtask: "mdi-checkbox-marked-circle-outline",
+        epic: "mdi-flag-outline",
+    });
 
 const statusMeta = computed(
     () =>
