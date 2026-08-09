@@ -28,6 +28,12 @@ const routes = [
     },
 
     {
+        path: "/tasks/:id",
+        name: "task",
+        component: () => import("@/views/TaskPage.vue"),
+    },
+
+    {
         path: "/calendar",
         name: "calendar",
         component: () => import("@/views/Calendar.vue"),

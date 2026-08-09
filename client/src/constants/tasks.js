@@ -1,7 +1,7 @@
 export const TASK_COLUMNS = [
     {
         status: "open",
-        label: "To Do",
+        label: "Open",
         icon: "mdi-circle-outline",
     },
     {

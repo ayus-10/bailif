@@ -186,8 +186,8 @@ const projects = [
 
 /** @type {TaskStatusOption[]} */
 const taskStatuses = [
-    { value: "todo", label: "To Do", icon: "mdi-circle-outline" },
-    { value: "in-progress", label: "In Progress", icon: "mdi-progress-clock" },
+    { value: "open", label: "Open", icon: "mdi-circle-outline" },
+    { value: "in_progress", label: "In Progress", icon: "mdi-progress-clock" },
     { value: "done", label: "Done", icon: "mdi-check-circle-outline" },
 ];
 
