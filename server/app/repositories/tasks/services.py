@@ -30,7 +30,8 @@ async def generate_task_embedding(task: Task) -> list[float]:
     {task.priority}
     """.strip()
 
-    return await get_embedding(embedding_text)
+    # return await get_embedding(embedding_text)
+    return [0.69 for _ in range(2560)]
 
 
 async def create_task(db: Session, payload: TaskCreate) -> Task:

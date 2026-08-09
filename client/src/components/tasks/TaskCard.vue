@@ -1,6 +1,15 @@
 <script setup>
 import { computed } from "vue";
 import { PRIORITY_COLORS } from "@/constants/tasks";
+import {
+    STATUS_META,
+    TYPE_ICONS,
+    FALLBACK_STATUS_META,
+    FALLBACK_TYPE_ICON,
+} from "@/constants/taskMeta";
+import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
+import { useRouter } from "vue-router";
+
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
 const props = defineProps({
@@ -11,240 +20,160 @@ const props = defineProps({
     },
 });
 
-const STATUS_META = {
-    open: { color: "grey", icon: "mdi-circle-outline", label: "Open" },
-    in_progress: {
-        color: "blue",
-        icon: "mdi-progress-clock",
-        label: "In progress",
-    },
-    in_review: { color: "purple", icon: "mdi-eye-outline", label: "In review" },
-    done: { color: "success", icon: "mdi-check-circle", label: "Done" },
-    blocked: { color: "error", icon: "mdi-block-helper", label: "Blocked" },
-    cancelled: {
-        color: "grey-darken-1",
-        icon: "mdi-close-circle-outline",
-        label: "Cancelled",
-    },
-};
-
-const TYPE_ICONS = {
-    bug: "mdi-bug-outline",
-    feature: "mdi-star-outline",
-    task: "mdi-checkbox-marked-circle-outline",
-    chore: "mdi-broom",
-    epic: "mdi-flag-outline",
-};
-
 const statusMeta = computed(
     () =>
         STATUS_META[props.task.status] ?? {
-            color: "grey",
-            icon: "mdi-help-circle-outline",
+            ...FALLBACK_STATUS_META,
             label: props.task.status,
         }
 );
 
+const router = useRouter();
+
 const typeIcon = computed(
-    () => TYPE_ICONS[props.task.type] ?? "mdi-checkbox-blank-circle-outline"
+    () => TYPE_ICONS[props.task.type] ?? FALLBACK_TYPE_ICON
 );
-
-const tags = computed(() =>
-    (props.task.tags ?? "")
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean)
-);
-
-const isOverdue = computed(() => {
-    if (!props.task.due_date) return false;
-    if (["done", "cancelled"].includes(props.task.status)) return false;
-    return new Date(props.task.due_date) < new Date();
-});
-
-/** @param {string} iso */
-function formatDate(iso) {
-    if (!iso) return null;
-    return new Date(iso).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-    });
-}
-
-/** @param {number} minutes */
-function formatDuration(minutes) {
-    if (!minutes) return null;
-    if (minutes < 60) return `${minutes}m`;
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return m ? `${h}h ${m}m` : `${h}h`;
-}
+const isOverdue = computed(() => isTaskOverdue(props.task));
+const tagCount = computed(() => parseTags(props.task.tags).length);
 </script>
 
 <template>
     <v-card
         variant="outlined"
         rounded="lg"
-        class="task-card"
-        :class="{ 'task-card--overdue': isOverdue }"
+        class="task-row"
+        :class="{ 'task-row--overdue': isOverdue }"
         ripple
         link
+        @click="router.push(`/tasks/${task.id}`)"
     >
         <div class="status-rail" :class="`bg-${statusMeta.color}`" />
 
-        <div class="pa-4 pl-5">
-            <div class="d-flex align-start ga-3 mb-3">
-                <v-avatar
-                    size="32"
+        <v-tooltip :text="statusMeta.label" location="top" open-delay="300">
+            <template #activator="{ props: tip }">
+                <v-icon
+                    v-bind="tip"
+                    :icon="typeIcon"
+                    size="16"
                     :color="statusMeta.color"
-                    variant="tonal"
-                    class="flex-shrink-0"
-                >
-                    <v-icon :icon="typeIcon" size="16" />
-                </v-avatar>
+                    class="task-row__type"
+                />
+            </template>
+        </v-tooltip>
 
-                <div class="flex-grow-1 min-width-0">
-                    <div class="text-subtitle-2 font-weight-medium">
-                        {{ task.title }}
-                    </div>
+        <span class="task-row__title text-body-2 font-weight-medium">
+            {{ task.title }}
+        </span>
 
-                    <div
-                        v-if="task.description"
-                        class="text-caption text-medium-emphasis mt-1"
-                    >
-                        {{ task.description }}
-                    </div>
-                </div>
+        <div class="task-row__spacer" />
 
-                <v-chip
-                    link
-                    ripple
-                    size="small"
-                    variant="flat"
-                    class="flex-shrink-0"
-                    :color="PRIORITY_COLORS[task.priority] ?? 'default'"
-                >
-                    {{ task.priority.toUpperCase() }}
-                </v-chip>
-            </div>
-
-            <div v-if="tags.length" class="d-flex flex-wrap ga-2 mb-3">
-                <v-chip
-                    v-for="tag in tags"
-                    :key="tag"
-                    link
-                    ripple
-                    size="x-small"
-                    variant="tonal"
-                >
-                    {{ tag }}
-                </v-chip>
-            </div>
-
-            <v-divider class="mb-3" />
-
-            <div class="task-meta">
-                <v-chip
-                    link
-                    ripple
-                    size="x-small"
-                    variant="tonal"
-                    :color="statusMeta.color"
-                    :prepend-icon="statusMeta.icon"
-                >
-                    {{ statusMeta.label }}
-                </v-chip>
-
-                <div v-if="task.project" class="meta-item">
-                    <v-icon icon="mdi-folder-outline" size="14" />
-                    <span>{{ task.project.name }}</span>
-                </div>
-
-                <div v-if="task.estimated_duration_minutes" class="meta-item">
-                    <v-icon icon="mdi-timer-outline" size="14" />
-                    <span>{{
-                        formatDuration(task.estimated_duration_minutes)
-                    }}</span>
-                </div>
-
-                <div v-if="task.start_date" class="meta-item">
-                    <v-icon icon="mdi-calendar-start-outline" size="14" />
-                    <span>{{ formatDate(task.start_date) }}</span>
-                </div>
-
-                <div
-                    v-if="task.due_date"
-                    class="meta-item"
-                    :class="{ overdue: isOverdue }"
-                >
-                    <v-icon
-                        :icon="
-                            isOverdue
-                                ? 'mdi-calendar-alert'
-                                : 'mdi-calendar-blank-outline'
-                        "
-                        size="14"
-                    />
-
-                    <span>{{ formatDate(task.due_date) }}</span>
-                </div>
-            </div>
+        <div v-if="tagCount" class="task-row__meta">
+            <v-icon icon="mdi-tag-outline" size="12" />
+            <span>{{ tagCount }}</span>
         </div>
+
+        <div v-if="task.estimated_duration_minutes" class="task-row__meta">
+            <v-icon icon="mdi-timer-outline" size="12" />
+        </div>
+
+        <div
+            v-if="task.due_date"
+            class="task-row__meta"
+            :class="{ overdue: isOverdue }"
+        >
+            <v-icon
+                :icon="
+                    isOverdue
+                        ? 'mdi-calendar-alert'
+                        : 'mdi-calendar-blank-outline'
+                "
+                size="12"
+            />
+            <span>{{ formatDate(task.due_date) }}</span>
+        </div>
+
+        <v-chip
+            size="x-small"
+            variant="flat"
+            class="task-row__priority"
+            :color="PRIORITY_COLORS[task.priority] ?? 'default'"
+        >
+            {{ task.priority.toUpperCase() }}
+        </v-chip>
     </v-card>
 </template>
 
 <style scoped>
-.task-card {
+.task-row {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px 8px 16px;
     overflow: hidden;
     cursor: pointer;
     user-select: none;
 
     transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
+        background-color 0.12s ease,
+        transform 0.12s ease;
 }
 
-.task-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+.task-row:hover {
+    background-color: rgba(var(--v-theme-on-surface), 0.035);
 }
 
-.task-card:active {
-    transform: translateY(0);
+.task-row:active {
+    transform: scale(0.997);
 }
 
 .status-rail {
     position: absolute;
     inset: 0 auto 0 0;
-    width: 4px;
+    width: 3px;
 }
 
-.task-meta {
+.task-row__type {
+    flex-shrink: 0;
+}
+
+.task-row__title {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.task-row__spacer {
+    flex: 1 1 auto;
+}
+
+.task-row__meta {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
-    font-size: 0.75rem;
-    color: rgba(var(--v-theme-on-surface), 0.65);
+    gap: 3px;
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    color: rgba(var(--v-theme-on-surface), 0.6);
 }
 
-.meta-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.overdue {
+.task-row__meta.overdue {
     color: rgb(var(--v-theme-error));
     font-weight: 600;
 }
 
-.task-card--overdue {
-    border-color: rgba(var(--v-theme-on-surface), 0.3);
+.task-row__priority {
+    flex-shrink: 0;
 }
 
-.min-width-0 {
-    min-width: 0;
+.task-row--overdue {
+    border-color: rgba(var(--v-theme-error), 0.4);
+}
+
+@media (max-width: 520px) {
+    .task-row__meta:not(:last-of-type) {
+        display: none;
+    }
 }
 </style>

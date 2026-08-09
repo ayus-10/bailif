@@ -3,12 +3,11 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
-import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskRead} TaskCreate*/
+/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 
 const route = useRoute();
 const router = useRouter();
@@ -77,7 +76,7 @@ function startDrag(task) {
 }
 
 /**
- * @param {string} targetStatus
+ * @param {TaskRead["status"]} targetStatus
  */
 async function dropTask(targetStatus) {
     if (!draggedTask.value) return;
@@ -89,16 +88,14 @@ async function dropTask(targetStatus) {
         return;
     }
 
-    // optimistic update
     const oldStatus = task.status;
     task.status = targetStatus;
 
     try {
-        // await store.update(boardId.value, task.id, {
-        //     status: targetStatus,
-        // });
+        await store.update(boardId.value, task.id, {
+            status: targetStatus,
+        });
     } catch (err) {
-        // rollback
         task.status = oldStatus;
         console.error(err);
     } finally {
@@ -106,19 +103,18 @@ async function dropTask(targetStatus) {
     }
 }
 
-const showNewTask = ref(false);
+/** @type {import('vue').Ref<TaskCreate | null>} */
+const pendingTask = ref(null);
 
 function openNewTask() {
-    showNewTask.value = !showNewTask.value;
+    pendingTask.value = {
+        title: "",
+        status: "open",
+    };
 }
 
-/** @param {TaskCreate} task */
-function createTask(task) {
-    console.log(task);
-
-    // await store.create(boardId.value, task)
-
-    showNewTask.value = false;
+function handleClear() {
+    pendingTask.value = null;
 }
 </script>
 
@@ -142,8 +138,7 @@ function createTask(task) {
                 prepend-icon="mdi-plus"
                 variant="flat"
                 @click="openNewTask"
-            >
-                {{ showNewTask ? "Cancel" : "New Task" }}
+                >New Task
             </v-btn>
         </div>
 
@@ -179,16 +174,16 @@ function createTask(task) {
             </template>
         </v-alert>
 
-        <PendingTaskCard v-if="showNewTask" class="mb-6" @submit="createTask" />
-
         <v-row v-else>
             <TaskColumn
                 v-for="column in TASK_COLUMNS"
                 :key="column.status"
                 :column="column"
                 :tasks="tasksByStatus[column.status] ?? []"
+                :pendingTask="pendingTask"
                 @drag-start="startDrag"
                 @drop="dropTask"
+                @clear-pending-task="handleClear"
             />
         </v-row>
     </v-container>

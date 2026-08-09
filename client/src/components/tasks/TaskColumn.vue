@@ -1,7 +1,11 @@
 <script setup>
+import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
+import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
+/** @typedef {import('@/types/project').ProjectRead} ProjectRead */
 
 const props = defineProps({
     column: {
@@ -13,9 +17,19 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    pendingTask: {
+        /** @type {import('vue').PropType<TaskCreate | null>} */
+        type: Object,
+        required: false,
+    },
 });
 
-const emit = defineEmits(["drag-start", "drop"]);
+const store = useTasksStore();
+
+const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
+
+/** @type {ProjectRead[]} */
+const projects = [];
 
 /**
  * @param {TaskRead} task
@@ -26,6 +40,16 @@ function handleDragStart(task) {
 
 function handleDrop() {
     emit("drop", props.column.status);
+}
+
+/** @param {TaskCreate} task */
+async function handleCreate(task) {
+    await store.create("default", task);
+    emit("clear-pending-task");
+}
+
+function handleCancel() {
+    emit("clear-pending-task");
 }
 </script>
 
@@ -48,6 +72,12 @@ function handleDrop() {
             @dragover.prevent
             @drop="handleDrop"
         >
+            <PendingTaskCard
+                v-if="pendingTask && pendingTask.status === column.status"
+                :projects="projects"
+                @submit="handleCreate"
+                @cancel="handleCancel"
+            />
             <TaskCard
                 v-for="task in tasks"
                 :key="task.id"
@@ -55,15 +85,15 @@ function handleDrop() {
                 draggable="true"
                 @dragstart="handleDragStart(task)"
             />
-        </div>
 
-        <v-sheet
-            v-if="tasks.length === 0"
-            class="pa-4 mt-3 text-center text-caption text-medium-emphasis"
-            border
-            rounded
-        >
-            No tasks here
-        </v-sheet>
+            <v-sheet
+                v-if="tasks.length === 0"
+                class="pa-4 mt-3 text-center text-caption text-medium-emphasis"
+                border
+                rounded
+            >
+                No tasks here
+            </v-sheet>
+        </div>
     </v-col>
 </template>
