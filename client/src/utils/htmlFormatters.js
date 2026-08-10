@@ -1,5 +1,6 @@
 const ELEMENTS_TO_STRIP = ["script", "style", "template", "noscript"];
 
+/** @type {HTMLDivElement | null} */
 let sharedContainer = null;
 
 /** @returns {HTMLDivElement | null} */
@@ -11,7 +12,10 @@ function getContainer() {
     return sharedContainer;
 }
 
-/** @param {String} html */
+/**
+ * @param {String} html
+ * @returns {string}
+ */
 function stripHtmlWithRegex(html) {
     return (
         html

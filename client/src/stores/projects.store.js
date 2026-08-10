@@ -12,7 +12,7 @@ import {
 /** @typedef {import("@/types/project").ProjectCreate} ProjectCreate */
 /** @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate */
 
-/** @typedef {"idle" | "loading" | "loading-more" | "success" | "error"} FetchStatus */
+/** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
 
 /**
  * @typedef {Object} ProjectsState

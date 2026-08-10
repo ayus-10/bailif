@@ -1,3 +1,5 @@
+/** @typedef {import('@/types/task').TaskType} TaskType */
+
 export const STATUS_META = {
     open: { color: "grey", icon: "mdi-circle-outline", label: "Open" },
     in_progress: {
@@ -14,8 +16,6 @@ export const STATUS_META = {
         label: "Cancelled",
     },
 };
-
-/** @typedef {import('@/types/task').TaskType} TaskType */
 
 export const TYPE_ICONS =
     /** @type {Record<TaskType, string>} */

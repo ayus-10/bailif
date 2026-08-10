@@ -11,7 +11,7 @@ import {
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 
-/** @typedef {"idle" | "loading" | "loading-more" | "success" | "error"} FetchStatus */
+/** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
 
 /**
  * @typedef {Object} TasksState
@@ -64,7 +64,9 @@ export const useTasksStore = defineStore("tasks", {
             }
         },
 
-        /** @param {string} boardId */
+        /**
+         * @param {String} boardId
+         */
         loadMore(boardId) {
             try {
                 const cursor = this.nextCursor[boardId];
