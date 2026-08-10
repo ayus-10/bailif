@@ -75,14 +75,11 @@
  * @property {string} [target_end_date_before]
  * @property {string} [target_end_date_after]
  * @property {boolean} [archived]
- * @property {string} [cursor]
- * @property {number} [limit]
  */
 
 /**
  * @typedef {Object} ProjectListResponse
  * @property {ProjectRead[]} items
- * @property {string | null} next_cursor
  */
 
 export {};

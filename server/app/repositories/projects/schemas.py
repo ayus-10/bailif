@@ -91,10 +91,6 @@ class ProjectFilterParams(BaseModel):
     target_end_date_after: datetime | None = None
     archived: bool = False
 
-    cursor: str | None = None
-    limit: int = Field(default=50, ge=1, le=100)
-
 
 class ProjectListResponse(BaseModel):
     items: list[ProjectRead]
-    next_cursor: str | None = None
