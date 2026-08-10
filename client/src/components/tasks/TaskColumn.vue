@@ -17,6 +17,11 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    projects: {
+        /** @type {import('vue').PropType<ProjectRead[]>} */
+        type: Array,
+        required: true,
+    },
     pendingTask: {
         /** @type {import('vue').PropType<TaskCreate | null>} */
         type: Object,
@@ -27,9 +32,6 @@ const props = defineProps({
 const store = useTasksStore();
 
 const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
-
-/** @type {ProjectRead[]} */
-const projects = [];
 
 /**
  * @param {TaskRead} task

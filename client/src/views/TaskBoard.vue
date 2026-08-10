@@ -5,6 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTasksStore } from "@/stores/tasks.store";
+import { useProjectsStore } from "@/stores/projects.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
@@ -12,19 +13,21 @@ import { useTasksStore } from "@/stores/tasks.store";
 const route = useRoute();
 const router = useRouter();
 
-const store = useTasksStore();
+const tasksStore = useTasksStore();
+const projectsStore = useProjectsStore();
 
 const boardId = computed(() => String(route.params.boardId ?? "default"));
 
 onMounted(() => {
-    store.fetch(boardId.value);
+    tasksStore.fetch(boardId.value);
+    projectsStore.fetch();
 });
 
-const tasks = computed(() => store.items[boardId.value] ?? []);
+const tasks = computed(() => tasksStore.items[boardId.value] ?? []);
+const projects = computed(() => projectsStore.items ?? []);
 
-const status = computed(() => store.status[boardId.value] ?? "idle");
-
-const error = computed(() => store.errors[boardId.value]);
+const status = computed(() => tasksStore.status[boardId.value] ?? "idle");
+const error = computed(() => tasksStore.errors[boardId.value]);
 
 const filteredTasks = computed(() => {
     return tasks.value.filter((task) => {
@@ -49,9 +52,10 @@ const tasksByStatus = computed(() => {
 });
 
 function retry() {
-    store.fetch(boardId.value, {
+    tasksStore.fetch(boardId.value, {
         force: true,
     });
+    projectsStore.fetch({ force: true });
 }
 
 /** @param {string} key */
@@ -92,7 +96,7 @@ async function dropTask(targetStatus) {
     task.status = targetStatus;
 
     try {
-        await store.update(boardId.value, task.id, {
+        await tasksStore.update(boardId.value, task.id, {
             status: targetStatus,
         });
     } catch (err) {
@@ -181,6 +185,7 @@ function handleClear() {
                 :column="column"
                 :tasks="tasksByStatus[column.status] ?? []"
                 :pendingTask="pendingTask"
+                :projects="projects"
                 @drag-start="startDrag"
                 @drop="dropTask"
                 @clear-pending-task="handleClear"
