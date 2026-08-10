@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { PRIORITY_COLORS } from "@/constants/tasks";
 import {
     STATUS_META,
@@ -8,39 +8,59 @@ import {
     FALLBACK_STATUS_META,
     FALLBACK_TYPE_ICON,
 } from "@/constants/taskMeta";
-import { formatDate, formatDuration, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
+import {
+    formatDate,
+    formatDuration,
+    isTaskOverdue,
+    parseTags,
+} from "@/utils/taskFormatters";
+import { useTasksStore } from "@/stores/tasks.store";
+import { useRoute } from "vue-router";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
-const props = defineProps({
-    task: {
-        /** @type {import('vue').PropType<TaskRead>} */
-        type: Object,
-        required: true,
-    },
+const route = useRoute();
+
+const taskId = String(route.params.id);
+const boardId = computed(() => String(route.params.boardId ?? "default"));
+
+const store = useTasksStore();
+
+onMounted(() => {
+    store.get(boardId.value, taskId);
 });
 
 defineEmits(["back", "edit"]);
 
-const statusMeta = computed(
-    () =>
-        STATUS_META[props.task.status] ?? {
-            ...FALLBACK_STATUS_META,
-            label: props.task.status,
-        }
+const task = computed(() => store.currentTask);
+
+const statusMeta = computed(() => {
+    const status = task.value?.status;
+    return status ? STATUS_META[status] : FALLBACK_STATUS_META;
+});
+
+const typeIcon = computed(() => {
+    const type = task.value?.type;
+    return type ? TYPE_ICONS[type] : FALLBACK_TYPE_ICON;
+});
+
+const typeLabel = computed(() => {
+    const type = task.value?.type;
+    return type ? TYPE_LABELS[type] : "Unknown";
+});
+
+const isOverdue = computed(() =>
+    task.value ? isTaskOverdue(task.value) : false
 );
 
-const typeIcon = computed(() => TYPE_ICONS[props.task.type] ?? FALLBACK_TYPE_ICON);
-const typeLabel = computed(() => TYPE_LABELS[props.task.type] ?? props.task.type);
-const isOverdue = computed(() => isTaskOverdue(props.task));
-const tags = computed(() => parseTags(props.task.tags));
+const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
 
 // Rich-text-ready paragraph split: a blank line breaks a new paragraph, a
 // single newline breaks a line within one (via `white-space: pre-wrap`).
 // Swap this for a real renderer (markdown, Tiptap JSON, etc.) later without
 // touching the surrounding `.prose` layout.
 const descriptionParagraphs = computed(() =>
-    (props.task.description ?? "")
+    (task.value?.description ?? "")
         .split(/\n{2,}/)
         .map((p) => p.trim())
         .filter(Boolean)
@@ -48,7 +68,7 @@ const descriptionParagraphs = computed(() =>
 </script>
 
 <template>
-    <div class="task-page">
+    <div v-if="task" class="task-page">
         <div class="task-page__topbar">
             <v-btn
                 icon="mdi-arrow-left"
@@ -64,7 +84,11 @@ const descriptionParagraphs = computed(() =>
 
             <v-spacer />
 
-            <v-btn variant="tonal" prepend-icon="mdi-pencil-outline" @click="$emit('edit')">
+            <v-btn
+                variant="tonal"
+                prepend-icon="mdi-pencil-outline"
+                @click="$emit('edit')"
+            >
                 Edit
             </v-btn>
         </div>
@@ -108,7 +132,9 @@ const descriptionParagraphs = computed(() =>
                     <h2 class="panel__label">Description</h2>
 
                     <div v-if="descriptionParagraphs.length" class="prose">
-                        <p v-for="(para, i) in descriptionParagraphs" :key="i">{{ para }}</p>
+                        <p v-for="(para, i) in descriptionParagraphs" :key="i">
+                            {{ para }}
+                        </p>
                     </div>
                     <p v-else class="panel__empty">No description yet.</p>
                 </section>
@@ -144,7 +170,13 @@ const descriptionParagraphs = computed(() =>
                         </div>
                         <div class="detail-list__row">
                             <dt>Estimate</dt>
-                            <dd>{{ formatDuration(task.estimated_duration_minutes) ?? "—" }}</dd>
+                            <dd>
+                                {{
+                                    formatDuration(
+                                        task.estimated_duration_minutes
+                                    ) ?? "—"
+                                }}
+                            </dd>
                         </div>
                     </dl>
                 </div>
@@ -152,7 +184,12 @@ const descriptionParagraphs = computed(() =>
                 <div v-if="tags.length" class="panel">
                     <h2 class="panel__label">Tags</h2>
                     <div class="tag-list">
-                        <v-chip v-for="tag in tags" :key="tag" size="small" variant="tonal">
+                        <v-chip
+                            v-for="tag in tags"
+                            :key="tag"
+                            size="small"
+                            variant="tonal"
+                        >
                             {{ tag }}
                         </v-chip>
                     </div>
@@ -281,8 +318,6 @@ const descriptionParagraphs = computed(() =>
     color: rgba(var(--v-theme-on-surface), 0.5);
 }
 
-/* Rich-text-ready reading layout: capped measure, generous leading, and
-   paragraph rhythm so a future markdown/HTML renderer drops in cleanly. */
 .prose {
     max-width: 68ch;
     font-size: 0.9375rem;

@@ -38,6 +38,7 @@ export const TYPE_LABELS =
 export const FALLBACK_STATUS_META = {
     color: "grey",
     icon: "mdi-help-circle-outline",
+    label: "Unknown",
 };
 
 export const FALLBACK_TYPE_ICON = "mdi-checkbox-blank-circle-outline";
