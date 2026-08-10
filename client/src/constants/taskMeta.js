@@ -1,3 +1,5 @@
+/** @typedef {import('@/types/task').TaskType} TaskType */
+
 export const STATUS_META = {
     open: { color: "grey", icon: "mdi-circle-outline", label: "Open" },
     in_progress: {
@@ -14,8 +16,6 @@ export const STATUS_META = {
         label: "Cancelled",
     },
 };
-
-/** @typedef {import('@/types/task').TaskType} TaskType */
 
 export const TYPE_ICONS =
     /** @type {Record<TaskType, string>} */
@@ -38,6 +38,7 @@ export const TYPE_LABELS =
 export const FALLBACK_STATUS_META = {
     color: "grey",
     icon: "mdi-help-circle-outline",
+    label: "Unknown",
 };
 
 export const FALLBACK_TYPE_ICON = "mdi-checkbox-blank-circle-outline";

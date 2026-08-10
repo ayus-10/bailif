@@ -1,8 +1,8 @@
+import { API_URL } from "@/config";
+
 /** @typedef {import('@/types/ai-actions').ChatRequest} ChatRequest */
 /** @typedef {import('@/types/ai-actions').ChatResponse} ChatResponse */
 /** @typedef {import('@/types/ai-actions').ChatMode} ChatMode */
-
-import { API_URL } from "@/config";
 
 /**
  * @param {Response} response
@@ -17,8 +17,6 @@ async function parseJson(response) {
 }
 
 /**
- * Send a natural-language request to the AI planner.
- *
  * @param {ChatRequest} payload
  * @param {AbortSignal} [signal]
  * @returns {Promise<ChatResponse>}
@@ -37,8 +35,6 @@ export async function chat(payload, signal) {
 }
 
 /**
- * Bypass the planner and directly suggest tasks.
- *
  * @param {ChatRequest} payload
  * @param {AbortSignal} [signal]
  * @returns {Promise<ChatResponse>}
@@ -57,8 +53,6 @@ export async function suggestTasks(payload, signal) {
 }
 
 /**
- * Bypass the planner and directly search tasks.
- *
  * @param {ChatRequest} payload
  * @param {AbortSignal} [signal]
  * @returns {Promise<ChatResponse>}

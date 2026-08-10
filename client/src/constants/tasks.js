@@ -16,7 +16,6 @@ export const TASK_COLUMNS = [
     },
 ];
 
-/** @type {Record<string, string>} */
 export const PRIORITY_COLORS = {
     low: "success",
     medium: "warning",

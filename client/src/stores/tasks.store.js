@@ -1,16 +1,23 @@
 import { defineStore } from "pinia";
 
-import { listTasks, createTask, updateTask, deleteTask } from "@/api/tasks.api";
+import {
+    listTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+    getTask,
+} from "@/api/tasks.api";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 
-/** @typedef {"idle" | "loading" | "loading-more" | "success" | "error"} FetchStatus */
+/** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
 
 /**
  * @typedef {Object} TasksState
  * @property {Record<string, TaskRead[]>} items
  * @property {Record<string, string | null>} nextCursor
+ * @property {TaskRead | null} currentTask
  * @property {Record<string, FetchStatus>} status
  * @property {Record<string, any>} errors
  */
@@ -20,9 +27,11 @@ export const useTasksStore = defineStore("tasks", {
     state: () => ({
         items: {},
         nextCursor: {},
+        currentTask: null,
         status: {},
         errors: {},
     }),
+
     actions: {
         /**
          * @param {string} boardId
@@ -46,6 +55,7 @@ export const useTasksStore = defineStore("tasks", {
                 this.items[boardId] = append
                     ? [...(this.items[boardId] ?? []), ...data.items]
                     : data.items;
+
                 this.nextCursor[boardId] = data.next_cursor;
                 this.status[boardId] = "success";
             } catch (err) {
@@ -54,53 +64,88 @@ export const useTasksStore = defineStore("tasks", {
             }
         },
 
-        /** @param {string} boardId */
+        /**
+         * @param {String} boardId
+         */
         loadMore(boardId) {
-            const cursor = this.nextCursor[boardId];
-            if (!cursor) return;
+            try {
+                const cursor = this.nextCursor[boardId];
 
-            return this.fetch(boardId, {
-                cursor,
-                append: true,
-            });
+                if (!cursor) return;
+
+                return this.fetch(boardId, {
+                    cursor,
+                    append: true,
+                });
+            } catch (err) {
+                this.errors[boardId] = err;
+                this.status[boardId] = "error";
+            }
+        },
+
+        /**
+         * @param {string} boardId
+         * @param {string} taskId
+         */
+        async get(boardId = "default", taskId) {
+            try {
+                const task = await getTask(taskId);
+
+                this.currentTask = task;
+
+                return task;
+            } catch (err) {
+                this.errors[boardId] = err;
+                this.status[boardId] = "error";
+            }
         },
 
         /**
          * @param {string} boardId
          * @param {TaskCreate} payload
-         * @returns {Promise<TaskRead>}
+         * @returns {Promise<TaskRead | undefined>}
          */
         async create(boardId = "default", payload) {
-            const task = await createTask({
-                ...payload,
-            });
+            try {
+                const task = await createTask({
+                    ...payload,
+                });
 
-            this.items[boardId] = [...(this.items[boardId] ?? []), task];
+                this.items[boardId] = [...(this.items[boardId] ?? []), task];
 
-            return task;
+                return task;
+            } catch (err) {
+                this.errors[boardId] = err;
+                this.status[boardId] = "error";
+            }
         },
 
         /**
          * @param {string} boardId
          * @param {string} taskId
          * @param {Partial<TaskCreate>} payload
-         * @returns {Promise<TaskRead>}
+         * @returns {Promise<TaskRead | undefined>}
          */
         async update(boardId = "default", taskId, payload) {
-            const task = await updateTask(taskId, payload);
+            try {
+                const task = await updateTask(taskId, payload);
 
-            const tasks = this.items[boardId] ?? [];
-            const index = tasks.findIndex((item) => item.id === taskId);
+                const tasks = this.items[boardId] ?? [];
+                const index = tasks.findIndex((item) => item.id === taskId);
 
-            if (index !== -1) {
-                this.items[boardId] = [
-                    ...tasks.slice(0, index),
-                    task,
-                    ...tasks.slice(index + 1),
-                ];
+                if (index !== -1) {
+                    this.items[boardId] = [
+                        ...tasks.slice(0, index),
+                        task,
+                        ...tasks.slice(index + 1),
+                    ];
+                }
+
+                return task;
+            } catch (err) {
+                this.errors[boardId] = err;
+                this.status[boardId] = "error";
             }
-
-            return task;
         },
 
         /**
@@ -108,11 +153,16 @@ export const useTasksStore = defineStore("tasks", {
          * @param {string} taskId
          */
         async remove(boardId = "default", taskId) {
-            await deleteTask(taskId);
+            try {
+                await deleteTask(taskId);
 
-            this.items[boardId] = (this.items[boardId] ?? []).filter(
-                (item) => item.id !== taskId
-            );
+                this.items[boardId] = (this.items[boardId] ?? []).filter(
+                    (item) => item.id !== taskId
+                );
+            } catch (err) {
+                this.errors[boardId] = err;
+                this.status[boardId] = "error";
+            }
         },
     },
 });

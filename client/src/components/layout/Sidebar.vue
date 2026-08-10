@@ -154,8 +154,8 @@ const router = useRouter();
  * @property {string} icon
  */
 
-/** @typedef {'todo' | 'in-progress' | 'done'} TaskStatusValue */
-/** @typedef {'low' | 'medium' | 'high'} TaskPriorityValue */
+/** @typedef {import('@/types/task.js').TaskStatus} TaskStatusValue */
+/** @typedef {import('@/types/task.js').TaskPriority} TaskPriorityValue */
 
 /**
  * @typedef {Object} TaskStatusOption
