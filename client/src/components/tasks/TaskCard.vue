@@ -9,6 +9,7 @@ import {
 } from "@/constants/taskMeta";
 import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 import { useRouter } from "vue-router";
+import { htmlPreview } from "@/utils/htmlFormatters";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
@@ -36,7 +37,6 @@ const typeIcon = computed(
 const isOverdue = computed(() => isTaskOverdue(props.task));
 const tagCount = computed(() => parseTags(props.task.tags).length);
 </script>
-
 <template>
     <v-card
         variant="outlined"
@@ -61,59 +61,68 @@ const tagCount = computed(() => parseTags(props.task.tags).length);
             </template>
         </v-tooltip>
 
-        <span class="task-row__title text-body-2 font-weight-medium">
-            {{ task.title }}
-        </span>
+        <div class="task-row__body">
+            <div class="task-row__main">
+                <span class="task-row__title text-body-2 font-weight-medium">
+                    {{ task.title }}
+                </span>
+                <div class="task-row__spacer" />
+                <div v-if="tagCount" class="task-row__meta">
+                    <v-icon icon="mdi-tag-outline" size="12" />
+                    <span>{{ tagCount }}</span>
+                </div>
+                <div
+                    v-if="task.estimated_duration_minutes"
+                    class="task-row__meta"
+                >
+                    <v-icon icon="mdi-timer-outline" size="12" />
+                </div>
+                <div
+                    v-if="task.due_date"
+                    class="task-row__meta"
+                    :class="{ overdue: isOverdue }"
+                >
+                    <v-icon
+                        :icon="
+                            isOverdue
+                                ? 'mdi-calendar-alert'
+                                : 'mdi-calendar-blank-outline'
+                        "
+                        size="12"
+                    />
+                    <span>{{ formatDate(task.due_date) }}</span>
+                </div>
+                <v-chip
+                    size="x-small"
+                    variant="flat"
+                    class="task-row__priority"
+                    :color="PRIORITY_COLORS[task.priority] ?? 'default'"
+                >
+                    {{ task.priority.toUpperCase() }}
+                </v-chip>
+            </div>
 
-        <div class="task-row__spacer" />
-
-        <div v-if="tagCount" class="task-row__meta">
-            <v-icon icon="mdi-tag-outline" size="12" />
-            <span>{{ tagCount }}</span>
+            <p
+                v-if="task.description"
+                class="task-row__description text-caption"
+            >
+                {{ htmlPreview(task.description) }}
+            </p>
         </div>
-
-        <div v-if="task.estimated_duration_minutes" class="task-row__meta">
-            <v-icon icon="mdi-timer-outline" size="12" />
-        </div>
-
-        <div
-            v-if="task.due_date"
-            class="task-row__meta"
-            :class="{ overdue: isOverdue }"
-        >
-            <v-icon
-                :icon="
-                    isOverdue
-                        ? 'mdi-calendar-alert'
-                        : 'mdi-calendar-blank-outline'
-                "
-                size="12"
-            />
-            <span>{{ formatDate(task.due_date) }}</span>
-        </div>
-
-        <v-chip
-            size="x-small"
-            variant="flat"
-            class="task-row__priority"
-            :color="PRIORITY_COLORS[task.priority] ?? 'default'"
-        >
-            {{ task.priority.toUpperCase() }}
-        </v-chip>
     </v-card>
 </template>
 
 <style scoped>
 .task-row {
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px 8px 16px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    column-gap: 10px;
+    padding: 10px 12px 10px 16px;
     overflow: hidden;
     cursor: pointer;
     user-select: none;
-
     transition:
         background-color 0.12s ease,
         transform 0.12s ease;
@@ -135,6 +144,21 @@ const tagCount = computed(() => parseTags(props.task.tags).length);
 
 .task-row__type {
     flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.task-row__body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.task-row__main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 20px;
 }
 
 .task-row__title {
@@ -165,6 +189,16 @@ const tagCount = computed(() => parseTags(props.task.tags).length);
 
 .task-row__priority {
     flex-shrink: 0;
+}
+
+.task-row__description {
+    margin: 0;
+    color: rgba(var(--v-theme-on-surface), 0.6);
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
 }
 
 .task-row--overdue {

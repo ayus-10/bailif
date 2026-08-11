@@ -1,3 +1,5 @@
+/** @typedef {import("@/components/tasks/PendingTaskCard.vue").TaskPriority} TaskPriority */
+
 export const TASK_COLUMNS = [
     {
         status: "open",
@@ -16,8 +18,16 @@ export const TASK_COLUMNS = [
     },
 ];
 
+/** @type {Record<TaskPriority, string>} */
 export const PRIORITY_COLORS = {
     low: "success",
     medium: "warning",
     high: "error",
+};
+
+/** @type {Record<TaskPriority, string>} */
+export const PRIORITY_ICONS = {
+    low: "mdi-arrow-down",
+    medium: "mdi-minus",
+    high: "mdi-arrow-up",
 };
