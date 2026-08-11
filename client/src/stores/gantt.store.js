@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-
 import { fetchGantt } from "@/api/gantt.api";
 import { createResourceStore } from "@/stores/factories/createResourceStore";
 

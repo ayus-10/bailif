@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-
 import { fetchDashboard } from "@/api/dashboard.api";
 import { createResourceStore } from "@/stores/factories/createResourceStore";
 

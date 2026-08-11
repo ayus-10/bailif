@@ -1,7 +1,6 @@
 <script setup>
-import { computed, onMounted, watch } from "vue";
 import { useRoute } from "vue-router";
-
+import { computed, onMounted, watch } from "vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import { useProjectsStore } from "@/stores/projects.store";
 

@@ -1,11 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
+import { computed, onMounted, ref } from "vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
-import { useTasksStore } from "@/stores/tasks.store";
 import { useProjectsStore } from "@/stores/projects.store";
+import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
@@ -26,18 +25,16 @@ onMounted(() => {
 const tasks = computed(() => tasksStore.items[boardId.value] ?? []);
 const projects = computed(() => projectsStore.items ?? []);
 
-const status = computed(() => tasksStore.status[boardId.value] ?? "idle");
+const status = computed(() => tasksStore.status[boardId.value]);
 const error = computed(() => tasksStore.errors[boardId.value]);
 
 const filteredTasks = computed(() => {
     return tasks.value.filter((task) => {
-        if (route.query.status && task.status !== route.query.status) {
+        if (route.query.status && task.status !== route.query.status)
             return false;
-        }
 
-        if (route.query.priority && task.priority !== route.query.priority) {
+        if (route.query.priority && task.priority !== route.query.priority)
             return false;
-        }
 
         return true;
     });
@@ -45,11 +42,17 @@ const filteredTasks = computed(() => {
 
 const tasksByStatus = computed(() => {
     return filteredTasks.value.reduce((acc, task) => {
-        (acc[task.status] ??= []).push(task);
+        if (!acc[task.status]) acc[task.status] = [];
 
+        acc[task.status].push(task);
         return acc;
     }, /** @type {Record<string, TaskRead[]>} */ ({}));
 });
+
+const draggedTask = ref(/** @type {TaskRead | null} */ (null));
+
+/** @type {import('vue').Ref<TaskCreate | null>} */
+const pendingTask = ref(null);
 
 function retry() {
     tasksStore.fetch(boardId.value, {
@@ -70,18 +73,12 @@ function clearFilter(key) {
     });
 }
 
-const draggedTask = ref(/** @type {TaskRead | null} */ (null));
-
-/**
- * @param {TaskRead} task
- */
+/** @param {TaskRead} task */
 function startDrag(task) {
     draggedTask.value = task;
 }
 
-/**
- * @param {TaskRead["status"]} targetStatus
- */
+/** @param {TaskRead["status"]} targetStatus */
 async function dropTask(targetStatus) {
     if (!draggedTask.value) return;
 
@@ -106,9 +103,6 @@ async function dropTask(targetStatus) {
         draggedTask.value = null;
     }
 }
-
-/** @type {import('vue').Ref<TaskCreate | null>} */
-const pendingTask = ref(null);
 
 function openNewTask() {
     pendingTask.value = {

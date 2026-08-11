@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted } from "vue";
-
 import DocumentList from "@/components/documents/DocumentList.vue";
 import { useDocumentsStore } from "@/stores/documents.store";
 

@@ -1,7 +1,6 @@
 <script setup>
-import { computed, ref } from "vue";
-import { PRIORITY_COLORS } from "@/constants/tasks";
 import { QuillEditor } from "@vueup/vue-quill";
+import { computed, ref } from "vue";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 
 /** @typedef {import('@/types/task').TaskPriority} TaskPriority */
@@ -16,47 +15,53 @@ const props = defineProps({
 
 const emit = defineEmits(["submit", "cancel"]);
 
-const title = ref("");
-const description = ref("");
-const projectId = ref(null);
-const priority = ref(/** @type {TaskPriority} */ ("medium"));
-const tags = ref("");
-const startDate = ref(null);
-const dueDate = ref(null);
+const emptyForm = {
+    title: "",
+    description: "",
+    projectId: null,
+    priority: /** @type {TaskPriority} */ ("medium"),
+    tags: "",
+    startDate: null,
+    dueDate: null,
+};
 
-const priorityOptions = Object.keys(PRIORITY_COLORS).map((value) => ({
-    title: value.charAt(0).toUpperCase() + value.slice(1),
-    value,
-}));
+const form = ref(emptyForm);
 
-const canSubmit = computed(() => title.value.trim().length > 0);
+const hasUnsavedChanges = ref(false);
+const confirmClose = ref(false);
+
+const dialog = ref(false);
+
+/** @type {{ title: string, value: TaskPriority }[]} */
+const priorityOptions = [
+    { title: "Low", value: "low" },
+    { title: "Medium", value: "medium" },
+    { title: "High", value: "high" },
+];
+
+const canSubmit = computed(() => form.value.title.trim().length > 0);
 
 function submit() {
     if (!canSubmit.value) return;
 
     /** @type {TaskCreate} */
     const task = {
-        title: title.value.trim(),
-        description: description.value.trim(),
-        project_id: projectId.value,
-        priority: priority.value,
-        tags: tags.value
+        title: form.value.title.trim(),
+        description: form.value.description.trim(),
+        project_id: form.value.projectId,
+        priority: form.value.priority,
+        tags: form.value.tags
             .split(",")
             .map((tag) => tag.trim())
             .filter(Boolean)
             .join(","),
-        start_date: startDate.value || null,
-        due_date: dueDate.value || null,
+        start_date: form.value.startDate || null,
+        due_date: form.value.dueDate || null,
         status: "open",
     };
 
     emit("submit", task);
 }
-
-const hasUnsavedChanges = ref(false);
-const confirmClose = ref(false);
-
-const dialog = ref(false);
 
 function cancel() {
     dialog.value = false;
@@ -66,14 +71,7 @@ function cancel() {
 function discardAndClose() {
     confirmClose.value = false;
     cancel();
-
-    title.value = "";
-    description.value = "";
-    priority.value = "low";
-    projectId.value = null;
-    tags.value = "";
-    startDate.value = null;
-    dueDate.value = null;
+    form.value = emptyForm;
 }
 
 function openEditor() {
@@ -137,7 +135,7 @@ function attemptClose() {
             </div>
 
             <v-text-field
-                v-model="title"
+                v-model="form.title"
                 label="Title"
                 placeholder="What needs to be done?"
                 variant="outlined"
@@ -147,7 +145,7 @@ function attemptClose() {
             />
 
             <v-textarea
-                v-model="description"
+                v-model="form.description"
                 label="Description"
                 placeholder="Add a description..."
                 variant="outlined"
@@ -160,7 +158,7 @@ function attemptClose() {
 
             <div class="d-flex ga-3 mt-2">
                 <v-select
-                    v-model="priority"
+                    v-model="form.priority"
                     :items="priorityOptions"
                     label="Priority"
                     variant="outlined"
@@ -170,7 +168,7 @@ function attemptClose() {
                 />
 
                 <v-select
-                    v-model="projectId"
+                    v-model="form.projectId"
                     :items="projects"
                     item-title="name"
                     item-value="id"
@@ -214,7 +212,7 @@ function attemptClose() {
 
             <v-card-text class="pa-5">
                 <v-text-field
-                    v-model="title"
+                    v-model="form.title"
                     label="Title"
                     placeholder="What needs to be done?"
                     variant="outlined"
@@ -224,7 +222,7 @@ function attemptClose() {
                 />
 
                 <QuillEditor
-                    v-model:content="description"
+                    v-model:content="form.description"
                     content-type="html"
                     theme="snow"
                     placeholder="Add a description..."
@@ -234,7 +232,7 @@ function attemptClose() {
 
                 <div class="d-flex ga-3 mt-3">
                     <v-select
-                        v-model="priority"
+                        v-model="form.priority"
                         :items="priorityOptions"
                         label="Priority"
                         variant="outlined"
@@ -244,7 +242,7 @@ function attemptClose() {
                     />
 
                     <v-select
-                        v-model="projectId"
+                        v-model="form.projectId"
                         :items="projects"
                         item-title="name"
                         item-value="id"
@@ -259,7 +257,7 @@ function attemptClose() {
                 </div>
 
                 <v-text-field
-                    v-model="tags"
+                    v-model="form.tags"
                     label="Tags"
                     placeholder="bug, frontend, urgent"
                     variant="outlined"
@@ -271,7 +269,7 @@ function attemptClose() {
 
                 <div class="d-flex ga-3 mt-3">
                     <v-text-field
-                        v-model="startDate"
+                        v-model="form.startDate"
                         type="date"
                         label="Start"
                         variant="outlined"
@@ -282,7 +280,7 @@ function attemptClose() {
                     />
 
                     <v-text-field
-                        v-model="dueDate"
+                        v-model="form.dueDate"
                         type="date"
                         label="Due"
                         variant="outlined"

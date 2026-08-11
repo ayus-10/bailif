@@ -1,7 +1,8 @@
 <script setup>
+import { ref } from "vue";
+import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
-import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
@@ -33,15 +34,58 @@ const store = useTasksStore();
 
 const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
 
+const isDragOver = ref(false);
+
+/** @param {DragEvent} event */
+function handleDragOver(event) {
+    const sourceStatus = event.dataTransfer?.getData("task-status");
+
+    if (sourceStatus === props.column.status) {
+        isDragOver.value = false;
+        return;
+    }
+
+    isDragOver.value = true;
+}
+
+/** @param {DragEvent} event */
+function handleDragLeave(event) {
+    const target = event.currentTarget;
+
+    if (!(target instanceof HTMLElement)) return;
+
+    if (
+        !(event.relatedTarget instanceof Node) ||
+        !target.contains(event.relatedTarget)
+    ) {
+        isDragOver.value = false;
+    }
+}
+
+/** @param {DragEvent} event */
+function handleDrop(event) {
+    isDragOver.value = false;
+
+    const sourceStatus = event.dataTransfer?.getData("task-status");
+
+    if (sourceStatus === props.column.status) {
+        return;
+    }
+
+    emit("drop", props.column.status);
+}
+
 /**
+ * @param {DragEvent} event
  * @param {TaskRead} task
  */
-function handleDragStart(task) {
+function handleDragStart(event, task) {
+    event.dataTransfer?.setData("task-status", task.status);
     emit("drag-start", task);
 }
 
-function handleDrop() {
-    emit("drop", props.column.status);
+function handleDragEnd() {
+    isDragOver.value = false;
 }
 
 /** @param {TaskCreate} task */
@@ -70,8 +114,10 @@ function handleCancel() {
         </div>
 
         <div
-            class="d-flex flex-column ga-3"
-            @dragover.prevent
+            class="task-column"
+            :class="{ 'task-column--drag-over': isDragOver }"
+            @dragover.prevent="handleDragOver"
+            @dragleave="handleDragLeave"
             @drop="handleDrop"
         >
             <PendingTaskCard
@@ -80,17 +126,19 @@ function handleCancel() {
                 @submit="handleCreate"
                 @cancel="handleCancel"
             />
+
             <TaskCard
                 v-for="task in tasks"
                 :key="task.id"
                 :task="task"
                 draggable="true"
-                @dragstart="handleDragStart(task)"
+                @dragstart="handleDragStart($event, task)"
+                @dragend="handleDragEnd"
             />
 
             <v-sheet
                 v-if="tasks.length === 0"
-                class="pa-4 mt-3 text-center text-caption text-medium-emphasis"
+                class="task-column__empty text-center text-caption text-medium-emphasis"
                 border
                 rounded
             >
@@ -99,3 +147,34 @@ function handleCancel() {
         </div>
     </v-col>
 </template>
+
+<style scoped>
+.task-column {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+    padding: 10px;
+    gap: 10px;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+    border-radius: 10px;
+    background: rgba(var(--v-theme-on-surface), 0.015);
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.task-column__empty {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.task-column--drag-over {
+    background: rgba(var(--v-theme-primary), 0.06);
+    border-color: rgba(var(--v-theme-primary), 0.4);
+    box-shadow:
+        inset 0 0 0 1px rgba(var(--v-theme-primary), 0.12),
+        0 0 0 2px rgba(var(--v-theme-primary), 0.04);
+}
+</style>

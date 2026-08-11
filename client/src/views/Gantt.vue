@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted } from "vue";
-
 import GanttChart from "@/components/gantt/GanttChart.vue";
 import { useGanttStore } from "@/stores/gantt.store";
 

@@ -1,26 +1,25 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
-import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import EditableVChip from "@/components/layout/EditableVChip.vue";
 import {
+    FALLBACK_TYPE_ICON,
     STATUS_META,
     TYPE_ICONS,
     TYPE_LABELS,
-    FALLBACK_TYPE_ICON,
 } from "@/constants/taskMeta";
+import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
+import { htmlToText } from "@/utils/htmlFormatters";
 import {
     formatDate,
     formatDuration,
     isTaskOverdue,
     parseTags,
 } from "@/utils/taskFormatters";
-import { htmlToText } from "@/utils/htmlFormatters";
-import EditableVChip from "@/components/layout/EditableVChip.vue";
-
-import { QuillEditor } from "@vueup/vue-quill";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
-import { useTasksStore } from "@/stores/tasks.store";
 import { useProjectsStore } from "@/stores/projects.store";
+import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */

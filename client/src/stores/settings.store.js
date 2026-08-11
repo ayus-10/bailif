@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-
 import { fetchSettings } from "@/api/settings.api";
 import { createResourceStore } from "@/stores/factories/createResourceStore";
 

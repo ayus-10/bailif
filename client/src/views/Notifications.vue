@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted } from "vue";
-
 import NotificationList from "@/components/notifications/NotificationList.vue";
 import { useNotificationsStore } from "@/stores/notifications.store";
 
