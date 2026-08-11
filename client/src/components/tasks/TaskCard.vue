@@ -24,7 +24,14 @@ const router = useRouter();
 const isOverdue = computed(() => isTaskOverdue(props.task));
 const tagCount = computed(() => parseTags(props.task.tags).length);
 
-const emit = defineEmits(["complete", "snooze", "delete", "duplicate"]);
+const emit = defineEmits([
+    "complete",
+    "snooze",
+    "delete",
+    "duplicate",
+    "dragstart",
+    "dragend",
+]);
 
 const isExpanded = ref(false);
 const isHovering = ref(false);
@@ -74,6 +81,7 @@ function handleDuplicate(e) {
 
 <template>
     <v-card
+        draggable="true"
         variant="outlined"
         rounded="lg"
         class="task-row"
@@ -89,6 +97,8 @@ function handleDuplicate(e) {
         @mouseenter="isHovering = true"
         @mouseleave="isHovering = false"
         @contextmenu.prevent="openContextMenu"
+        @dragstart="$emit('dragstart', $event)"
+        @dragend="$emit('dragend')"
     >
         <div class="task-row__controls">
             <button
