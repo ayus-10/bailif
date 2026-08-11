@@ -142,34 +142,14 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 
-const router = useRouter();
-
-/**
- * @typedef {Object} Project
- * @property {number} id
- * @property {string} name
- * @property {string} icon
- */
+import { taskPriorities, taskStatuses } from "@/constants/sidebarMeta";
+import { useProjectsStore } from "@/stores/projects.store";
 
 /** @typedef {import('@/types/task.js').TaskStatus} TaskStatusValue */
 /** @typedef {import('@/types/task.js').TaskPriority} TaskPriorityValue */
-
-/**
- * @typedef {Object} TaskStatusOption
- * @property {TaskStatusValue} value
- * @property {string} label
- * @property {string} icon
- */
-
-/**
- * @typedef {Object} TaskPriorityOption
- * @property {TaskPriorityValue} value
- * @property {string} label
- * @property {string} color
- */
 
 /**
  * @typedef {Object} TaskFilters
@@ -177,30 +157,19 @@ const router = useRouter();
  * @property {TaskPriorityValue | null} priority
  */
 
-/** @type {Project[]} */
-const projects = [
-    { id: 1, name: "Website Redesign", icon: "mdi-web" },
-    { id: 2, name: "Mobile App", icon: "mdi-cellphone" },
-    { id: 3, name: "Marketing Campaign", icon: "mdi-bullhorn-outline" },
-];
-
-/** @type {TaskStatusOption[]} */
-const taskStatuses = [
-    { value: "open", label: "Open", icon: "mdi-circle-outline" },
-    { value: "in_progress", label: "In Progress", icon: "mdi-progress-clock" },
-    { value: "done", label: "Done", icon: "mdi-check-circle-outline" },
-];
-
-/** @type {TaskPriorityOption[]} */
-const taskPriorities = [
-    { value: "low", label: "Low", color: "success" },
-    { value: "medium", label: "Medium", color: "warning" },
-    { value: "high", label: "High", color: "error" },
-];
+const router = useRouter();
 
 const isOpen = ref(true);
 const isRail = ref(false);
 const unreadNotifications = ref(4);
+
+const projectsStore = useProjectsStore();
+
+onMounted(() => {
+    projectsStore.fetch();
+});
+
+const projects = computed(() => projectsStore.items);
 
 /** @type {TaskFilters} */
 const taskFilters = reactive({
