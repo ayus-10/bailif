@@ -1,11 +1,10 @@
 import { defineStore } from "pinia";
-
 import {
-    listTasks,
     createTask,
-    updateTask,
     deleteTask,
     getTask,
+    listTasks,
+    updateTask,
 } from "@/api/tasks.api";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */

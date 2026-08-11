@@ -1,11 +1,10 @@
 import { defineStore } from "pinia";
-
 import {
-    listProjects,
     createProject,
-    updateProject,
     deleteProject,
     getProject,
+    listProjects,
+    updateProject,
 } from "@/api/projects.api";
 
 /** @typedef {import("@/types/project").ProjectRead} ProjectRead */

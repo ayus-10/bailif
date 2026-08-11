@@ -142,9 +142,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-
+import { computed, onMounted, reactive, ref } from "vue";
 import { taskPriorities, taskStatuses } from "@/constants/sidebarMeta";
 import { useProjectsStore } from "@/stores/projects.store";
 

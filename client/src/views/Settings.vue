@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted } from "vue";
-
 import SettingsPanel from "@/components/settings/SettingsPanel.vue";
 import { useSettingsStore } from "@/stores/settings.store";
 

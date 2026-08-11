@@ -1,11 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
+import { computed, onMounted, ref } from "vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
-import { useTasksStore } from "@/stores/tasks.store";
 import { useProjectsStore } from "@/stores/projects.store";
+import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */

@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted } from "vue";
-
 import CalendarGrid from "@/components/calendar/CalendarGrid.vue";
 import { useCalendarStore } from "@/stores/calendar.store";
 

@@ -1,7 +1,7 @@
 <script setup>
+import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
-import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */

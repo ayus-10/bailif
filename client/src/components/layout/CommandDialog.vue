@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref } from "vue";
-
 import { chat, searchTasks, suggestTasks } from "@/api/ai-actions.api";
 
 const open = ref(false);

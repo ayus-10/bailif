@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted } from "vue";
-
 import DashboardMetrics from "@/components/dashboard/DashboardMetrics.vue";
 import { useDashboardStore } from "@/stores/dashboard.store";
 
