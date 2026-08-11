@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { PRIORITY_COLORS } from "@/constants/tasks";
+import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
 import {
     STATUS_META,
     TYPE_ICONS,
@@ -15,50 +15,48 @@ import {
     parseTags,
 } from "@/utils/taskFormatters";
 import { htmlToText } from "@/utils/htmlFormatters";
-import { useTasksStore } from "@/stores/tasks.store";
 import EditableVChip from "@/components/layout/EditableVChip.vue";
 
+import { QuillEditor } from "@vueup/vue-quill";
+import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import { useTasksStore } from "@/stores/tasks.store";
+import { useProjectsStore } from "@/stores/projects.store";
+
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 /** @typedef {TaskRead["status"]} TaskStatus */
 /** @typedef {TaskRead["priority"]} TaskPriority */
 /** @typedef {"title" | "description" | "details" | "none"} EditMode */
 
 /**
  * @typedef {Object} TaskDraft
+ * @property {string | null} project_id
  * @property {string} title
  * @property {string} description
- * @property {TaskStatus | ""} status
- * @property {TaskPriority | ""} priority
- * @property {string} start_date
- * @property {string} due_date
+ * @property {TaskStatus | null} status
+ * @property {TaskPriority | null} priority
+ * @property {string | null} start_date
+ * @property {string | null} due_date
  * @property {number | null} estimated_duration_minutes
  */
 
-// Icons aren't part of PRIORITY_COLORS today, so we map them here. Add a
-// key whenever a new priority value is introduced; unmapped values fall
-// back to a generic flag icon.
-/** @type {Record<string, string>} */
-const PRIORITY_ICONS = {
-    low: "mdi-arrow-down",
-    medium: "mdi-minus",
-    high: "mdi-arrow-up",
-    urgent: "mdi-alert",
-};
-const FALLBACK_PRIORITY_ICON = "mdi-flag-outline";
-
 const route = useRoute();
 const router = useRouter();
-const store = useTasksStore();
+const tasksStore = useTasksStore();
+const projectsStore = useProjectsStore();
 
 const taskId = String(route.params.id);
 const boardId = computed(() => String(route.params.boardId ?? "default"));
 
 onMounted(() => {
-    store.get(boardId.value, taskId);
+    tasksStore.get(boardId.value, taskId);
+    projectsStore.fetch();
 });
 
+const projects = computed(() => projectsStore.items);
+
 /** @type {import('vue').ComputedRef<TaskRead | null>} */
-const task = computed(() => store.currentTask);
+const task = computed(() => tasksStore.currentTask);
 
 const editMode = ref(/** @type {EditMode} */ ("none"));
 const hasPendingChanges = ref(false);
@@ -74,12 +72,13 @@ const isEditingDetails = computed(() => editMode.value === "details");
  */
 function getTaskDraft(source) {
     return {
+        project_id: source?.project?.id ?? null,
         title: source?.title ?? "",
         description: source?.description ?? "",
-        status: source?.status ?? "",
-        priority: source?.priority ?? "",
-        start_date: source?.start_date ?? "",
-        due_date: source?.due_date ?? "",
+        status: source?.status ?? null,
+        priority: source?.priority ?? null,
+        start_date: source?.start_date ?? null,
+        due_date: source?.due_date ?? null,
         estimated_duration_minutes: source?.estimated_duration_minutes ?? null,
     };
 }
@@ -92,10 +91,6 @@ function copyDraftValues(target, source) {
     Object.assign(target, source);
 }
 
-/**
- * Local editable copy. We intentionally don't mutate `task` directly so
- * Cancel can restore everything without needing to refetch the task.
- */
 const draft = reactive(getTaskDraft(null));
 const originalDraft = reactive(getTaskDraft(null));
 
@@ -109,7 +104,8 @@ function syncDraftFromTask() {
     hasPendingChanges.value = false;
 }
 
-function beginEdit(/** @type {EditMode} */ mode) {
+/** @param {EditMode} mode */
+function beginEdit(mode) {
     if (!task.value) return;
 
     // If starting a new edit session, make sure the draft reflects
@@ -136,25 +132,10 @@ async function saveChanges() {
     isSaving.value = true;
 
     try {
-        const payload = {
-            title: draft.title,
-            description: draft.description,
-            status: draft.status,
-            priority: draft.priority,
-            start_date: draft.start_date || null,
-            due_date: draft.due_date || null,
-            estimated_duration_minutes:
-                draft.estimated_duration_minutes === ""
-                    ? null
-                    : draft.estimated_duration_minutes,
-        };
+        const payload = buildUpdatePayload(draft, originalDraft);
 
-        // Adjust this call if your store uses a different update signature.
-        await store.update(boardId.value, taskId, payload);
+        await tasksStore.update(boardId.value, taskId, payload);
 
-        // If `store.update()` updates currentTask, this keeps the draft
-        // aligned with it. Otherwise the local state is still synchronized
-        // with what we just submitted.
         copyDraftValues(originalDraft, draft);
 
         hasPendingChanges.value = false;
@@ -162,6 +143,38 @@ async function saveChanges() {
     } finally {
         isSaving.value = false;
     }
+}
+
+/**
+ * @template {keyof TaskDraft} K
+ * @param {Partial<TaskDraft>} target
+ * @param {K} key
+ * @param {TaskDraft[K]} value
+ */
+function setDraftField(target, key, value) {
+    target[key] = value;
+}
+
+/**
+ * @param {TaskDraft} draft
+ * @param {TaskDraft} originalDraft
+ * @returns {Partial<TaskCreate>}
+ */
+function buildUpdatePayload(draft, originalDraft) {
+    /** @type {Partial<TaskDraft>} */
+    const payload = {};
+    const draftFields = /** @type {(keyof TaskDraft)[]} */ (Object.keys(draft));
+
+    for (const field of draftFields) {
+        if (draft[field] !== originalDraft[field]) {
+            setDraftField(payload, field, draft[field]);
+        }
+    }
+
+    if (payload.status === null) delete payload.status;
+    if (payload.priority === null) delete payload.priority;
+
+    return /** @type {Partial<TaskCreate>} */ (payload);
 }
 
 watch(
@@ -200,12 +213,15 @@ const statusOptions = computed(() =>
     }))
 );
 
+/** @type {TaskPriority[]} */
+const taskPriorities = ["low", "medium", "high"];
+
 const priorityOptions = computed(() =>
-    Object.keys(PRIORITY_COLORS).map((value) => ({
+    taskPriorities.map((value) => ({
         value,
         label: value.toUpperCase(),
-        color: PRIORITY_COLORS[value] ?? "default",
-        icon: PRIORITY_ICONS[value] ?? FALLBACK_PRIORITY_ICON,
+        color: PRIORITY_COLORS[value],
+        icon: PRIORITY_ICONS[value],
     }))
 );
 
@@ -219,6 +235,44 @@ const selectedPriority = ref(
 const isSavingStatus = ref(false);
 const isSavingPriority = ref(false);
 
+const typeIcon = computed(() => {
+    const type = task.value?.type;
+    return type ? TYPE_ICONS[type] : FALLBACK_TYPE_ICON;
+});
+
+const typeLabel = computed(() => {
+    const type = task.value?.type;
+    return type ? TYPE_LABELS[type] : "Unknown";
+});
+
+const isOverdue = computed(() =>
+    task.value ? isTaskOverdue(task.value) : false
+);
+
+const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
+
+const startDate = computed({
+    get() {
+        return draft.start_date
+            ? new Date(draft.start_date).toISOString().slice(0, 10)
+            : "";
+    },
+    set(value) {
+        draft.start_date = value;
+    },
+});
+
+const dueDate = computed({
+    get() {
+        return draft.due_date
+            ? new Date(draft.due_date).toISOString().slice(0, 10)
+            : "";
+    },
+    set(value) {
+        draft.due_date = value;
+    },
+});
+
 watch(
     task,
     (newTask) => {
@@ -230,15 +284,11 @@ watch(
 );
 
 /**
- * Shared optimistic-update handler for single-field chip edits (status,
- * priority, ...). Persists the field immediately; on failure, reverts the
- * local ref so the chip snaps back to its previous value.
- *
  * @template {"status" | "priority"} F
  * @param {F} field
- * @param {{ value: string }} item Selected EditableVChip option.
- * @param {import('vue').Ref<string>} localRef Ref bound to the chip's v-model.
- * @param {import('vue').Ref<boolean>} savingRef Ref tracking in-flight save state.
+ * @param {{ value: string }} item
+ * @param {import('vue').Ref<string>} localRef
+ * @param {import('vue').Ref<boolean>} savingRef
  */
 async function updateTaskField(field, item, localRef, savingRef) {
     if (!task.value) return;
@@ -247,7 +297,7 @@ async function updateTaskField(field, item, localRef, savingRef) {
     savingRef.value = true;
 
     try {
-        await store.update(boardId.value, taskId, { [field]: item.value });
+        await tasksStore.update(boardId.value, taskId, { [field]: item.value });
     } catch (error) {
         localRef.value = previousValue;
         throw error;
@@ -270,22 +320,6 @@ function onPriorityChange(item) {
         isSavingPriority
     );
 }
-
-const typeIcon = computed(() => {
-    const type = task.value?.type;
-    return type ? TYPE_ICONS[type] : FALLBACK_TYPE_ICON;
-});
-
-const typeLabel = computed(() => {
-    const type = task.value?.type;
-    return type ? TYPE_LABELS[type] : "Unknown";
-});
-
-const isOverdue = computed(() =>
-    task.value ? isTaskOverdue(task.value) : false
-);
-
-const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
 </script>
 
 <template>
@@ -409,13 +443,13 @@ const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
                     </div>
 
                     <div v-if="isEditingDescription" class="description-editor">
-                        <v-textarea
-                            v-model="draft.description"
-                            label="Description"
-                            variant="outlined"
-                            rows="8"
-                            auto-grow
-                            hide-details
+                        <QuillEditor
+                            v-model:content="draft.description"
+                            content-type="html"
+                            theme="snow"
+                            placeholder="Add a description..."
+                            toolbar="minimal"
+                            class="mt-3"
                         />
                     </div>
 
@@ -493,17 +527,20 @@ const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
                     </dl>
 
                     <div v-else class="detail-editor">
-                        <v-text-field
-                            :model-value="task.project?.name ?? ''"
+                        <v-select
+                            v-model="draft.project_id"
+                            :items="projects"
+                            item-title="name"
+                            item-value="id"
                             label="Project"
                             variant="outlined"
                             density="compact"
                             hide-details
-                            disabled
+                            clearable
                         />
 
                         <v-text-field
-                            v-model="draft.start_date"
+                            v-model="startDate"
                             label="Start"
                             type="date"
                             variant="outlined"
@@ -512,7 +549,7 @@ const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
                         />
 
                         <v-text-field
-                            v-model="draft.due_date"
+                            v-model="dueDate"
                             label="Due"
                             type="date"
                             variant="outlined"

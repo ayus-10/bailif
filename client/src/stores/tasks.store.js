@@ -141,6 +141,10 @@ export const useTasksStore = defineStore("tasks", {
                     ];
                 }
 
+                if (task.id === this.currentTask?.id) {
+                    this.currentTask = task;
+                }
+
                 return task;
             } catch (err) {
                 this.errors[boardId] = err;
