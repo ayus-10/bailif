@@ -9,6 +9,7 @@ import {
 } from "@/constants/taskMeta";
 import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 import { useRouter } from "vue-router";
+import { htmlPreview } from "@/utils/htmlFormatters";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
@@ -105,7 +106,7 @@ const tagCount = computed(() => parseTags(props.task.tags).length);
                 v-if="task.description"
                 class="task-row__description text-caption"
             >
-                {{ task.description }}
+                {{ htmlPreview(task.description) }}
             </p>
         </div>
     </v-card>

@@ -1,11 +1,11 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { PRIORITY_COLORS } from "@/constants/tasks";
 import {
     STATUS_META,
     TYPE_ICONS,
     TYPE_LABELS,
-    FALLBACK_STATUS_META,
     FALLBACK_TYPE_ICON,
 } from "@/constants/taskMeta";
 import {
@@ -14,30 +14,262 @@ import {
     isTaskOverdue,
     parseTags,
 } from "@/utils/taskFormatters";
+import { htmlToText } from "@/utils/htmlFormatters";
 import { useTasksStore } from "@/stores/tasks.store";
-import { useRoute } from "vue-router";
+import EditableVChip from "@/components/layout/EditableVChip.vue";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {TaskRead["status"]} TaskStatus */
+/** @typedef {TaskRead["priority"]} TaskPriority */
+/** @typedef {"title" | "description" | "details" | "none"} EditMode */
+
+/**
+ * @typedef {Object} TaskDraft
+ * @property {string} title
+ * @property {string} description
+ * @property {TaskStatus | ""} status
+ * @property {TaskPriority | ""} priority
+ * @property {string} start_date
+ * @property {string} due_date
+ * @property {number | null} estimated_duration_minutes
+ */
+
+// Icons aren't part of PRIORITY_COLORS today, so we map them here. Add a
+// key whenever a new priority value is introduced; unmapped values fall
+// back to a generic flag icon.
+/** @type {Record<string, string>} */
+const PRIORITY_ICONS = {
+    low: "mdi-arrow-down",
+    medium: "mdi-minus",
+    high: "mdi-arrow-up",
+    urgent: "mdi-alert",
+};
+const FALLBACK_PRIORITY_ICON = "mdi-flag-outline";
 
 const route = useRoute();
+const router = useRouter();
+const store = useTasksStore();
 
 const taskId = String(route.params.id);
 const boardId = computed(() => String(route.params.boardId ?? "default"));
-
-const store = useTasksStore();
 
 onMounted(() => {
     store.get(boardId.value, taskId);
 });
 
-defineEmits(["back", "edit"]);
-
+/** @type {import('vue').ComputedRef<TaskRead | null>} */
 const task = computed(() => store.currentTask);
 
-const statusMeta = computed(() => {
-    const status = task.value?.status;
-    return status ? STATUS_META[status] : FALLBACK_STATUS_META;
-});
+const editMode = ref(/** @type {EditMode} */ ("none"));
+const hasPendingChanges = ref(false);
+const isSaving = ref(false);
+
+const isEditingTitle = computed(() => editMode.value === "title");
+const isEditingDescription = computed(() => editMode.value === "description");
+const isEditingDetails = computed(() => editMode.value === "details");
+
+/**
+ * @param {TaskRead | null | undefined} source
+ * @returns {TaskDraft}
+ */
+function getTaskDraft(source) {
+    return {
+        title: source?.title ?? "",
+        description: source?.description ?? "",
+        status: source?.status ?? "",
+        priority: source?.priority ?? "",
+        start_date: source?.start_date ?? "",
+        due_date: source?.due_date ?? "",
+        estimated_duration_minutes: source?.estimated_duration_minutes ?? null,
+    };
+}
+
+/**
+ * @param {TaskDraft} target
+ * @param {TaskDraft} source
+ */
+function copyDraftValues(target, source) {
+    Object.assign(target, source);
+}
+
+/**
+ * Local editable copy. We intentionally don't mutate `task` directly so
+ * Cancel can restore everything without needing to refetch the task.
+ */
+const draft = reactive(getTaskDraft(null));
+const originalDraft = reactive(getTaskDraft(null));
+
+function syncDraftFromTask() {
+    if (!task.value) return;
+
+    const values = getTaskDraft(task.value);
+    copyDraftValues(draft, values);
+    copyDraftValues(originalDraft, values);
+
+    hasPendingChanges.value = false;
+}
+
+function beginEdit(/** @type {EditMode} */ mode) {
+    if (!task.value) return;
+
+    // If starting a new edit session, make sure the draft reflects
+    // the currently displayed task.
+    if (editMode.value === "none") {
+        syncDraftFromTask();
+    }
+
+    editMode.value = mode;
+}
+
+function cancelChanges() {
+    copyDraftValues(draft, originalDraft);
+    hasPendingChanges.value = false;
+    editMode.value = "none";
+}
+
+async function saveChanges() {
+    if (!task.value || !hasPendingChanges.value) {
+        editMode.value = "none";
+        return;
+    }
+
+    isSaving.value = true;
+
+    try {
+        const payload = {
+            title: draft.title,
+            description: draft.description,
+            status: draft.status,
+            priority: draft.priority,
+            start_date: draft.start_date || null,
+            due_date: draft.due_date || null,
+            estimated_duration_minutes:
+                draft.estimated_duration_minutes === ""
+                    ? null
+                    : draft.estimated_duration_minutes,
+        };
+
+        // Adjust this call if your store uses a different update signature.
+        await store.update(boardId.value, taskId, payload);
+
+        // If `store.update()` updates currentTask, this keeps the draft
+        // aligned with it. Otherwise the local state is still synchronized
+        // with what we just submitted.
+        copyDraftValues(originalDraft, draft);
+
+        hasPendingChanges.value = false;
+        editMode.value = "none";
+    } finally {
+        isSaving.value = false;
+    }
+}
+
+watch(
+    task,
+    (newTask) => {
+        if (!newTask) return;
+
+        // Don't overwrite local edits while the user is editing.
+        if (editMode.value === "none") {
+            syncDraftFromTask();
+        }
+    },
+    { immediate: true }
+);
+
+watch(
+    draft,
+    () => {
+        if (editMode.value === "none") {
+            hasPendingChanges.value = false;
+            return;
+        }
+
+        hasPendingChanges.value =
+            JSON.stringify(draft) !== JSON.stringify(originalDraft);
+    },
+    { deep: true }
+);
+
+const statusOptions = computed(() =>
+    Object.entries(STATUS_META).map(([value, meta]) => ({
+        value,
+        label: meta.label,
+        color: meta.color,
+        icon: meta.icon,
+    }))
+);
+
+const priorityOptions = computed(() =>
+    Object.keys(PRIORITY_COLORS).map((value) => ({
+        value,
+        label: value.toUpperCase(),
+        color: PRIORITY_COLORS[value] ?? "default",
+        icon: PRIORITY_ICONS[value] ?? FALLBACK_PRIORITY_ICON,
+    }))
+);
+
+const selectedStatus = ref(
+    /** @type {TaskStatus | ""} */ (task.value?.status ?? "")
+);
+const selectedPriority = ref(
+    /** @type {TaskPriority | ""} */ (task.value?.priority ?? "")
+);
+
+const isSavingStatus = ref(false);
+const isSavingPriority = ref(false);
+
+watch(
+    task,
+    (newTask) => {
+        if (!newTask) return;
+        selectedStatus.value = newTask.status;
+        selectedPriority.value = newTask.priority;
+    },
+    { immediate: true }
+);
+
+/**
+ * Shared optimistic-update handler for single-field chip edits (status,
+ * priority, ...). Persists the field immediately; on failure, reverts the
+ * local ref so the chip snaps back to its previous value.
+ *
+ * @template {"status" | "priority"} F
+ * @param {F} field
+ * @param {{ value: string }} item Selected EditableVChip option.
+ * @param {import('vue').Ref<string>} localRef Ref bound to the chip's v-model.
+ * @param {import('vue').Ref<boolean>} savingRef Ref tracking in-flight save state.
+ */
+async function updateTaskField(field, item, localRef, savingRef) {
+    if (!task.value) return;
+
+    const previousValue = task.value[field];
+    savingRef.value = true;
+
+    try {
+        await store.update(boardId.value, taskId, { [field]: item.value });
+    } catch (error) {
+        localRef.value = previousValue;
+        throw error;
+    } finally {
+        savingRef.value = false;
+    }
+}
+
+/** @param {{ value: TaskStatus }} item */
+function onStatusChange(item) {
+    return updateTaskField("status", item, selectedStatus, isSavingStatus);
+}
+
+/** @param {{ value: TaskPriority }} item */
+function onPriorityChange(item) {
+    return updateTaskField(
+        "priority",
+        item,
+        selectedPriority,
+        isSavingPriority
+    );
+}
 
 const typeIcon = computed(() => {
     const type = task.value?.type;
@@ -54,17 +286,6 @@ const isOverdue = computed(() =>
 );
 
 const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
-
-// Rich-text-ready paragraph split: a blank line breaks a new paragraph, a
-// single newline breaks a line within one (via `white-space: pre-wrap`).
-// Swap this for a real renderer (markdown, Tiptap JSON, etc.) later without
-// touching the surrounding `.prose` layout.
-const descriptionParagraphs = computed(() =>
-    (task.value?.description ?? "")
-        .split(/\n{2,}/)
-        .map((p) => p.trim())
-        .filter(Boolean)
-);
 </script>
 
 <template>
@@ -74,7 +295,7 @@ const descriptionParagraphs = computed(() =>
                 icon="mdi-arrow-left"
                 variant="text"
                 density="comfortable"
-                @click="$emit('back')"
+                @click="router.back()"
             />
 
             <div v-if="task.project" class="task-page__crumb">
@@ -84,13 +305,26 @@ const descriptionParagraphs = computed(() =>
 
             <v-spacer />
 
-            <v-btn
-                variant="tonal"
-                prepend-icon="mdi-pencil-outline"
-                @click="$emit('edit')"
-            >
-                Edit
-            </v-btn>
+            <template v-if="editMode !== 'none'">
+                <v-btn
+                    variant="text"
+                    :disabled="isSaving"
+                    @click="cancelChanges"
+                >
+                    Cancel
+                </v-btn>
+
+                <v-btn
+                    color="primary"
+                    variant="tonal"
+                    prepend-icon="mdi-content-save-outline"
+                    :disabled="!hasPendingChanges"
+                    :loading="isSaving"
+                    @click="saveChanges"
+                >
+                    Save
+                </v-btn>
+            </template>
         </div>
 
         <header class="task-page__header">
@@ -99,25 +333,55 @@ const descriptionParagraphs = computed(() =>
                 <span>{{ typeLabel }}</span>
             </div>
 
-            <h1 class="task-page__title">{{ task.title }}</h1>
+            <div
+                class="editable-field editable-field--title"
+                :class="{ 'editable-field--editing': isEditingTitle }"
+            >
+                <v-text-field
+                    v-if="isEditingTitle"
+                    v-model="draft.title"
+                    label="Title"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details
+                    autofocus
+                />
+
+                <div v-else class="editable-field__display">
+                    <h1 class="task-page__title">
+                        {{ task.title }}
+                    </h1>
+
+                    <v-btn
+                        class="editable-field__edit-btn"
+                        icon="mdi-pencil-outline"
+                        size="x-small"
+                        variant="text"
+                        density="comfortable"
+                        aria-label="Edit title"
+                        @click="beginEdit('title')"
+                    />
+                </div>
+            </div>
 
             <div class="task-page__badges">
-                <v-chip
+                <EditableVChip
+                    v-model="selectedStatus"
+                    :items="statusOptions"
+                    :disabled="isSavingStatus"
                     size="small"
                     variant="tonal"
-                    :color="statusMeta.color"
-                    :prepend-icon="statusMeta.icon"
-                >
-                    {{ statusMeta.label }}
-                </v-chip>
+                    @change="onStatusChange"
+                />
 
-                <v-chip
+                <EditableVChip
+                    v-model="selectedPriority"
+                    :items="priorityOptions"
+                    :disabled="isSavingPriority"
                     size="small"
                     variant="flat"
-                    :color="PRIORITY_COLORS[task.priority] ?? 'default'"
-                >
-                    {{ task.priority.toUpperCase() }} priority
-                </v-chip>
+                    @change="onPriorityChange"
+                />
 
                 <span v-if="isOverdue" class="task-page__overdue-flag">
                     <v-icon icon="mdi-calendar-alert" size="14" />
@@ -129,13 +393,36 @@ const descriptionParagraphs = computed(() =>
         <div class="task-page__body">
             <main class="task-page__main">
                 <section class="panel">
-                    <h2 class="panel__label">Description</h2>
+                    <div class="panel__heading">
+                        <h2 class="panel__label">Description</h2>
 
-                    <div v-if="descriptionParagraphs.length" class="prose">
-                        <p v-for="(para, i) in descriptionParagraphs" :key="i">
-                            {{ para }}
-                        </p>
+                        <v-btn
+                            v-if="!isEditingDescription"
+                            class="panel__edit-btn"
+                            icon="mdi-pencil-outline"
+                            size="x-small"
+                            variant="text"
+                            density="comfortable"
+                            aria-label="Edit description"
+                            @click="beginEdit('description')"
+                        />
                     </div>
+
+                    <div v-if="isEditingDescription" class="description-editor">
+                        <v-textarea
+                            v-model="draft.description"
+                            label="Description"
+                            variant="outlined"
+                            rows="8"
+                            auto-grow
+                            hide-details
+                        />
+                    </div>
+
+                    <div v-else-if="task.description" class="prose">
+                        {{ htmlToText(task.description) }}
+                    </div>
+
                     <p v-else class="panel__empty">No description yet.</p>
                 </section>
 
@@ -150,24 +437,49 @@ const descriptionParagraphs = computed(() =>
             </main>
 
             <aside class="task-page__sidebar">
-                <div class="panel">
-                    <h2 class="panel__label">Details</h2>
+                <div
+                    class="panel"
+                    :class="{
+                        'panel--editing': isEditingDetails,
+                    }"
+                >
+                    <div class="panel__heading">
+                        <h2 class="panel__label">Details</h2>
 
-                    <dl class="detail-list">
+                        <v-btn
+                            v-if="!isEditingDetails"
+                            class="panel__edit-btn"
+                            icon="mdi-pencil-outline"
+                            size="x-small"
+                            variant="text"
+                            density="comfortable"
+                            aria-label="Edit details"
+                            @click="beginEdit('details')"
+                        />
+                    </div>
+
+                    <dl v-if="!isEditingDetails" class="detail-list">
                         <div class="detail-list__row">
                             <dt>Project</dt>
-                            <dd>{{ task.project?.name ?? "—" }}</dd>
+                            <dd>
+                                {{ task.project?.name ?? "—" }}
+                            </dd>
                         </div>
+
                         <div class="detail-list__row">
                             <dt>Start</dt>
-                            <dd>{{ formatDate(task.start_date) ?? "—" }}</dd>
+                            <dd>
+                                {{ formatDate(task.start_date) ?? "—" }}
+                            </dd>
                         </div>
+
                         <div class="detail-list__row">
                             <dt>Due</dt>
                             <dd :class="{ overdue: isOverdue }">
                                 {{ formatDate(task.due_date) ?? "—" }}
                             </dd>
                         </div>
+
                         <div class="detail-list__row">
                             <dt>Estimate</dt>
                             <dd>
@@ -179,10 +491,50 @@ const descriptionParagraphs = computed(() =>
                             </dd>
                         </div>
                     </dl>
+
+                    <div v-else class="detail-editor">
+                        <v-text-field
+                            :model-value="task.project?.name ?? ''"
+                            label="Project"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                            disabled
+                        />
+
+                        <v-text-field
+                            v-model="draft.start_date"
+                            label="Start"
+                            type="date"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                        />
+
+                        <v-text-field
+                            v-model="draft.due_date"
+                            label="Due"
+                            type="date"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                        />
+
+                        <v-text-field
+                            v-model.number="draft.estimated_duration_minutes"
+                            label="Estimate (minutes)"
+                            type="number"
+                            min="0"
+                            variant="outlined"
+                            density="compact"
+                            hide-details
+                        />
+                    </div>
                 </div>
 
                 <div v-if="tags.length" class="panel">
                     <h2 class="panel__label">Tags</h2>
+
                     <div class="tag-list">
                         <v-chip
                             v-for="tag in tags"
@@ -239,7 +591,7 @@ const descriptionParagraphs = computed(() =>
 }
 
 .task-page__title {
-    margin: 0 0 14px;
+    margin: 0;
     font-size: 1.75rem;
     font-weight: 600;
     line-height: 1.25;
@@ -250,6 +602,15 @@ const descriptionParagraphs = computed(() =>
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.task-page__status-select {
+    width: 160px;
+}
+
+.task-page__priority-select {
+    width: 160px;
 }
 
 .task-page__overdue-flag {
@@ -302,6 +663,27 @@ const descriptionParagraphs = computed(() =>
     background: rgb(var(--v-theme-surface));
 }
 
+.panel--placeholder {
+    background: transparent;
+    border-style: dashed;
+}
+
+.panel--editing {
+    border-color: rgba(var(--v-theme-primary), 0.35);
+}
+
+.panel__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.panel__heading .panel__label {
+    margin-bottom: 0;
+}
+
 .panel__label {
     margin: 0 0 14px;
     font-size: 0.75rem;
@@ -311,11 +693,45 @@ const descriptionParagraphs = computed(() =>
     color: rgba(var(--v-theme-on-surface), 0.55);
 }
 
+.panel__edit-btn {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.panel:hover .panel__edit-btn,
+.panel__edit-btn:focus-visible {
+    opacity: 1;
+}
+
 .panel__empty {
     margin: 0;
     font-size: 0.875rem;
     font-style: italic;
     color: rgba(var(--v-theme-on-surface), 0.5);
+}
+
+.editable-field {
+    position: relative;
+}
+
+.editable-field__display {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.editable-field__edit-btn {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.editable-field:hover .editable-field__edit-btn,
+.editable-field__edit-btn:focus-visible {
+    opacity: 1;
+}
+
+.editable-field--editing {
+    max-width: 700px;
 }
 
 .prose {
@@ -334,9 +750,8 @@ const descriptionParagraphs = computed(() =>
     margin-bottom: 0;
 }
 
-.panel--placeholder {
-    background: transparent;
-    border-style: dashed;
+.description-editor {
+    width: 100%;
 }
 
 .gantt-placeholder {
@@ -384,6 +799,12 @@ const descriptionParagraphs = computed(() =>
 .detail-list__row dd.overdue {
     color: rgb(var(--v-theme-error));
     font-weight: 600;
+}
+
+.detail-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .tag-list {
