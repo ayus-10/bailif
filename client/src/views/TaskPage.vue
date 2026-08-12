@@ -1,5 +1,5 @@
 <script setup>
-import { Quill, QuillEditor } from "@vueup/vue-quill";
+import { QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import EditableVChip from "@/components/layout/EditableVChip.vue";
@@ -12,8 +12,8 @@ import {
     isTaskOverdue,
     parseTags,
 } from "@/utils/taskFormatters";
-import "@/plugins/customCheckboxBlot";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
+import "@/components/quill-editor.css";
 import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
@@ -110,6 +110,11 @@ const isOverdue = computed(() =>
 );
 
 const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
+
+const toolbarOptions = [
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
+];
 
 const startDate = computed({
     get() {
@@ -391,7 +396,7 @@ function onPriorityChange(item) {
                             content-type="html"
                             theme="snow"
                             placeholder="Add a description..."
-                            toolbar="minimal"
+                            :toolbar="toolbarOptions"
                         />
                     </div>
 
