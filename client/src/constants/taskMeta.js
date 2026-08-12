@@ -1,4 +1,8 @@
 /** @typedef {import('@/types/task').TaskType} TaskType */
+/** @typedef {import('@/types/task').TaskPriority} TaskPriority */
+
+/** @type {TaskPriority[]} */
+export const TASK_PRIORITIES = ["low", "medium", "high"];
 
 export const STATUS_META = {
     open: { color: "grey", icon: "mdi-circle-outline", label: "Open" },
@@ -16,29 +20,3 @@ export const STATUS_META = {
         label: "Cancelled",
     },
 };
-
-export const TYPE_ICONS =
-    /** @type {Record<TaskType, string>} */
-    ({
-        bug: "mdi-bug-outline",
-        task: "mdi-star-outline",
-        subtask: "mdi-checkbox-marked-circle-outline",
-        epic: "mdi-flag-outline",
-    });
-
-export const TYPE_LABELS =
-    /** @type {Record<TaskType, string>} */
-    ({
-        bug: "Bug",
-        task: "Task",
-        subtask: "Subtask",
-        epic: "Epic",
-    });
-
-export const FALLBACK_STATUS_META = {
-    color: "grey",
-    icon: "mdi-help-circle-outline",
-    label: "Unknown",
-};
-
-export const FALLBACK_TYPE_ICON = "mdi-checkbox-blank-circle-outline";
