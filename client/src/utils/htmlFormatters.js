@@ -22,8 +22,8 @@ export function isHtmlEmpty(html) {
     const doc = new DOMParser().parseFromString(html, "text/html");
 
     // real text content (nbsp counts as whitespace)
-    const text = doc.body.textContent.replace(/\u00a0/g, " ").trim();
-    if (text.length > 0) return false;
+    const text = doc.body.textContent?.replace(/\u00a0/g, " ").trim();
+    if (text?.length) return false;
 
     return true;
 }

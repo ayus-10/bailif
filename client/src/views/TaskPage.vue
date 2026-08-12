@@ -1,17 +1,18 @@
 <script setup>
-import { QuillEditor } from "@vueup/vue-quill";
+import { Quill, QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import EditableVChip from "@/components/layout/EditableVChip.vue";
 import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
 import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
-import { htmlToText, isHtmlEmpty } from "@/utils/htmlFormatters";
+import { isHtmlEmpty } from "@/utils/htmlFormatters";
 import {
     formatDate,
     formatDuration,
     isTaskOverdue,
     parseTags,
 } from "@/utils/taskFormatters";
+import "@/plugins/customCheckboxBlot";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
@@ -396,11 +397,10 @@ function onPriorityChange(item) {
 
                     <div
                         v-else-if="!isHtmlEmpty(task.description)"
+                        v-html="task.description"
                         class="prose"
                         @click="beginEdit('description')"
-                    >
-                        {{ htmlToText(task.description) }}
-                    </div>
+                    ></div>
 
                     <p
                         v-else
