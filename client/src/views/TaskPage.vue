@@ -3,14 +3,9 @@ import { QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import EditableVChip from "@/components/layout/EditableVChip.vue";
-import {
-    FALLBACK_TYPE_ICON,
-    STATUS_META,
-    TYPE_ICONS,
-    TYPE_LABELS,
-} from "@/constants/taskMeta";
+import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
 import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
-import { htmlToText } from "@/utils/htmlFormatters";
+import { htmlToText, isHtmlEmpty } from "@/utils/htmlFormatters";
 import {
     formatDate,
     formatDuration,
@@ -22,22 +17,11 @@ import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskDraft} TaskDraft */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 /** @typedef {TaskRead["status"]} TaskStatus */
 /** @typedef {TaskRead["priority"]} TaskPriority */
 /** @typedef {"title" | "description" | "details" | "none"} EditMode */
-
-/**
- * @typedef {Object} TaskDraft
- * @property {string | null} project_id
- * @property {string} title
- * @property {string} description
- * @property {TaskStatus | null} status
- * @property {TaskPriority | null} priority
- * @property {string | null} start_date
- * @property {string | null} due_date
- * @property {number | null} estimated_duration_minutes
- */
 
 const route = useRoute();
 const router = useRouter();
@@ -53,8 +37,6 @@ onMounted(() => {
 });
 
 const projects = computed(() => projectsStore.items);
-
-/** @type {import('vue').ComputedRef<TaskRead | null>} */
 const task = computed(() => tasksStore.currentTask);
 
 const editMode = ref(/** @type {EditMode} */ ("none"));
@@ -64,6 +46,91 @@ const isSaving = ref(false);
 const isEditingTitle = computed(() => editMode.value === "title");
 const isEditingDescription = computed(() => editMode.value === "description");
 const isEditingDetails = computed(() => editMode.value === "details");
+
+const draft = reactive(getTaskDraft(null));
+const originalDraft = reactive(getTaskDraft(null));
+
+const selectedStatus = ref(task.value?.status ?? "");
+const selectedPriority = ref(task.value?.priority ?? "");
+
+watch(
+    draft,
+    () => {
+        if (editMode.value === "none") {
+            hasPendingChanges.value = false;
+            return;
+        }
+
+        hasPendingChanges.value =
+            JSON.stringify(draft) !== JSON.stringify(originalDraft);
+    },
+    { deep: true }
+);
+
+watch(
+    task,
+    (newTask) => {
+        if (!newTask) return;
+
+        selectedStatus.value = newTask.status;
+        selectedPriority.value = newTask.priority;
+
+        // Don't overwrite local edits while the user is editing.
+        if (editMode.value === "none") {
+            syncDraftFromTask();
+        }
+    },
+    { immediate: true }
+);
+
+const statusOptions = computed(() =>
+    Object.entries(STATUS_META).map(([value, meta]) => ({
+        value,
+        label: meta.label,
+        color: meta.color,
+        icon: meta.icon,
+    }))
+);
+
+const priorityOptions = computed(() =>
+    TASK_PRIORITIES.map((value) => ({
+        value,
+        label: value.toUpperCase(),
+        color: PRIORITY_COLORS[value],
+        icon: PRIORITY_ICONS[value],
+    }))
+);
+
+const isSavingStatus = ref(false);
+const isSavingPriority = ref(false);
+
+const isOverdue = computed(() =>
+    task.value ? isTaskOverdue(task.value) : false
+);
+
+const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
+
+const startDate = computed({
+    get() {
+        return draft.start_date
+            ? new Date(draft.start_date).toISOString().slice(0, 10)
+            : "";
+    },
+    set(value) {
+        draft.start_date = value;
+    },
+});
+
+const dueDate = computed({
+    get() {
+        return draft.due_date
+            ? new Date(draft.due_date).toISOString().slice(0, 10)
+            : "";
+    },
+    set(value) {
+        draft.due_date = value;
+    },
+});
 
 /**
  * @param {TaskRead | null | undefined} source
@@ -90,9 +157,6 @@ function copyDraftValues(target, source) {
     Object.assign(target, source);
 }
 
-const draft = reactive(getTaskDraft(null));
-const originalDraft = reactive(getTaskDraft(null));
-
 function syncDraftFromTask() {
     if (!task.value) return;
 
@@ -107,8 +171,6 @@ function syncDraftFromTask() {
 function beginEdit(mode) {
     if (!task.value) return;
 
-    // If starting a new edit session, make sure the draft reflects
-    // the currently displayed task.
     if (editMode.value === "none") {
         syncDraftFromTask();
     }
@@ -145,16 +207,6 @@ async function saveChanges() {
 }
 
 /**
- * @template {keyof TaskDraft} K
- * @param {Partial<TaskDraft>} target
- * @param {K} key
- * @param {TaskDraft[K]} value
- */
-function setDraftField(target, key, value) {
-    target[key] = value;
-}
-
-/**
  * @param {TaskDraft} draft
  * @param {TaskDraft} originalDraft
  * @returns {Partial<TaskCreate>}
@@ -166,7 +218,7 @@ function buildUpdatePayload(draft, originalDraft) {
 
     for (const field of draftFields) {
         if (draft[field] !== originalDraft[field]) {
-            setDraftField(payload, field, draft[field]);
+            Object.assign(payload, { [field]: draft[field] });
         }
     }
 
@@ -175,112 +227,6 @@ function buildUpdatePayload(draft, originalDraft) {
 
     return /** @type {Partial<TaskCreate>} */ (payload);
 }
-
-watch(
-    task,
-    (newTask) => {
-        if (!newTask) return;
-
-        // Don't overwrite local edits while the user is editing.
-        if (editMode.value === "none") {
-            syncDraftFromTask();
-        }
-    },
-    { immediate: true }
-);
-
-watch(
-    draft,
-    () => {
-        if (editMode.value === "none") {
-            hasPendingChanges.value = false;
-            return;
-        }
-
-        hasPendingChanges.value =
-            JSON.stringify(draft) !== JSON.stringify(originalDraft);
-    },
-    { deep: true }
-);
-
-const statusOptions = computed(() =>
-    Object.entries(STATUS_META).map(([value, meta]) => ({
-        value,
-        label: meta.label,
-        color: meta.color,
-        icon: meta.icon,
-    }))
-);
-
-/** @type {TaskPriority[]} */
-const taskPriorities = ["low", "medium", "high"];
-
-const priorityOptions = computed(() =>
-    taskPriorities.map((value) => ({
-        value,
-        label: value.toUpperCase(),
-        color: PRIORITY_COLORS[value],
-        icon: PRIORITY_ICONS[value],
-    }))
-);
-
-const selectedStatus = ref(
-    /** @type {TaskStatus | ""} */ (task.value?.status ?? "")
-);
-const selectedPriority = ref(
-    /** @type {TaskPriority | ""} */ (task.value?.priority ?? "")
-);
-
-const isSavingStatus = ref(false);
-const isSavingPriority = ref(false);
-
-const typeIcon = computed(() => {
-    const type = task.value?.type;
-    return type ? TYPE_ICONS[type] : FALLBACK_TYPE_ICON;
-});
-
-const typeLabel = computed(() => {
-    const type = task.value?.type;
-    return type ? TYPE_LABELS[type] : "Unknown";
-});
-
-const isOverdue = computed(() =>
-    task.value ? isTaskOverdue(task.value) : false
-);
-
-const tags = computed(() => (task.value ? parseTags(task.value.tags) : []));
-
-const startDate = computed({
-    get() {
-        return draft.start_date
-            ? new Date(draft.start_date).toISOString().slice(0, 10)
-            : "";
-    },
-    set(value) {
-        draft.start_date = value;
-    },
-});
-
-const dueDate = computed({
-    get() {
-        return draft.due_date
-            ? new Date(draft.due_date).toISOString().slice(0, 10)
-            : "";
-    },
-    set(value) {
-        draft.due_date = value;
-    },
-});
-
-watch(
-    task,
-    (newTask) => {
-        if (!newTask) return;
-        selectedStatus.value = newTask.status;
-        selectedPriority.value = newTask.priority;
-    },
-    { immediate: true }
-);
 
 /**
  * @template {"status" | "priority"} F
@@ -322,25 +268,23 @@ function onPriorityChange(item) {
 </script>
 
 <template>
-    <div v-if="task" class="task-page">
+    <div v-if="task" class="task-page" @contextmenu.prevent>
         <div class="task-page__topbar">
             <v-btn
+                class="task-page__back"
                 icon="mdi-arrow-left"
                 variant="text"
                 density="comfortable"
+                aria-label="Go back"
                 @click="router.back()"
             />
 
-            <div v-if="task.project" class="task-page__crumb">
-                <v-icon icon="mdi-folder-outline" size="14" />
-                <span>{{ task.project.name }}</span>
-            </div>
-
             <v-spacer />
 
-            <template v-if="editMode !== 'none'">
+            <div v-if="editMode !== 'none'" class="task-page__actions">
                 <v-btn
                     variant="text"
+                    density="comfortable"
                     :disabled="isSaving"
                     @click="cancelChanges"
                 >
@@ -350,6 +294,7 @@ function onPriorityChange(item) {
                 <v-btn
                     color="primary"
                     variant="tonal"
+                    density="comfortable"
                     prepend-icon="mdi-content-save-outline"
                     :disabled="!hasPendingChanges"
                     :loading="isSaving"
@@ -357,18 +302,15 @@ function onPriorityChange(item) {
                 >
                     Save
                 </v-btn>
-            </template>
+            </div>
         </div>
 
         <header class="task-page__header">
-            <div class="task-page__eyebrow">
-                <v-icon :icon="typeIcon" size="14" />
-                <span>{{ typeLabel }}</span>
-            </div>
-
             <div
                 class="editable-field editable-field--title"
-                :class="{ 'editable-field--editing': isEditingTitle }"
+                :class="{
+                    'editable-field--editing': isEditingTitle,
+                }"
             >
                 <v-text-field
                     v-if="isEditingTitle"
@@ -378,6 +320,7 @@ function onPriorityChange(item) {
                     density="comfortable"
                     hide-details
                     autofocus
+                    @keydown.escape="cancelChanges"
                 />
 
                 <div v-else class="editable-field__display">
@@ -412,12 +355,12 @@ function onPriorityChange(item) {
                     :items="priorityOptions"
                     :disabled="isSavingPriority"
                     size="small"
-                    variant="flat"
+                    variant="tonal"
                     @change="onPriorityChange"
                 />
 
                 <span v-if="isOverdue" class="task-page__overdue-flag">
-                    <v-icon icon="mdi-calendar-alert" size="14" />
+                    <v-icon icon="mdi-calendar-alert" size="15" />
                     Overdue
                 </span>
             </div>
@@ -448,29 +391,29 @@ function onPriorityChange(item) {
                             theme="snow"
                             placeholder="Add a description..."
                             toolbar="minimal"
-                            class="mt-3"
                         />
                     </div>
 
-                    <div v-else-if="task.description" class="prose">
+                    <div
+                        v-else-if="!isHtmlEmpty(task.description)"
+                        class="prose"
+                        @click="beginEdit('description')"
+                    >
                         {{ htmlToText(task.description) }}
                     </div>
 
-                    <p v-else class="panel__empty">No description yet.</p>
-                </section>
-
-                <section class="panel panel--placeholder">
-                    <h2 class="panel__label">Timeline</h2>
-
-                    <div class="gantt-placeholder">
-                        <v-icon icon="mdi-chart-gantt" size="26" />
-                        <p>Related-task timeline is coming soon.</p>
-                    </div>
+                    <p
+                        v-else
+                        class="panel__empty"
+                        @click="beginEdit('description')"
+                    >
+                        No description yet.
+                    </p>
                 </section>
             </main>
 
             <aside class="task-page__sidebar">
-                <div
+                <section
                     class="panel"
                     :class="{
                         'panel--editing': isEditingDetails,
@@ -566,9 +509,9 @@ function onPriorityChange(item) {
                             hide-details
                         />
                     </div>
-                </div>
+                </section>
 
-                <div v-if="tags.length" class="panel">
+                <section v-if="tags.length" class="panel">
                     <h2 class="panel__label">Tags</h2>
 
                     <div class="tag-list">
@@ -581,7 +524,7 @@ function onPriorityChange(item) {
                             {{ tag }}
                         </v-chip>
                     </div>
-                </div>
+                </section>
             </aside>
         </div>
     </div>
@@ -589,123 +532,111 @@ function onPriorityChange(item) {
 
 <style scoped>
 .task-page {
-    max-width: 960px;
     margin: 0 auto;
-    padding: 24px 20px 64px;
+    padding: 20px 20px 56px;
+    color: rgb(var(--v-theme-on-surface));
+    user-select: none;
+}
+
+.task-page :deep(input),
+.task-page :deep(textarea),
+.task-page :deep(.ql-editor) {
+    user-select: text;
 }
 
 .task-page__topbar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    min-height: 40px;
 }
 
-.task-page__crumb {
+.task-page__back {
+    flex: 0 0 auto;
+}
+
+.task-page__actions {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.8125rem;
-    color: rgba(var(--v-theme-on-surface), 0.65);
+    gap: 4px;
 }
 
 .task-page__header {
-    padding: 20px 0 28px;
-    margin-bottom: 28px;
+    padding: 18px 0 24px;
+    margin-bottom: 24px;
     border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
 
-.task-page__eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: rgba(var(--v-theme-on-surface), 0.55);
-}
-
 .task-page__title {
+    min-width: 0;
     margin: 0;
     font-size: 1.75rem;
     font-weight: 600;
     line-height: 1.25;
+    letter-spacing: -0.015em;
 }
 
 .task-page__badges {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-top: 14px;
-}
-
-.task-page__status-select {
-    width: 160px;
-}
-
-.task-page__priority-select {
-    width: 160px;
+    margin-top: 12px;
 }
 
 .task-page__overdue-flag {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    gap: 5px;
+    min-height: 28px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: rgba(var(--v-theme-error), 0.08);
     color: rgb(var(--v-theme-error));
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
 .task-page__body {
     display: grid;
-    grid-template-columns: 1fr 280px;
+    grid-template-columns: minmax(0, 1fr) 280px;
     align-items: start;
-    gap: 28px;
-}
-
-@media (max-width: 760px) {
-    .task-page__body {
-        grid-template-columns: 1fr;
-    }
+    gap: 24px;
 }
 
 .task-page__main {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     min-width: 0;
 }
 
 .task-page__sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
     position: sticky;
     top: 20px;
-}
-
-@media (max-width: 760px) {
-    .task-page__sidebar {
-        position: static;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .panel {
-    padding: 20px 22px;
+    padding: 16px 18px;
     border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-    border-radius: 12px;
+    border-radius: 10px;
     background: rgb(var(--v-theme-surface));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.035);
+    transition:
+        border-color 140ms ease,
+        box-shadow 140ms ease;
 }
 
-.panel--placeholder {
-    background: transparent;
-    border-style: dashed;
+.panel:hover {
+    border-color: rgba(var(--v-theme-on-surface), 0.12);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .panel--editing {
-    border-color: rgba(var(--v-theme-primary), 0.35);
+    box-shadow: 0 2px 4px rgba(var(--v-theme-primary), 0.06);
 }
 
 .panel__heading {
@@ -713,57 +644,60 @@ function onPriorityChange(item) {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 14px;
-}
-
-.panel__heading .panel__label {
-    margin-bottom: 0;
+    margin-bottom: 12px;
 }
 
 .panel__label {
-    margin: 0 0 14px;
+    margin: 0;
+    color: rgba(var(--v-theme-on-surface), 0.55);
     font-size: 0.75rem;
     font-weight: 600;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: rgba(var(--v-theme-on-surface), 0.55);
+    line-height: 1.4;
+    text-transform: uppercase;
 }
 
-.panel__edit-btn {
+.panel__edit-btn,
+.editable-field__edit-btn {
     opacity: 0;
-    transition: opacity 0.15s ease;
+    transition:
+        opacity 120ms ease,
+        background-color 120ms ease,
+        color 120ms ease;
 }
 
 .panel:hover .panel__edit-btn,
-.panel__edit-btn:focus-visible {
+.panel__edit-btn:focus-visible,
+.editable-field:hover .editable-field__edit-btn,
+.editable-field__edit-btn:focus-visible {
     opacity: 1;
+}
+
+.panel__edit-btn:focus-visible,
+.editable-field__edit-btn:focus-visible,
+.task-page__back:focus-visible {
+    outline: 2px solid rgb(var(--v-theme-primary));
+    outline-offset: 2px;
 }
 
 .panel__empty {
     margin: 0;
+    color: rgba(var(--v-theme-on-surface), 0.5);
+    user-select: text;
     font-size: 0.875rem;
     font-style: italic;
-    color: rgba(var(--v-theme-on-surface), 0.5);
 }
 
 .editable-field {
     position: relative;
+    min-width: 0;
 }
 
 .editable-field__display {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 4px;
-}
-
-.editable-field__edit-btn {
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.editable-field:hover .editable-field__edit-btn,
-.editable-field__edit-btn:focus-visible {
-    opacity: 1;
+    min-width: 0;
+    gap: 10px;
 }
 
 .editable-field--editing {
@@ -771,10 +705,10 @@ function onPriorityChange(item) {
 }
 
 .prose {
-    max-width: 68ch;
+    color: rgba(var(--v-theme-on-surface), 0.87);
     font-size: 0.9375rem;
     line-height: 1.7;
-    color: rgba(var(--v-theme-on-surface), 0.87);
+    user-select: text;
 }
 
 .prose p {
@@ -788,21 +722,9 @@ function onPriorityChange(item) {
 
 .description-editor {
     width: 100%;
-}
-
-.gantt-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 28px 16px;
-    color: rgba(var(--v-theme-on-surface), 0.4);
-    text-align: center;
-}
-
-.gantt-placeholder p {
-    margin: 0;
-    font-size: 0.8125rem;
+    overflow: hidden;
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+    border-radius: 8px;
 }
 
 .detail-list {
@@ -810,12 +732,13 @@ function onPriorityChange(item) {
 }
 
 .detail-list__row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: center;
     gap: 12px;
-    padding: 7px 0;
-    font-size: 0.8125rem;
+    padding: 6px 0;
     border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+    font-size: 0.8125rem;
 }
 
 .detail-list__row:last-child {
@@ -823,13 +746,20 @@ function onPriorityChange(item) {
 }
 
 .detail-list__row dt {
+    min-width: 0;
     color: rgba(var(--v-theme-on-surface), 0.55);
 }
 
 .detail-list__row dd {
+    min-width: 0;
     margin: 0;
+    overflow: hidden;
+    color: rgba(var(--v-theme-on-surface), 0.88);
     font-weight: 500;
-    text-align: right;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 .detail-list__row dd.overdue {
@@ -840,12 +770,50 @@ function onPriorityChange(item) {
 .detail-editor {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .tag-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+}
+
+.task-page :deep(.v-ripple__container) {
+    display: none;
+}
+
+.task-page :deep(.v-btn) {
+    transition:
+        background-color 120ms ease,
+        color 120ms ease,
+        border-color 120ms ease;
+}
+
+.task-page :deep(.v-btn),
+.task-page :deep(.v-chip),
+.task-page :deep(.v-icon),
+.task-page :deep(.v-field__label),
+.task-page :deep(.v-field__append-inner),
+.task-page :deep(.v-field__prepend-inner) {
+    user-select: none;
+}
+
+@media (max-width: 760px) {
+    .task-page {
+        padding: 16px 16px 40px;
+    }
+
+    .task-page__body {
+        grid-template-columns: 1fr;
+    }
+
+    .task-page__sidebar {
+        position: static;
+    }
+
+    .task-page__title {
+        font-size: 1.5rem;
+    }
 }
 </style>
