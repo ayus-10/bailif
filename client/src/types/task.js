@@ -98,9 +98,8 @@
 
 /**
  * @typedef {Object} TaskDependencyCreate
- * @property {string} task_id UUID
  * @property {string} depends_on_id UUID
- * @property {DependencyType} [dependency_type]
+ * @property {DependencyType} dependency_type
  */
 
 /**

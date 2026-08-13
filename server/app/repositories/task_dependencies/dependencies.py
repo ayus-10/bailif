@@ -9,9 +9,19 @@ from app.repositories.task_dependencies.exceptions import TaskDependencyNotFound
 
 
 def get_task_dependency_by_id(
-    dependency_id: UUID, db: Session = Depends(get_db)
+    task_id: UUID,
+    dependency_id: UUID,
+    db: Session = Depends(get_db),
 ) -> TaskDependency:
-    dependency = db.get(TaskDependency, dependency_id)
+    dependency = (
+        db.query(TaskDependency)
+        .filter(
+            TaskDependency.id == dependency_id,
+            TaskDependency.task_id == task_id,
+        )
+        .first()
+    )
+
     if dependency is None:
         raise TaskDependencyNotFoundError(str(dependency_id))
     return dependency

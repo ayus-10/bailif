@@ -16,3 +16,7 @@ class CycleDetectedError(TaskDependencyError):
 
 class ReferencedTaskNotFoundError(TaskDependencyError):
     pass
+
+
+class SelfDependencyError(TaskDependencyError):
+    pass
