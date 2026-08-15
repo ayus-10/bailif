@@ -1,7 +1,6 @@
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
-from app.agent.llm.embeddings import get_embedding
 from app.models.db.task import Task
 from app.repositories.tasks.schemas import (
     TaskCreate,
@@ -10,38 +9,40 @@ from app.repositories.tasks.schemas import (
     TaskRead,
     TaskUpdate,
 )
+from app.utils.date_validation import validate_task_dates
 from app.utils.pagination import decode_cursor, encode_cursor
 
 
-async def generate_task_embedding(task: Task) -> list[float]:
-    embedding_text = f"""
-    Title: {task.title}
-
-    Description:
-    {task.description}
-
-    Tags:
-    {" ".join(task.tags)}
-
-    Status:
-    {task.status}
-
-    Priority:
-    {task.priority}
-    """.strip()
-
-    # return await get_embedding(embedding_text)
-    return [0.69 for _ in range(2560)]
-
-
-async def create_task(db: Session, payload: TaskCreate) -> Task:
+def create_task(
+    db: Session,
+    payload: TaskCreate,
+) -> Task:
     task = Task(**payload.model_dump())
 
-    task.embedding = await generate_task_embedding(task)
+    validate_task_dates(task, {})
 
     db.add(task)
     db.commit()
     db.refresh(task)
+
+    return task
+
+
+def update_task(
+    db: Session,
+    task: Task,
+    payload: TaskUpdate,
+) -> Task:
+    updates = payload.model_dump(exclude_unset=True)
+
+    validate_task_dates(task, updates)
+
+    for field, value in updates.items():
+        setattr(task, field, value)
+
+    db.commit()
+    db.refresh(task)
+
     return task
 
 
@@ -89,28 +90,6 @@ def list_tasks(db: Session, filters: TaskFilterParams) -> TaskListResponse:
         items=[TaskRead.model_validate(row) for row in rows],
         next_cursor=next_cursor,
     )
-
-
-async def update_task(db: Session, task: Task, payload: TaskUpdate) -> Task:
-    updates = payload.model_dump(exclude_unset=True)
-    for field, value in updates.items():
-        setattr(task, field, value)
-
-    if any(
-        field in updates
-        for field in [
-            "title",
-            "description",
-            "tags",
-            "status",
-            "priority",
-        ]
-    ):
-        task.embedding = await generate_task_embedding(task)
-
-    db.commit()
-    db.refresh(task)
-    return task
 
 
 def delete_task(db: Session, task: Task) -> None:

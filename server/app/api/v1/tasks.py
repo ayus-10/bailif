@@ -17,8 +17,8 @@ router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.post("", response_model=TaskRead, status_code=status.HTTP_201_CREATED)
-async def create_task(payload: TaskCreate, db: Session = Depends(get_db)) -> Task:
-    return await services.create_task(db, payload)
+def create_task(payload: TaskCreate, db: Session = Depends(get_db)) -> Task:
+    return services.create_task(db, payload)
 
 
 @router.get("", response_model=TaskListResponse)
@@ -34,12 +34,12 @@ def get_task(task: Task = Depends(get_task_by_id)) -> Task:
 
 
 @router.patch("/{task_id}", response_model=TaskRead)
-async def update_task(
+def update_task(
     payload: TaskUpdate,
     task: Task = Depends(get_task_by_id),
     db: Session = Depends(get_db),
 ) -> Task:
-    return await services.update_task(db, task, payload)
+    return services.update_task(db, task, payload)
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)

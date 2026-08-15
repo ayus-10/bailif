@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from uuid import UUID
 
@@ -35,8 +36,10 @@ class TaskFieldValidators(BaseModel):
     def validate_tags(cls, v: str | None) -> str | None:
         if v is None:
             return v
+        if not re.fullmatch(r"[A-Za-z0-9 ,]*", v):
+            raise ValueError("tags may only contain alphanumeric characters")
         tags = [tag.strip() for tag in v.split(",") if tag.strip()]
-        return ", ".join(tags)
+        return ",".join(tags)
 
 
 class TaskCreate(TaskFieldValidators):
