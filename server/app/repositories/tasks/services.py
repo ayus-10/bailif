@@ -2,7 +2,6 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.agent.llm.embeddings import get_embedding
-from app.core.pagination import decode_cursor, encode_cursor
 from app.models.db.task import Task
 from app.repositories.tasks.schemas import (
     TaskCreate,
@@ -11,6 +10,7 @@ from app.repositories.tasks.schemas import (
     TaskRead,
     TaskUpdate,
 )
+from app.utils.pagination import decode_cursor, encode_cursor
 
 
 async def generate_task_embedding(task: Task) -> list[float]:

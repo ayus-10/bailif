@@ -23,7 +23,6 @@ if TYPE_CHECKING:
     from app.models.db.project import Project
 
 
-# 2560 = qwen3-embedding-4b's output dimension (confirmed via `ollama show`).
 EMBEDDING_DIM = 2560
 
 

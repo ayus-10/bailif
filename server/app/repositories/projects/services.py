@@ -1,8 +1,6 @@
-from sqlalchemy import and_, or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.agent.llm.embeddings import get_embedding
-from app.core.pagination import decode_cursor, encode_cursor
 from app.models.db.project import Project
 from app.repositories.projects.schemas import (
     ProjectCreate,
@@ -11,32 +9,36 @@ from app.repositories.projects.schemas import (
     ProjectRead,
     ProjectUpdate,
 )
+from app.utils.date_validation import validate_project_dates
 
 
-async def generate_project_embedding(project: Project) -> list[float]:
-    embedding_text = f"""
-    Name: {project.name}
-
-    Description:
-    {project.description}
-
-    Status:
-    {project.status}
-    """.strip()
-
-    # return await get_embedding(embedding_text)
-    return [0.69 for _ in range(2560)]
-
-
-async def create_project(
+def create_project(
     db: Session,
     payload: ProjectCreate,
 ) -> Project:
     project = Project(**payload.model_dump())
 
-    project.embedding = await generate_project_embedding(project)
+    validate_project_dates(project, {})
 
     db.add(project)
+    db.commit()
+    db.refresh(project)
+
+    return project
+
+
+def update_project(
+    db: Session,
+    project: Project,
+    payload: ProjectUpdate,
+) -> Project:
+    updates = payload.model_dump(exclude_unset=True)
+
+    validate_project_dates(project, updates)
+
+    for field, value in updates.items():
+        setattr(project, field, value)
+
     db.commit()
     db.refresh(project)
 
@@ -70,32 +72,6 @@ def list_projects(db: Session, filters: ProjectFilterParams) -> ProjectListRespo
     return ProjectListResponse(
         items=[ProjectRead.model_validate(row) for row in rows],
     )
-
-
-async def update_project(
-    db: Session,
-    project: Project,
-    payload: ProjectUpdate,
-) -> Project:
-    updates = payload.model_dump(exclude_unset=True)
-
-    for field, value in updates.items():
-        setattr(project, field, value)
-
-    if any(
-        field in updates
-        for field in [
-            "name",
-            "description",
-            "status",
-        ]
-    ):
-        project.embedding = await generate_project_embedding(project)
-
-    db.commit()
-    db.refresh(project)
-
-    return project
 
 
 def delete_project(db: Session, project: Project) -> None:
