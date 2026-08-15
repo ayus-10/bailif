@@ -63,7 +63,7 @@ def create_task(
 ) -> Task:
     task = Task(**payload.model_dump())
 
-    validate_task_dates(task, {})
+    validate_task_dates(task)
 
     db.add(task)
     db.commit()
@@ -75,10 +75,7 @@ def create_task(
 
 
 def update_task(
-    db: Session,
-    task: Task,
-    payload: TaskUpdate,
-    background_tasks: BackgroundTasks
+    db: Session, task: Task, payload: TaskUpdate, background_tasks: BackgroundTasks
 ) -> Task:
     updates = payload.model_dump(exclude_unset=True)
 
@@ -90,7 +87,7 @@ def update_task(
     db.commit()
     db.refresh(task)
 
-    if (len(updates.items()) > 0):
+    if len(updates.items()) > 0:
         background_tasks.add_task(generate_and_save_task_embedding, task.id)
 
     return task

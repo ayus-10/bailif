@@ -18,7 +18,7 @@ def create_project(
 ) -> Project:
     project = Project(**payload.model_dump())
 
-    validate_project_dates(project, {})
+    validate_project_dates(project)
 
     db.add(project)
     db.commit()
