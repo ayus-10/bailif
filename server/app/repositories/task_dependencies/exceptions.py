@@ -1,22 +1,17 @@
-class TaskDependencyError(Exception):
-    pass
+from app.core.exceptions import ConflictError, NotFoundError
 
 
-class TaskDependencyNotFoundError(TaskDependencyError):
-    pass
+class TaskDependencyNotFoundError(NotFoundError):
+    code = "task_dependency_not_found"
 
 
-class DuplicateDependencyError(TaskDependencyError):
-    pass
+class DuplicateDependencyError(ConflictError):
+    code = "duplicate_dependency"
 
 
-class CycleDetectedError(TaskDependencyError):
-    pass
+class CycleDetectedError(ConflictError):
+    code = "cycle_detected"
 
 
-class ReferencedTaskNotFoundError(TaskDependencyError):
-    pass
-
-
-class SelfDependencyError(TaskDependencyError):
-    pass
+class SelfDependencyError(ConflictError):
+    code = "self_dependency"

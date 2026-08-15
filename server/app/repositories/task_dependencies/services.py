@@ -9,10 +9,10 @@ from app.models.enums.task import DependencyType
 from app.repositories.task_dependencies.exceptions import (
     CycleDetectedError,
     DuplicateDependencyError,
-    ReferencedTaskNotFoundError,
     SelfDependencyError,
 )
 from app.repositories.task_dependencies.schemas import TaskDependencyCreate
+from app.repositories.tasks.exceptions import TaskNotFoundError
 
 
 def _normalized_edge(
@@ -62,7 +62,7 @@ def create_dependency(
 
     depends_on_exists = db.get(Task, payload.depends_on_id)
     if depends_on_exists is None:
-        raise ReferencedTaskNotFoundError(str(payload.depends_on_id))
+        raise TaskNotFoundError(str(payload.depends_on_id))
 
     existing = db.execute(
         select(TaskDependency).where(
