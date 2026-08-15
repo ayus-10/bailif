@@ -1,6 +1,11 @@
+import asyncio
+from uuid import UUID
+
+from fastapi.background import BackgroundTasks
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
+from app.core.database import SessionLocal
 from app.models.db.task import Task
 from app.repositories.tasks.schemas import (
     TaskCreate,
@@ -13,9 +18,48 @@ from app.utils.date_validation import validate_task_dates
 from app.utils.pagination import decode_cursor, encode_cursor
 
 
+async def generate_task_embedding(task: Task) -> list[float]:
+    embedding_text = f"""
+    Title: {task.title}
+
+    Description:
+    {task.description}
+
+    Tags:
+    {" ".join(task.tags)}
+
+    Status:
+    {task.status}
+
+    Priority:
+    {task.priority}
+    """.strip()
+
+    # return await get_embedding(embedding_text)
+    return [0.69 for _ in range(2560)]
+
+
+def generate_and_save_task_embedding(task_id: UUID):
+    db = SessionLocal()
+    try:
+        task = db.get(Task, task_id)
+
+        if task is None:
+            return
+
+        embedding = asyncio.run(generate_task_embedding(task))
+
+        task.embedding = embedding
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
 def create_task(
-    db: Session,
-    payload: TaskCreate,
+    db: Session, payload: TaskCreate, background_tasks: BackgroundTasks
 ) -> Task:
     task = Task(**payload.model_dump())
 
@@ -25,6 +69,8 @@ def create_task(
     db.commit()
     db.refresh(task)
 
+    background_tasks.add_task(generate_and_save_task_embedding, task.id)
+
     return task
 
 
@@ -32,6 +78,7 @@ def update_task(
     db: Session,
     task: Task,
     payload: TaskUpdate,
+    background_tasks: BackgroundTasks
 ) -> Task:
     updates = payload.model_dump(exclude_unset=True)
 
@@ -42,6 +89,9 @@ def update_task(
 
     db.commit()
     db.refresh(task)
+
+    if (len(updates.items()) > 0):
+        background_tasks.add_task(generate_and_save_task_embedding, task.id)
 
     return task
 
