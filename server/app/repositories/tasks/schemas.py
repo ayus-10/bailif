@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from uuid import UUID
 
@@ -6,10 +7,43 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from app.models.enums.shared import Priority, Status
 from app.models.enums.task import TaskType
 from app.repositories.projects.schemas import ProjectRead
+from app.utils.date_validation import after
 
 
-class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=255)
+class TaskFieldValidators(BaseModel):
+    @field_validator("title", check_fields=False)
+    @classmethod
+    def validate_title(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        v = v.strip()
+        if not v:
+            raise ValueError("title cannot be empty")
+        return v
+
+    @field_validator("description", check_fields=False)
+    @classmethod
+    def validate_description(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        v = v.strip()
+        if len(v) > 5000:
+            raise ValueError("description cannot exceed 5000 characters")
+        return v
+
+    @field_validator("tags", check_fields=False)
+    @classmethod
+    def validate_tags(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not re.fullmatch(r"[A-Za-z0-9 ,]*", v):
+            raise ValueError("tags may only contain alphanumeric characters")
+        tags = [tag.strip() for tag in v.split(",") if tag.strip()]
+        return ",".join(tags)
+
+
+class TaskCreate(TaskFieldValidators):
+    title: str = Field(min_length=1, max_length=500)
     description: str = ""
     status: Status = Status.OPEN
     priority: Priority = Priority.MEDIUM
@@ -24,33 +58,18 @@ class TaskCreate(BaseModel):
         ge=1,
     )
 
-    @field_validator("title")
-    @classmethod
-    def validate_title(cls, v: str) -> str:
-        v = v.strip()
-        if not v:
-            raise ValueError("title cannot be empty")
-        return v
-
-    @field_validator("description")
-    @classmethod
-    def sanitize_description(cls, v: str) -> str:
-        return v.strip()
-
     @model_validator(mode="after")
-    def validate_dates(self):
-        if (
-            self.start_date is not None
-            and self.due_date is not None
-            and self.start_date > self.due_date
-        ):
-            raise ValueError("start_date cannot be after due_date")
-
+    def validate_date_order(self):
+        after(self.start_date, self.due_date, "due_date")
         return self
 
 
-class TaskUpdate(BaseModel):
-    title: str | None = Field(default=None, min_length=1, max_length=255)
+class TaskUpdate(TaskFieldValidators):
+    title: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=255,
+    )
     description: str | None = None
     status: Status | None = None
     priority: Priority | None = None
@@ -65,30 +84,9 @@ class TaskUpdate(BaseModel):
         ge=1,
     )
 
-    @field_validator("title")
-    @classmethod
-    def validate_title(cls, v: str | None) -> str | None:
-        if v is None:
-            return v
-        v = v.strip()
-        if not v:
-            raise ValueError("title cannot be empty")
-        return v
-
-    @field_validator("description")
-    @classmethod
-    def sanitize_description(cls, v: str | None) -> str | None:
-        return v.strip() if v is not None else v
-
     @model_validator(mode="after")
-    def validate_dates(self):
-        if (
-            self.start_date is not None
-            and self.due_date is not None
-            and self.start_date > self.due_date
-        ):
-            raise ValueError("start_date cannot be after due_date")
-
+    def validate_date_order(self):
+        after(self.start_date, self.due_date, "due_date")
         return self
 
 

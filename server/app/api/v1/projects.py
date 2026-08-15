@@ -21,11 +21,11 @@ router = APIRouter(prefix="/projects", tags=["projects"])
     response_model=ProjectRead,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_project(
+def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
 ) -> Project:
-    return await services.create_project(db, payload)
+    return services.create_project(db, payload)
 
 
 @router.get(
@@ -53,12 +53,12 @@ def get_project(
     "/{project_id}",
     response_model=ProjectRead,
 )
-async def update_project(
+def update_project(
     payload: ProjectUpdate,
     project: Project = Depends(get_project_by_id),
     db: Session = Depends(get_db),
 ) -> Project:
-    return await services.update_project(db, project, payload)
+    return services.update_project(db, project, payload)
 
 
 @router.delete(

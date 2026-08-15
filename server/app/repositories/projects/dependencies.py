@@ -5,8 +5,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.repositories.projects.exceptions import ProjectNotFoundError
 from app.models.db.project import Project
+from app.repositories.projects.exceptions import ProjectNotFoundError
 
 
 def get_project_by_id(

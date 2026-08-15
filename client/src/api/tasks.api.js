@@ -102,11 +102,12 @@ export async function deleteTask(id) {
 }
 
 /**
+ * @param {string} taskId
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskDependencyRead[]>}
  */
-export async function listDependencies(signal) {
-    const response = await fetch(`${API_URL}/task-dependencies`, {
+export async function listDependencies(taskId, signal) {
+    const response = await fetch(`${API_URL}/tasks/${taskId}/dependencies`, {
         signal,
     });
 
@@ -114,24 +115,27 @@ export async function listDependencies(signal) {
 }
 
 /**
- * @param {string} id
+ * @param {string} taskId
+ * @param {string} dependencyId
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskDependencyRead>}
  */
-export async function getDependency(id, signal) {
-    const response = await fetch(`${API_URL}/task-dependencies/${id}`, {
-        signal,
-    });
+export async function getDependency(taskId, dependencyId, signal) {
+    const response = await fetch(
+        `${API_URL}/tasks/${taskId}/dependencies/${dependencyId}`,
+        { signal }
+    );
 
     return parseJson(response);
 }
 
 /**
+ * @param {string} taskId
  * @param {TaskDependencyCreate} payload
  * @returns {Promise<TaskDependencyRead>}
  */
-export async function createDependency(payload) {
-    const response = await fetch(`${API_URL}/task-dependencies`, {
+export async function createDependency(taskId, payload) {
+    const response = await fetch(`${API_URL}/tasks/${taskId}/dependencies`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -143,13 +147,17 @@ export async function createDependency(payload) {
 }
 
 /**
- * @param {string} id
+ * @param {string} taskId
+ * @param {string} dependencyId
  * @returns {Promise<void>}
  */
-export async function deleteDependency(id) {
-    const response = await fetch(`${API_URL}/task-dependencies/${id}`, {
-        method: "DELETE",
-    });
+export async function deleteDependency(taskId, dependencyId) {
+    const response = await fetch(
+        `${API_URL}/tasks/${taskId}/dependencies/${dependencyId}`,
+        {
+            method: "DELETE",
+        }
+    );
 
     if (!response.ok) {
         throw new Error(`Request failed (${response.status})`);

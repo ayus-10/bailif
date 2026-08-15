@@ -1,14 +1,13 @@
-class TaskError(Exception):
-    pass
+from app.core.exceptions import ConflictError, NotFoundError, ValidationError
 
 
-class TaskNotFoundError(TaskError):
-    pass
+class TaskNotFoundError(NotFoundError):
+    error_code = "task_not_found"
 
 
-class DuplicateTaskError(TaskError):
-    pass
+class DuplicateTaskError(ConflictError):
+    error_code = "duplicate_task"
 
 
-class TaskValidationError(TaskError):
-    pass
+class TaskValidationError(ValidationError):
+    error_code = "invalid_task"

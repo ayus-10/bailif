@@ -1,0 +1,13 @@
+{
+  "lsp": {
+    "ruff": {
+      "initialization_options": {
+        "settings": {
+          "lint": {
+            "ignore": ["B008"],
+          },
+        },
+      },
+    },
+  },
+}
