@@ -6,6 +6,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
+from app.core.exceptions import ValidationError
 from app.models.db.task import Task
 from app.repositories.tasks.schemas import (
     TaskCreate,
@@ -63,7 +64,10 @@ def create_task(
 ) -> Task:
     task = Task(**payload.model_dump())
 
-    validate_task_dates(task)
+    try:
+        validate_task_dates(task)
+    except ValueError:
+        raise ValidationError()
 
     db.add(task)
     db.commit()
@@ -79,7 +83,10 @@ def update_task(
 ) -> Task:
     updates = payload.model_dump(exclude_unset=True)
 
-    validate_task_dates(task, updates)
+    try:
+        validate_task_dates(task, updates)
+    except ValueError:
+        raise ValidationError()
 
     for field, value in updates.items():
         setattr(task, field, value)
