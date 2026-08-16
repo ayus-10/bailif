@@ -56,9 +56,9 @@ const pendingTask = ref(null);
 
 function retry() {
     tasksStore.fetch(boardId.value, {
-        force: true,
+        forceRefresh: true,
     });
-    projectsStore.fetch({ force: true });
+    projectsStore.fetch({ forceRefresh: true });
 }
 
 /** @param {string} key */

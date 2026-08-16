@@ -8,15 +8,20 @@ const DEFAULT_TTL = 60_000;
  * @param {() => Promise<T>} fn
  * @param {Object} [options]
  * @param {number} [options.ttl]
- * @param {boolean} [options.force]
+ * @param {boolean} [options.forceRefresh]
  * @returns {Promise<T>}
  */
-export function cachedRequest(key, fn, { ttl = DEFAULT_TTL, force = false } = {}) {
+export function cachedRequest(
+    key,
+    fn,
+    { ttl = DEFAULT_TTL, forceRefresh = false } = {}
+) {
     const entry = requestCache.get(key);
 
-    if (!force && entry) {
+    if (!forceRefresh && entry) {
         const isPending = entry.status === "pending";
-        const isFresh = entry.status === "resolved" && Date.now() - entry.ts < ttl;
+        const isFresh =
+            entry.status === "resolved" && Date.now() - entry.ts < ttl;
 
         if (isPending || isFresh) {
             return entry.promise;

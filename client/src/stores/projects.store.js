@@ -33,10 +33,10 @@ export const useProjectsStore = defineStore("projects", {
     actions: {
         /**
          * @param {Object} [options]
-         * @param {boolean} [options.force=false]
+         * @param {boolean} [options.forceRefresh=false]
          */
-        async fetch({ force = false } = {}) {
-            if (this.status === "loading" && !force) return;
+        async fetch({ forceRefresh = false } = {}) {
+            if (this.status === "loading" && !forceRefresh) return;
             this.status = "loading";
             this.error = null;
 
@@ -46,7 +46,7 @@ export const useProjectsStore = defineStore("projects", {
                 const data = await cachedRequest(
                     cacheKey,
                     () => listProjects(),
-                    { force: false }
+                    { forceRefresh: false }
                 );
                 this.items = data.items;
                 this.status = "success";
@@ -60,15 +60,15 @@ export const useProjectsStore = defineStore("projects", {
         /**
          * @param {string} projectId
          * @param {Object} [options]
-         * @param {boolean} [options.force=false]
+         * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<ProjectRead | undefined>}
          */
-        async get(projectId, { force = false } = {}) {
+        async get(projectId, { forceRefresh = false } = {}) {
             try {
                 const project = await cachedRequest(
                     `project:${projectId}`,
                     () => getProject(projectId),
-                    { force }
+                    { forceRefresh }
                 );
 
                 this.currentProject = project;

@@ -35,7 +35,7 @@
  * @property {number | null} estimated_duration_minutes
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
- * @property {?ProjectRead} project
+ * @property {ProjectRead | null} project
  */
 
 /**
@@ -84,7 +84,7 @@
  * @property {string} [parent_id]
  * @property {string} [due_before]
  * @property {string} [due_after]
- * @property {?string} [cursor]
+ * @property {string | null} [cursor]
  * @property {number} [limit]
  */
 

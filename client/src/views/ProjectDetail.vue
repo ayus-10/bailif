@@ -7,24 +7,24 @@ import { useProjectsStore } from "@/stores/projects.store";
 const route = useRoute();
 const store = useProjectsStore();
 
-const projectId = computed(() => String(route.params.id ?? "default"));
+const projectId = computed(() => String(route.params.id));
 
 onMounted(() => {
-    store.fetch(projectId.value);
+    store.get(projectId.value);
 });
 
 watch(projectId, (id) => {
-    store.fetch(id);
+    store.get(id);
 });
 
-const project = computed(() => store.items[projectId.value]);
+const project = computed(() => store.currentProject);
 
-const status = computed(() => store.status[projectId.value] ?? "idle");
+const status = computed(() => store.status);
 
-const error = computed(() => store.errors[projectId.value]);
+const error = computed(() => store.error);
 
 function retry() {
-    store.fetch(projectId.value, { force: true });
+    store.get(projectId.value, { forceRefresh: true });
 }
 </script>
 

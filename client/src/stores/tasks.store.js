@@ -35,31 +35,36 @@ export const useTasksStore = defineStore("tasks", {
         /**
          * @param {string} boardId
          * @param {Object} [options]
-         * @param {?string} [options.cursor=null]
-         * @param {boolean} [options.append=false]
-         * @param {boolean} [options.force=false]
+         * @param {"root-tasks" | "child-tasks"} [options.queryMode="root-tasks"]
          * @param {string} [options.parentId]
-         * @param {boolean} [options.includeSubtasks=false]
+         * @param {string | null} [options.cursor=null]
+         * @param {boolean} [options.append=false]
+         * @param {boolean} [options.forceRefresh=false]
          */
         async fetch(
             boardId,
             {
+                queryMode = "root-tasks",
+                parentId,
                 cursor = null,
                 append = false,
-                force = false,
-                includeSubtasks = false,
-                parentId,
+                forceRefresh = false,
             } = {}
         ) {
-            if (this.status[boardId] === "loading" && !force) return;
+            if (this.status[boardId] === "loading" && !forceRefresh) return;
+
+            if (queryMode === "child-tasks" && !parentId) {
+                throw new Error(
+                    "parentId is required when queryMode is 'child-tasks'"
+                );
+            }
 
             /** @type Record<string, any> */
             const params = { cursor };
-
-            if (parentId) {
+            if (queryMode === "child-tasks") {
                 params.parent_id = parentId;
-            } else if (!includeSubtasks) {
-                params.parent_id = null;
+            } else {
+                params.only_root = true;
             }
 
             this.status[boardId] = append ? "loading-more" : "loading";
@@ -69,21 +74,19 @@ export const useTasksStore = defineStore("tasks", {
                 "tasks",
                 boardId,
                 cursor ?? "first",
-                parentId ?? "root",
-                includeSubtasks ? "with-subtasks" : "without-subtasks",
+                queryMode,
+                queryMode === "child-tasks" ? parentId : "root",
             ].join(":");
 
             try {
                 const data = await cachedRequest(
                     cacheKey,
                     () => listTasks(params),
-                    { force }
+                    { forceRefresh }
                 );
-
                 this.items[boardId] = append
                     ? [...(this.items[boardId] ?? []), ...data.items]
                     : data.items;
-
                 this.nextCursor[boardId] = data.next_cursor;
                 this.status[boardId] = "success";
             } catch (err) {
@@ -115,14 +118,14 @@ export const useTasksStore = defineStore("tasks", {
          * @param {string} boardId
          * @param {string} taskId
          * @param {Object} [options]
-         * @param {boolean} [options.force=false]
+         * @param {boolean} [options.forceRefresh=false]
          */
-        async get(boardId = "default", taskId, { force = false } = {}) {
+        async get(boardId = "default", taskId, { forceRefresh = false } = {}) {
             try {
                 const task = await cachedRequest(
                     `task:${taskId}`,
                     () => getTask(taskId),
-                    { force }
+                    { forceRefresh }
                 );
 
                 this.currentTask = task;

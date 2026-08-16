@@ -273,7 +273,7 @@ function onPriorityChange(item) {
     );
 }
 
-function handleAddSubtask({ parentId }) {
+function handleAddSubtask() {
     // TODO: open create-subtask flow, e.g.:
     // tasksStore.create(boardId.value, { parent_id: parentId, title: "..." })
 }

@@ -113,12 +113,15 @@ def list_tasks(db: Session, filters: TaskFilterParams) -> TaskListResponse:
         stmt = stmt.where(Task.type == filters.type)
     if filters.tag is not None:
         stmt = stmt.where(Task.tags.contains(filters.tag))
-    if filters.parent_id is not None:
-        stmt = stmt.where(Task.parent_id == filters.parent_id)
     if filters.due_before is not None:
         stmt = stmt.where(Task.due_date <= filters.due_before)
     if filters.due_after is not None:
         stmt = stmt.where(Task.due_date >= filters.due_after)
+
+    if filters.only_root:
+        stmt = stmt.where(Task.parent_id.is_(None))
+    elif filters.parent_id is not None:
+        stmt = stmt.where(Task.parent_id == filters.parent_id)
 
     if filters.cursor is not None:
         cursor_created_at, cursor_id = decode_cursor(filters.cursor)
