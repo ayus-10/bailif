@@ -6,6 +6,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
+from app.core.exceptions import ValidationError
 from app.models.db.task import Task
 from app.repositories.tasks.schemas import (
     TaskCreate,
@@ -63,7 +64,10 @@ def create_task(
 ) -> Task:
     task = Task(**payload.model_dump())
 
-    validate_task_dates(task, {})
+    try:
+        validate_task_dates(task)
+    except ValueError:
+        raise ValidationError()
 
     db.add(task)
     db.commit()
@@ -75,14 +79,14 @@ def create_task(
 
 
 def update_task(
-    db: Session,
-    task: Task,
-    payload: TaskUpdate,
-    background_tasks: BackgroundTasks
+    db: Session, task: Task, payload: TaskUpdate, background_tasks: BackgroundTasks
 ) -> Task:
     updates = payload.model_dump(exclude_unset=True)
 
-    validate_task_dates(task, updates)
+    try:
+        validate_task_dates(task, updates)
+    except ValueError:
+        raise ValidationError()
 
     for field, value in updates.items():
         setattr(task, field, value)
@@ -90,7 +94,7 @@ def update_task(
     db.commit()
     db.refresh(task)
 
-    if (len(updates.items()) > 0):
+    if len(updates.items()) > 0:
         background_tasks.add_task(generate_and_save_task_embedding, task.id)
 
     return task
@@ -109,12 +113,15 @@ def list_tasks(db: Session, filters: TaskFilterParams) -> TaskListResponse:
         stmt = stmt.where(Task.type == filters.type)
     if filters.tag is not None:
         stmt = stmt.where(Task.tags.contains(filters.tag))
-    if filters.parent_id is not None:
-        stmt = stmt.where(Task.parent_id == filters.parent_id)
     if filters.due_before is not None:
         stmt = stmt.where(Task.due_date <= filters.due_before)
     if filters.due_after is not None:
         stmt = stmt.where(Task.due_date >= filters.due_after)
+
+    if filters.only_root:
+        stmt = stmt.where(Task.parent_id.is_(None))
+    elif filters.parent_id is not None:
+        stmt = stmt.where(Task.parent_id == filters.parent_id)
 
     if filters.cursor is not None:
         cursor_created_at, cursor_id = decode_cursor(filters.cursor)

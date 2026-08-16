@@ -6,7 +6,6 @@ from datetime import datetime
 from app.core.database import SessionLocal
 from app.models.db.project import Project
 from app.models.db.task import Task, TaskDependency
-from app.repositories.projects.services import generate_project_embedding
 from app.repositories.tasks.services import generate_task_embedding
 
 GENERATE_EMBEDDINGS = True
@@ -38,11 +37,6 @@ async def seed_projects(db, projects: list[dict]) -> None:
                 color=item.get("color"),
                 status=item.get("status", "active"),
             )
-            if GENERATE_EMBEDDINGS:
-                try:
-                    project.embedding = await generate_project_embedding(project)
-                except Exception as e:
-                    print(f"⚠️  embedding failed for {project.name}: {e}")
             db.add(project)
             db.flush()
             print(f"✅ project: {project.name}")
