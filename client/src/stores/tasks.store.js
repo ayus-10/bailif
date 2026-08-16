@@ -38,22 +38,45 @@ export const useTasksStore = defineStore("tasks", {
          * @param {?string} [options.cursor=null]
          * @param {boolean} [options.append=false]
          * @param {boolean} [options.force=false]
+         * @param {string} [options.parentId]
+         * @param {boolean} [options.includeSubtasks=false]
          */
         async fetch(
             boardId,
-            { cursor = null, append = false, force = false } = {}
+            {
+                cursor = null,
+                append = false,
+                force = false,
+                includeSubtasks = false,
+                parentId,
+            } = {}
         ) {
             if (this.status[boardId] === "loading" && !force) return;
+
+            /** @type Record<string, any> */
+            const params = { cursor };
+
+            if (parentId) {
+                params.parent_id = parentId;
+            } else if (!includeSubtasks) {
+                params.parent_id = null;
+            }
 
             this.status[boardId] = append ? "loading-more" : "loading";
             this.errors[boardId] = null;
 
-            const cacheKey = `tasks:${boardId}:${cursor ?? "first"}`;
+            const cacheKey = [
+                "tasks",
+                boardId,
+                cursor ?? "first",
+                parentId ?? "root",
+                includeSubtasks ? "with-subtasks" : "without-subtasks",
+            ].join(":");
 
             try {
                 const data = await cachedRequest(
                     cacheKey,
-                    () => listTasks({ cursor }),
+                    () => listTasks(params),
                     { force }
                 );
 
