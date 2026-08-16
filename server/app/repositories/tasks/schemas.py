@@ -60,7 +60,7 @@ class TaskCreate(TaskFieldValidators):
 
     @model_validator(mode="after")
     def validate_date_order(self):
-        after(self.start_date, self.due_date, "due_date")
+        after(self.start_date, self.due_date)
         return self
 
 
@@ -86,7 +86,7 @@ class TaskUpdate(TaskFieldValidators):
 
     @model_validator(mode="after")
     def validate_date_order(self):
-        after(self.start_date, self.due_date, "due_date")
+        after(self.start_date, self.due_date)
         return self
 
 

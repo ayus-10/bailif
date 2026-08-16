@@ -75,8 +75,8 @@ class ProjectCreate(ProjectFieldValidators):
 
     @model_validator(mode="after")
     def validate_date_order(self: ProjectCreate):
-        after(self.start_date, self.target_end_date, "target_end_date")
-        after(self.start_date, self.actual_end_date, "actual_end_date")
+        after(self.start_date, self.target_end_date)
+        after(self.start_date, self.actual_end_date)
         return self
 
 
@@ -102,8 +102,8 @@ class ProjectUpdate(ProjectFieldValidators):
 
     @model_validator(mode="after")
     def validate_date_order(self: ProjectUpdate):
-        after(self.start_date, self.target_end_date, "target_end_date")
-        after(self.start_date, self.actual_end_date, "actual_end_date")
+        after(self.start_date, self.target_end_date)
+        after(self.start_date, self.actual_end_date)
         return self
 
 
