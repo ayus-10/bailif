@@ -6,11 +6,11 @@ import {
     listProjects,
     updateProject,
 } from "@/api/projects.api";
+import { cachedRequest, invalidateRequestCache } from "./cache";
 
 /** @typedef {import("@/types/project").ProjectRead} ProjectRead */
 /** @typedef {import("@/types/project").ProjectCreate} ProjectCreate */
 /** @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate */
-
 /** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
 
 /**
@@ -39,8 +39,15 @@ export const useProjectsStore = defineStore("projects", {
             if (this.status === "loading" && !force) return;
             this.status = "loading";
             this.error = null;
+
+            const cacheKey = `projects:all`;
+
             try {
-                const data = await listProjects();
+                const data = await cachedRequest(
+                    cacheKey,
+                    () => listProjects(),
+                    { force: false }
+                );
                 this.items = data.items;
                 this.status = "success";
                 return data;
@@ -52,11 +59,17 @@ export const useProjectsStore = defineStore("projects", {
 
         /**
          * @param {string} projectId
+         * @param {Object} [options]
+         * @param {boolean} [options.force=false]
          * @returns {Promise<ProjectRead | undefined>}
          */
-        async get(projectId) {
+        async get(projectId, { force = false } = {}) {
             try {
-                const project = await getProject(projectId);
+                const project = await cachedRequest(
+                    `project:${projectId}`,
+                    () => getProject(projectId),
+                    { force }
+                );
 
                 this.currentProject = project;
 
@@ -76,6 +89,8 @@ export const useProjectsStore = defineStore("projects", {
                 const project = await createProject(payload);
 
                 this.items = [...this.items, project];
+
+                invalidateRequestCache(`projects:all`);
 
                 return project;
             } catch (err) {
@@ -109,6 +124,9 @@ export const useProjectsStore = defineStore("projects", {
                     this.currentProject = project;
                 }
 
+                invalidateRequestCache(`projects:all`);
+                invalidateRequestCache(`project:${projectId}`);
+
                 return project;
             } catch (err) {
                 this.error = err;
@@ -128,6 +146,9 @@ export const useProjectsStore = defineStore("projects", {
                 if (this.currentProject?.id === projectId) {
                     this.currentProject = null;
                 }
+
+                invalidateRequestCache(`projects:all`);
+                invalidateRequestCache(`project:${projectId}`);
             } catch (err) {
                 this.error = err;
                 this.status = "error";
