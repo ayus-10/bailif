@@ -15,3 +15,7 @@ class CycleDetectedError(ConflictError):
 
 class SelfDependencyError(ConflictError):
     code = "self_dependency"
+
+
+class TaskLevelMismatchError(ConflictError):
+    code = "task_level_mismatch"
