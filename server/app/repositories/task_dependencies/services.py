@@ -25,7 +25,7 @@ def _normalized_edge(
         return depends_on_id, task_id
     return None
 
-
+# TODO: hand the traversal to the DB and let its query planner figure out which rows are relevant
 def _would_create_cycle(db: Session, from_id: UUID, to_id: UUID) -> bool:
     edges = db.execute(
         select(
