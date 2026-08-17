@@ -3,7 +3,7 @@ import { QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import EditableVChip from "@/components/layout/EditableVChip.vue";
-import SubtaskSection from "@/components/tasks/SubtaskSection.vue";
+import SubtaskPanel from "@/components/tasks/SubtaskPanel.vue";
 import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
 import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
 import { isHtmlEmpty } from "@/utils/htmlFormatters";
@@ -272,11 +272,6 @@ function onPriorityChange(item) {
         isSavingPriority
     );
 }
-
-function handleAddSubtask() {
-    // TODO: open create-subtask flow, e.g.:
-    // tasksStore.create(boardId.value, { parent_id: parentId, title: "..." })
-}
 </script>
 
 <template>
@@ -537,10 +532,7 @@ function handleAddSubtask() {
                     </div>
                 </section>
 
-                <SubtaskSection
-                    :task-id="taskId"
-                    @add-subtask="handleAddSubtask"
-                />
+                <SubtaskPanel :task-id="taskId" />
             </aside>
         </div>
     </div>

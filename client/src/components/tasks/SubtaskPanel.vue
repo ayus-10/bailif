@@ -1,10 +1,13 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
+import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 /** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
 
 const props = defineProps({
@@ -14,21 +17,28 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["add-subtask"]);
-
 const route = useRoute();
 const router = useRouter();
 const tasksStore = useTasksStore();
+const projectsStore = useProjectsStore();
 
 const boardId = computed(() => `board-${props.taskId}`);
 
 function fetchSubtasks() {
     tasksStore.fetch(boardId.value, {
+        queryMode: "child-tasks",
         parentId: props.taskId,
     });
 }
 
-onMounted(fetchSubtasks);
+function fetchProjects() {
+    projectsStore.fetch();
+}
+
+onMounted(() => {
+    fetchSubtasks();
+    fetchProjects();
+});
 
 watch(
     () => props.taskId,
@@ -41,7 +51,10 @@ watch(
 
 /** @type {import('vue').ComputedRef<TaskRead[]>} */
 const subtasks = computed(() => tasksStore.items[boardId.value] ?? []);
+
 const hasSubtasks = computed(() => subtasks.value.length > 0);
+
+const projects = computed(() => projectsStore.items ?? []);
 
 /** @type {import('vue').ComputedRef<FetchStatus>} */
 const fetchStatus = computed(() => tasksStore.status[boardId.value] ?? "idle");
@@ -51,6 +64,16 @@ const isLoading = computed(
 );
 const fetchError = computed(() => tasksStore.errors[boardId.value] ?? null);
 
+/** @type {import('vue').Ref<TaskCreate | null>} */
+const pendingSubTask = ref(null);
+
+const showSubtasks = computed(
+    () => !isLoading.value && !fetchError.value && hasSubtasks.value
+);
+const showEmptyMessage = computed(
+    () => !showSubtasks.value && !pendingSubTask.value
+);
+
 /** @param {TaskRead} subtask */
 function openSubtask(subtask) {
     router.push({
@@ -59,8 +82,22 @@ function openSubtask(subtask) {
     });
 }
 
-function handleAddSubtask() {
-    emit("add-subtask", { parentId: props.taskId });
+/** @param {TaskCreate} task */
+async function handleCreateSubtask(task) {
+    if (!pendingSubTask.value) return;
+    await tasksStore.create(boardId.value, task);
+    pendingSubTask.value = null;
+}
+
+function handleNewSubtask() {
+    pendingSubTask.value = {
+        title: "",
+        status: "open",
+    };
+}
+
+function handleClear() {
+    pendingSubTask.value = null;
 }
 </script>
 
@@ -80,7 +117,7 @@ function handleAddSubtask() {
                 size="small"
                 prepend-icon="mdi-plus"
                 aria-label="Add subtask"
-                @click="handleAddSubtask"
+                @click="handleNewSubtask"
             >
                 Add subtask
             </v-btn>
@@ -103,17 +140,24 @@ function handleAddSubtask() {
             </v-btn>
         </div>
 
-        <div v-else-if="hasSubtasks" class="subtask-list">
-            <TaskCard
-                v-for="subtask in subtasks"
-                :key="subtask.id"
-                :task="subtask"
-                class="subtask-list__card"
-                @click="openSubtask(subtask)"
-            />
-        </div>
+        <p v-if="showEmptyMessage" class="panel__empty">No subtasks yet.</p>
 
-        <p v-else class="panel__empty">No subtasks yet.</p>
+        <PendingTaskCard
+            v-if="pendingSubTask"
+            :projects="projects"
+            :parent-id="props.taskId"
+            @submit="handleCreateSubtask"
+            @cancel="handleClear"
+        />
+
+        <TaskCard
+            v-if="showSubtasks"
+            v-for="subtask in subtasks"
+            :key="subtask.id"
+            :task="subtask"
+            class="subtask-list__card"
+            @click="openSubtask(subtask)"
+        />
     </section>
 </template>
 
