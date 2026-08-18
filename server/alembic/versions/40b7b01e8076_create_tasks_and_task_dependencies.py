@@ -1,7 +1,7 @@
 """create tasks and task_dependencies
 
 Revision ID: 40b7b01e8076
-Revises: 
+Revises:
 Create Date: 2026-07-25 22:24:11.819827
 
 """
@@ -25,7 +25,7 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
-    sa.Column('status', sa.Enum('OPEN', 'IN_PROGRESS', 'DONE', name='status_enum'), nullable=False),
+    sa.Column('status', sa.Enum('OPEN', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'BLOCKED', 'CANCELLED', name='status_enum'), nullable=False),
     sa.Column('priority', sa.Enum('LOW', 'MEDIUM', 'HIGH', name='priority_enum'), nullable=False),
     sa.Column('type', sa.Enum('TASK', 'SUBTASK', 'EPIC', 'BUG', name='task_type_enum'), nullable=False),
     sa.Column('tags', sa.String(length=255), nullable=False),
