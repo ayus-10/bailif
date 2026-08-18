@@ -1,5 +1,7 @@
-/** @typedef {import("@/components/tasks/PendingTaskCard.vue").TaskPriority} TaskPriority */
+/** @typedef {import("@/types/task").TaskPriority} TaskPriority */
+/** @typedef {import("@/types/task").TaskStatus} TaskStatus */
 
+/** @type {{ status: TaskStatus; label: string; icon: string }[]} */
 export const TASK_COLUMNS = [
     {
         status: "open",
@@ -12,9 +14,24 @@ export const TASK_COLUMNS = [
         icon: "mdi-progress-clock",
     },
     {
+        status: "in_review",
+        label: "In Review",
+        icon: "mdi-eye-outline",
+    },
+    {
         status: "done",
         label: "Done",
         icon: "mdi-check-circle-outline",
+    },
+    {
+        status: "blocked",
+        label: "Blocked",
+        icon: "mdi-block-helper",
+    },
+    {
+        status: "cancelled",
+        label: "Cancelled",
+        icon: "mdi-close-circle-outline",
     },
 ];
 

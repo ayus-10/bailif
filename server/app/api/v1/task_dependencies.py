@@ -41,16 +41,6 @@ def list_dependencies(
     return services.list_dependencies_for_task(db, task.id)
 
 
-@router.get(
-    "/{dependency_id}",
-    response_model=TaskDependencyRead,
-)
-def get_dependency(
-    dependency: TaskDependency = Depends(get_task_dependency_by_id),
-) -> TaskDependency:
-    return dependency
-
-
 @router.delete(
     "/{dependency_id}",
     status_code=status.HTTP_204_NO_CONTENT,

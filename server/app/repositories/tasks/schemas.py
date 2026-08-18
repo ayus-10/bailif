@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.models.enums.shared import Priority, Status
+from app.models.enums.shared import TaskPriority, TaskStatus
 from app.models.enums.task import TaskType
 from app.repositories.projects.schemas import ProjectRead
 from app.utils.date_validation import after
@@ -45,8 +45,8 @@ class TaskFieldValidators(BaseModel):
 class TaskCreate(TaskFieldValidators):
     title: str = Field(min_length=1, max_length=500)
     description: str = ""
-    status: Status = Status.OPEN
-    priority: Priority = Priority.MEDIUM
+    status: TaskStatus = TaskStatus.OPEN
+    priority: TaskPriority = TaskPriority.MEDIUM
     type: TaskType = TaskType.TASK
     tags: str = ""
     project_id: UUID | None = None
@@ -71,8 +71,8 @@ class TaskUpdate(TaskFieldValidators):
         max_length=255,
     )
     description: str | None = None
-    status: Status | None = None
-    priority: Priority | None = None
+    status: TaskStatus | None = None
+    priority: TaskPriority | None = None
     type: TaskType | None = None
     tags: str | None = None
     project_id: UUID | None = None
@@ -94,8 +94,8 @@ class TaskRead(BaseModel):
     id: UUID
     title: str
     description: str
-    status: Status
-    priority: Priority
+    status: TaskStatus
+    priority: TaskPriority
     type: TaskType
     tags: str
     project_id: UUID | None
@@ -112,8 +112,8 @@ class TaskRead(BaseModel):
 
 class TaskFilterParams(BaseModel):
     project_id: UUID | None = None
-    status: Status | None = None
-    priority: Priority | None = None
+    status: TaskStatus | None = None
+    priority: TaskPriority | None = None
     type: TaskType | None = None
     tag: str | None = None
     parent_id: UUID | None = None

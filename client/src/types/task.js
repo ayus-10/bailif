@@ -1,5 +1,5 @@
 /**
- * @typedef {'open' | 'in_progress' | 'done'} TaskStatus
+ * @typedef {'open' | 'in_progress' | 'in_review' | 'done' | 'blocked' | 'cancelled'} TaskStatus
  */
 
 /**

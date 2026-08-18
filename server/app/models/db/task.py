@@ -11,8 +11,8 @@ from app.models.enums.shared import (
     AgentPermissionLevel,
     ApprovalStatus,
     CreatedBy,
-    Priority,
-    Status,
+    TaskPriority,
+    TaskStatus,
 )
 from app.models.enums.task import (
     DependencyType,
@@ -35,14 +35,14 @@ class Task(Base):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String, default="")
-    status: Mapped[Status] = mapped_column(
-        Enum(Status, name="status_enum"),
-        default=Status.OPEN,
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus, name="status_enum"),
+        default=TaskStatus.OPEN,
         nullable=False,
     )
-    priority: Mapped[Priority] = mapped_column(
-        Enum(Priority, name="priority_enum"),
-        default=Priority.MEDIUM,
+    priority: Mapped[TaskPriority] = mapped_column(
+        Enum(TaskPriority, name="priority_enum"),
+        default=TaskPriority.MEDIUM,
         nullable=False,
     )
     type: Mapped[TaskType] = mapped_column(

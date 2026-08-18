@@ -7,13 +7,16 @@ class AgentPermissionLevel(str, Enum):
     ACT_WITH_NOTIFY = "act_with_notify"
 
 
-class Status(str, Enum):
+class TaskStatus(str, Enum):
     OPEN = "open"
     IN_PROGRESS = "in_progress"
+    IN_REVIEW = "in_review"
     DONE = "done"
+    BLOCKED = "blocked"
+    CANCELLED = "cancelled"
 
 
-class Priority(str, Enum):
+class TaskPriority(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
