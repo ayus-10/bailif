@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, UUID, Boolean, DateTime, Enum, String, func
+from sqlalchemy import UUID, Boolean, DateTime, Enum, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -21,7 +22,7 @@ class Project(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(String, default="")
+    description: Mapped[str] = mapped_column(Text, default="")
     icon: Mapped[str] = mapped_column(String(64), default="mdi-folder-outline")
     color: Mapped[str | None] = mapped_column(String(20), nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(
@@ -52,10 +53,10 @@ class Project(Base):
         default=AgentPermissionLevel.PROPOSE_ONLY,
         nullable=False,
     )
-    agent_activity_log: Mapped[list[dict]] = mapped_column(JSON, default=list)
+    agent_activity_log: Mapped[list[dict]] = mapped_column(JSONB, default=list)
 
     # Integrations
-    external_refs: Mapped[dict] = mapped_column(JSON, default=dict)
+    external_refs: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     # Relations
     tasks: Mapped[list[Task]] = relationship("Task", back_populates="project")

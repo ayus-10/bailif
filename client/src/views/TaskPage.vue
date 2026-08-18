@@ -152,7 +152,6 @@ function getTaskDraft(source) {
         priority: source?.priority ?? null,
         start_date: source?.start_date ?? null,
         due_date: source?.due_date ?? null,
-        estimated_duration_minutes: source?.estimated_duration_minutes ?? null,
     };
 }
 
@@ -461,17 +460,6 @@ function onPriorityChange(item) {
                                 {{ formatDate(task.due_date) ?? "—" }}
                             </dd>
                         </div>
-
-                        <div class="detail-list__row">
-                            <dt>Estimate</dt>
-                            <dd>
-                                {{
-                                    formatDuration(
-                                        task.estimated_duration_minutes
-                                    ) ?? "—"
-                                }}
-                            </dd>
-                        </div>
                     </dl>
 
                     <div v-else class="detail-editor">
@@ -500,16 +488,6 @@ function onPriorityChange(item) {
                             v-model="dueDate"
                             label="Due"
                             type="date"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                        />
-
-                        <v-text-field
-                            v-model.number="draft.estimated_duration_minutes"
-                            label="Estimate (minutes)"
-                            type="number"
-                            min="0"
                             variant="outlined"
                             density="compact"
                             hide-details

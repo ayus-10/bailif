@@ -53,10 +53,6 @@ class TaskCreate(TaskFieldValidators):
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
-    estimated_duration_minutes: int | None = Field(
-        default=None,
-        ge=1,
-    )
 
     @model_validator(mode="after")
     def validate_date_order(self):
@@ -79,10 +75,6 @@ class TaskUpdate(TaskFieldValidators):
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
-    estimated_duration_minutes: int | None = Field(
-        default=None,
-        ge=1,
-    )
 
     @model_validator(mode="after")
     def validate_date_order(self):
@@ -104,7 +96,6 @@ class TaskRead(BaseModel):
     created_at: datetime
     updated_at: datetime
     start_date: datetime | None
-    estimated_duration_minutes: int | None
     project: ProjectRead | None = None
 
     model_config = {"from_attributes": True}
