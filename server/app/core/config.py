@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = (
-        "cockroachdb+psycopg2://root@localhost:26257/defaultdb?sslmode=disable"
+        "postgresql+psycopg2://aayush:1234@localhost:5432/local"
     )
 
     llm_provider: str = "local"

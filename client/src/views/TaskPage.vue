@@ -3,7 +3,7 @@ import { QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import EditableVChip from "@/components/layout/EditableVChip.vue";
-import SubtaskSection from "@/components/tasks/SubtaskSection.vue";
+import SubtaskPanel from "@/components/tasks/SubtaskPanel.vue";
 import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
 import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
 import { isHtmlEmpty } from "@/utils/htmlFormatters";
@@ -152,7 +152,6 @@ function getTaskDraft(source) {
         priority: source?.priority ?? null,
         start_date: source?.start_date ?? null,
         due_date: source?.due_date ?? null,
-        estimated_duration_minutes: source?.estimated_duration_minutes ?? null,
     };
 }
 
@@ -271,11 +270,6 @@ function onPriorityChange(item) {
         selectedPriority,
         isSavingPriority
     );
-}
-
-function handleAddSubtask() {
-    // TODO: open create-subtask flow, e.g.:
-    // tasksStore.create(boardId.value, { parent_id: parentId, title: "..." })
 }
 </script>
 
@@ -466,17 +460,6 @@ function handleAddSubtask() {
                                 {{ formatDate(task.due_date) ?? "—" }}
                             </dd>
                         </div>
-
-                        <div class="detail-list__row">
-                            <dt>Estimate</dt>
-                            <dd>
-                                {{
-                                    formatDuration(
-                                        task.estimated_duration_minutes
-                                    ) ?? "—"
-                                }}
-                            </dd>
-                        </div>
                     </dl>
 
                     <div v-else class="detail-editor">
@@ -509,16 +492,6 @@ function handleAddSubtask() {
                             density="compact"
                             hide-details
                         />
-
-                        <v-text-field
-                            v-model.number="draft.estimated_duration_minutes"
-                            label="Estimate (minutes)"
-                            type="number"
-                            min="0"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                        />
                     </div>
                 </section>
 
@@ -537,10 +510,7 @@ function handleAddSubtask() {
                     </div>
                 </section>
 
-                <SubtaskSection
-                    :task-id="taskId"
-                    @add-subtask="handleAddSubtask"
-                />
+                <SubtaskPanel :task-id="taskId" />
             </aside>
         </div>
     </div>

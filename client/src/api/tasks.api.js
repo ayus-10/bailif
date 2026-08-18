@@ -116,21 +116,6 @@ export async function listDependencies(taskId, signal) {
 
 /**
  * @param {string} taskId
- * @param {string} dependencyId
- * @param {AbortSignal} [signal]
- * @returns {Promise<TaskDependencyRead>}
- */
-export async function getDependency(taskId, dependencyId, signal) {
-    const response = await fetch(
-        `${API_URL}/tasks/${taskId}/dependencies/${dependencyId}`,
-        { signal }
-    );
-
-    return parseJson(response);
-}
-
-/**
- * @param {string} taskId
  * @param {TaskDependencyCreate} payload
  * @returns {Promise<TaskDependencyRead>}
  */

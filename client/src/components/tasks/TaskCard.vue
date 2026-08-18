@@ -159,14 +159,6 @@ function handleDuplicate(e) {
                         <span>{{ formatDate(task.due_date) }}</span>
                     </div>
 
-                    <div
-                        v-if="task.estimated_duration_minutes"
-                        class="task-row__meta"
-                    >
-                        <v-icon icon="mdi-timer-outline" size="12" />
-                        <span>{{ task.estimated_duration_minutes }}m</span>
-                    </div>
-
                     <v-chip
                         size="x-small"
                         variant="tonal"

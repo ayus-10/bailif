@@ -1,5 +1,5 @@
 /**
- * @typedef {'open' | 'in_progress' | 'done'} TaskStatus
+ * @typedef {'open' | 'in_progress' | 'in_review' | 'done' | 'blocked' | 'cancelled'} TaskStatus
  */
 
 /**
@@ -32,7 +32,6 @@
  * @property {string | null} parent_id UUID
  * @property {string | null} start_date ISO datetime
  * @property {string | null} due_date ISO datetime
- * @property {number | null} estimated_duration_minutes
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
  * @property {ProjectRead | null} project
@@ -50,7 +49,6 @@
  * @property {string | null} [parent_id]
  * @property {string | null} [start_date] ISO datetime
  * @property {string | null} [due_date] ISO datetime
- * @property {number | null} [estimated_duration_minutes]
  */
 
 /**
@@ -65,7 +63,6 @@
  * @property {string | null} [parent_id]
  * @property {string | null} [start_date]
  * @property {string | null} [due_date]
- * @property {number | null} [estimated_duration_minutes]
  */
 
 /**
@@ -111,7 +108,6 @@
  * @property {TaskPriority | null} priority
  * @property {string | null} start_date
  * @property {string | null} due_date
- * @property {number | null} estimated_duration_minutes
  */
 
 export {};

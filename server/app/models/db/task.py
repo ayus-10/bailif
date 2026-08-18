@@ -3,7 +3,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import JSON, UUID, DateTime, Enum, ForeignKey, String, func
+from sqlalchemy import JSON, UUID, DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
 
 from app.core.database import Base
@@ -11,8 +12,8 @@ from app.models.enums.shared import (
     AgentPermissionLevel,
     ApprovalStatus,
     CreatedBy,
-    Priority,
-    Status,
+    TaskPriority,
+    TaskStatus,
 )
 from app.models.enums.task import (
     DependencyType,
@@ -34,15 +35,15 @@ class Task(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[str] = mapped_column(String, default="")
-    status: Mapped[Status] = mapped_column(
-        Enum(Status, name="status_enum"),
-        default=Status.OPEN,
+    description: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus, name="status_enum"),
+        default=TaskStatus.OPEN,
         nullable=False,
     )
-    priority: Mapped[Priority] = mapped_column(
-        Enum(Priority, name="priority_enum"),
-        default=Priority.MEDIUM,
+    priority: Mapped[TaskPriority] = mapped_column(
+        Enum(TaskPriority, name="priority_enum"),
+        default=TaskPriority.MEDIUM,
         nullable=False,
     )
     type: Mapped[TaskType] = mapped_column(
@@ -50,7 +51,7 @@ class Task(Base):
         default=TaskType.TASK,
         nullable=False,
     )
-    tags: Mapped[str] = mapped_column(String(255), default="")  # comma-separated
+    tags: Mapped[str] = mapped_column(String(255), default="")
 
     # Scheduling
     start_date: Mapped[datetime | None] = mapped_column(
@@ -59,7 +60,6 @@ class Task(Base):
     due_date: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    estimated_duration_minutes: Mapped[int | None] = mapped_column(nullable=True)
     timezone: Mapped[str | None] = mapped_column(String(64), nullable=True)
     recurrence_rule: Mapped[str | None] = mapped_column(
         String(255), nullable=True
@@ -103,11 +103,10 @@ class Task(Base):
         Enum(AgentPermissionLevel, name="agent_permission_level_enum"),
         nullable=True,
     )
-    agent_activity_log: Mapped[list[dict]] = mapped_column(JSON, default=list)
-    reasoning_trace: Mapped[str | None] = mapped_column(String, nullable=True)
+    agent_activity_log: Mapped[list[dict]] = mapped_column(JSONB, default=list)
+    reasoning_trace: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Embedding
-    # Populate at insert/update time
     embedding: Mapped[list[float] | None] = mapped_column(
         Vector(EMBEDDING_DIM), nullable=True
     )

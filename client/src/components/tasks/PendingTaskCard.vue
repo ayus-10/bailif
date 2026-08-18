@@ -11,6 +11,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    parentId: {
+        type: String,
+        default: null,
+    },
 });
 
 const emit = defineEmits(["submit", "cancel"]);
@@ -49,6 +53,7 @@ function submit() {
         title: form.value.title.trim(),
         description: form.value.description.trim(),
         project_id: form.value.projectId,
+        parent_id: props.parentId,
         priority: form.value.priority,
         tags: form.value.tags
             .split(",")

@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
@@ -29,7 +27,7 @@ def create_dependency(
     task: Task = Depends(get_task_by_id),
     db: Session = Depends(get_db),
 ) -> TaskDependency:
-    return services.create_dependency(db, task.id, payload)
+    return services.create_dependency(db, task, payload)
 
 
 @router.get(
@@ -41,16 +39,6 @@ def list_dependencies(
     db: Session = Depends(get_db),
 ) -> list[TaskDependency]:
     return services.list_dependencies_for_task(db, task.id)
-
-
-@router.get(
-    "/{dependency_id}",
-    response_model=TaskDependencyRead,
-)
-def get_dependency(
-    dependency: TaskDependency = Depends(get_task_dependency_by_id),
-) -> TaskDependency:
-    return dependency
 
 
 @router.delete(
