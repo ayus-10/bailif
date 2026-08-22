@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.db.task import Task, TaskDependency
-from app.repositories.task_dependencies import services
-from app.repositories.task_dependencies.dependencies import get_task_dependency_by_id
-from app.repositories.task_dependencies.schemas import (
+from app.features.task_dependencies import services
+from app.features.task_dependencies.dependencies import get_task_dependency_by_id
+from app.features.task_dependencies.schemas import (
     TaskDependencyCreate,
     TaskDependencyRead,
 )
-from app.repositories.tasks.dependencies import get_task_by_id
+from app.features.tasks.dependencies import get_task_by_id
+from app.models.db.task import Task, TaskDependency
 
 router = APIRouter(
     prefix="/tasks/{task_id}/dependencies",

@@ -4,16 +4,16 @@ from uuid import UUID
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.models.db.task import Task, TaskDependency
-from app.models.enums.task import DependencyType
-from app.repositories.task_dependencies.exceptions import (
+from app.features.task_dependencies.exceptions import (
     CycleDetectedError,
     DuplicateDependencyError,
     SelfDependencyError,
     TaskLevelMismatchError,
 )
-from app.repositories.task_dependencies.schemas import TaskDependencyCreate
-from app.repositories.tasks.exceptions import TaskNotFoundError
+from app.features.task_dependencies.schemas import TaskDependencyCreate
+from app.features.tasks.exceptions import TaskNotFoundError
+from app.models.db.task import Task, TaskDependency
+from app.models.enums.task import DependencyType
 
 
 def _normalized_edge(
@@ -24,6 +24,7 @@ def _normalized_edge(
     if dependency_type == DependencyType.BLOCKED_BY:
         return depends_on_id, task_id
     return None
+
 
 # TODO: hand the traversal to the DB and let its query planner figure out which rows are relevant
 def _would_create_cycle(db: Session, from_id: UUID, to_id: UUID) -> bool:

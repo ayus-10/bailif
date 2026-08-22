@@ -2,14 +2,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ValidationError
-from app.models.db.project import Project
-from app.repositories.projects.schemas import (
+from app.features.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
     ProjectListResponse,
     ProjectRead,
     ProjectUpdate,
 )
+from app.models.db.project import Project
 from app.utils.date_validation import validate_project_dates
 
 

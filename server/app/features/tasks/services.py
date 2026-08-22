@@ -7,14 +7,14 @@ from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
 from app.core.exceptions import ValidationError
-from app.models.db.task import Task
-from app.repositories.tasks.schemas import (
+from app.features.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
     TaskListResponse,
     TaskRead,
     TaskUpdate,
 )
+from app.models.db.task import Task
 from app.utils.date_validation import validate_task_dates
 from app.utils.pagination import decode_cursor, encode_cursor
 

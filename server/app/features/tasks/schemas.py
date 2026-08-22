@@ -4,9 +4,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.features.projects.schemas import ProjectRead
 from app.models.enums.shared import TaskPriority, TaskStatus
 from app.models.enums.task import TaskType
-from app.repositories.projects.schemas import ProjectRead
 from app.utils.date_validation import after
 
 
