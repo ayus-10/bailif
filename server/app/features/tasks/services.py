@@ -1,7 +1,7 @@
 import asyncio
+from typing import Tuple
 from uuid import UUID
 
-from fastapi.background import BackgroundTasks
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
@@ -60,7 +60,8 @@ def generate_and_save_task_embedding(task_id: UUID):
 
 
 def create_task(
-    db: Session, payload: TaskCreate, background_tasks: BackgroundTasks
+    db: Session,
+    payload: TaskCreate,
 ) -> Task:
     task = Task(**payload.model_dump())
 
@@ -73,14 +74,14 @@ def create_task(
     db.commit()
     db.refresh(task)
 
-    background_tasks.add_task(generate_and_save_task_embedding, task.id)
-
     return task
 
 
 def update_task(
-    db: Session, task: Task, payload: TaskUpdate, background_tasks: BackgroundTasks
-) -> Task:
+    db: Session,
+    task: Task,
+    payload: TaskUpdate,
+) -> Tuple[Task, int]:
     updates = payload.model_dump(exclude_unset=True)
 
     try:
@@ -94,10 +95,9 @@ def update_task(
     db.commit()
     db.refresh(task)
 
-    if len(updates.items()) > 0:
-        background_tasks.add_task(generate_and_save_task_embedding, task.id)
+    updated_field_count = len(updates.items())
 
-    return task
+    return task, updated_field_count
 
 
 def list_tasks(db: Session, filters: TaskFilterParams) -> TaskListResponse:
