@@ -16,6 +16,10 @@ from app.models.db.task import (  # noqa: F401
     Task,
     TaskDependency,
 )
+from app.models.db.taskboard import (  # noqa: F401
+    Taskboard,
+    TaskboardTask,
+)
 
 config = context.config
 
