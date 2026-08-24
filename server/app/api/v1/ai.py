@@ -38,18 +38,14 @@ async def chat(
     if mode == "search_tasks":
         if not payload.query:
             raise HTTPException(422, "query is required when mode=search_tasks")
-        hits = await semantic_search(
-            db=db, query=payload.query, model=Task, top_k=payload.top_k
-        )
+        hits = await semantic_search(db=db, query=payload.query, top_k=payload.top_k)
         results = [{"task": task, "score": score} for task, score in hits]
         return ChatResponse(reply="", actions=[], results=results)
 
     if mode == "suggest_tasks":
         if not payload.title:
             raise HTTPException(422, "title is required when mode=suggest_tasks")
-        similar_tasks = await semantic_search(
-            db=db, query=payload.title, model=Task, top_k=5
-        )
+        similar_tasks = await semantic_search(db=db, query=payload.title, top_k=5)
         suggestions = await generate_task_suggestions(
             payload=TaskSuggestionRequest(
                 title=payload.title, description=payload.description
@@ -74,7 +70,7 @@ async def chat(
         results = []
         for item in plan.actions:
             try:
-                result = await execute_action(db, item.type, item.data)
+                result = await execute_action(db, item.type)
                 results.append({"type": item.type, "ok": True, "result": result})
             except Exception as e:
                 results.append({"type": item.type, "ok": False, "error": str(e)})
@@ -129,7 +125,7 @@ async def accept_action(
 
     for item in items:
         try:
-            result = await execute_action(db, item.type, item.data)
+            result = await execute_action(db, item.type)
             results.append(
                 ActionExecutionResult(type=item.type, ok=True, result=result)
             )
