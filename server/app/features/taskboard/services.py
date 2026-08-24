@@ -59,20 +59,43 @@ def list_taskboards(
     db: Session,
     project_id: UUID | None = None,
 ) -> TaskboardListResponse:
-    stmt = select(Taskboard)
+    stmt = (
+        select(
+            Taskboard,
+            func.count(Task.id).label("task_count"),
+        )
+        .outerjoin(
+            TaskboardTask,
+            TaskboardTask.taskboard_id == Taskboard.id,
+        )
+        .outerjoin(
+            Task,
+            Task.id == TaskboardTask.task_id,
+        )
+    )
 
     if project_id is not None:
         stmt = stmt.where(Taskboard.project_id == project_id)
 
-    stmt = stmt.order_by(
+    stmt = stmt.group_by(Taskboard.id).order_by(
         Taskboard.created_at.asc(),
         Taskboard.id.asc(),
     )
 
-    rows = list(db.execute(stmt).scalars().all())
+    rows = db.execute(stmt).all()
 
     return TaskboardListResponse(
-        items=[TaskboardListRead.model_validate(row) for row in rows],
+        items=[
+            TaskboardListRead(
+                id=taskboard.id,
+                name=taskboard.name,
+                description=taskboard.description,
+                color=taskboard.color,
+                project_id=taskboard.project_id,
+                task_count=task_count,
+            )
+            for taskboard, task_count in rows
+        ],
     )
 
 
