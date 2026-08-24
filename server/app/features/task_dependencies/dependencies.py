@@ -4,8 +4,8 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.features.task_dependencies.exceptions import TaskDependencyNotFoundError
 from app.models.db.task import TaskDependency
-from app.repositories.task_dependencies.exceptions import TaskDependencyNotFoundError
 
 
 def get_task_dependency_by_id(

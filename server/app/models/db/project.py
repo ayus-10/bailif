@@ -11,7 +11,7 @@ from app.models.enums.project import ProjectStatus
 from app.models.enums.shared import AgentPermissionLevel
 
 if TYPE_CHECKING:
-    from app.models.db.task import Task
+    from app.models.db import Task, Taskboard
 
 
 class Project(Base):
@@ -60,6 +60,7 @@ class Project(Base):
 
     # Relations
     tasks: Mapped[list[Task]] = relationship("Task", back_populates="project")
+    taskboards: Mapped[list[Taskboard]] = relationship("Taskboard", back_populates="project")
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

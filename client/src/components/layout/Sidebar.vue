@@ -1,3 +1,60 @@
+<script setup>
+import { useRouter } from "vue-router";
+import { computed, onMounted, ref } from "vue";
+import { useProjectsStore } from "@/stores/projects.store";
+
+const emit = defineEmits(["create-board"]);
+
+const router = useRouter();
+
+const isOpen = ref(true);
+const isRail = ref(false);
+const unreadNotifications = ref(4);
+
+const projectsStore = useProjectsStore();
+
+const taskBoards = [];
+
+onMounted(() => {
+    projectsStore.fetch();
+});
+
+const projects = computed(() => projectsStore.items);
+
+const MIN_WIDTH = 220;
+const MAX_WIDTH = 440;
+const drawerWidth = ref(280);
+
+let startX = 0;
+let startWidth = 0;
+
+/** @param {MouseEvent} event */
+function startResize(event) {
+    startX = event.clientX;
+    startWidth = drawerWidth.value;
+
+    window.addEventListener("mousemove", handleResize);
+    window.addEventListener("mouseup", stopResize);
+}
+
+/** @param {MouseEvent} event */
+function handleResize(event) {
+    const delta = event.clientX - startX;
+    const next = startWidth + delta;
+
+    drawerWidth.value = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, next));
+}
+
+function stopResize() {
+    window.removeEventListener("mousemove", handleResize);
+    window.removeEventListener("mouseup", stopResize);
+}
+
+function createBoard() {
+    emit("create-board");
+}
+</script>
+
 <template>
     <v-navigation-drawer
         v-model="isOpen"
@@ -11,13 +68,16 @@
             <v-avatar color="primary" size="32" class="ml-1">
                 <span class="text-subtitle-2 font-weight-bold">P</span>
             </v-avatar>
+
             <span
                 v-if="!isRail"
                 class="text-subtitle-1 font-weight-medium ml-3 text-truncate"
             >
                 app
             </span>
+
             <v-spacer />
+
             <v-btn
                 v-if="!isRail"
                 icon="mdi-chevron-left"
@@ -53,6 +113,7 @@
                         title="Projects"
                     />
                 </template>
+
                 <v-list-item
                     v-for="project in projects"
                     :key="project.id"
@@ -73,33 +134,34 @@
                     />
                 </template>
 
-                <v-list-subheader v-if="!isRail">Status</v-list-subheader>
-                <v-list-item
-                    v-for="status in taskStatuses"
-                    :key="status.value"
-                    :active="taskFilters.status === status.value"
-                    :prepend-icon="status.icon"
-                    :title="status.label"
-                    density="compact"
-                    @click="setStatusFilter(status.value)"
-                />
+                <v-list-subheader v-if="!isRail">
+                    Task boards
+                </v-list-subheader>
 
-                <v-list-subheader v-if="!isRail">Priority</v-list-subheader>
                 <v-list-item
-                    v-for="priority in taskPriorities"
-                    :key="priority.value"
-                    :active="taskFilters.priority === priority.value"
+                    v-for="board in taskBoards"
+                    :key="board.id"
+                    :to="`/tasks/boards/${board.id}`"
+                    :title="board.name"
                     density="compact"
-                    @click="setPriorityFilter(priority.value)"
                 >
                     <template #prepend>
                         <v-icon
-                            :color="priority.color"
-                            icon="mdi-flag"
+                            :color="board.color"
+                            icon="mdi-circle"
                             size="small"
                         />
                     </template>
-                    <v-list-item-title>{{ priority.label }}</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item
+                    title="New task board"
+                    density="compact"
+                    @click="createBoard"
+                >
+                    <template #prepend>
+                        <v-icon icon="mdi-plus" size="small" />
+                    </template>
                 </v-list-item>
             </v-list-group>
 
@@ -140,81 +202,6 @@
         <div v-if="!isRail" class="resize-handle" @mousedown="startResize" />
     </v-navigation-drawer>
 </template>
-
-<script setup>
-import { useRouter } from "vue-router";
-import { computed, onMounted, reactive, ref } from "vue";
-import { taskPriorities, taskStatuses } from "@/constants/sidebarMeta";
-import { useProjectsStore } from "@/stores/projects.store";
-
-/** @typedef {import('@/types/task.js').TaskStatus} TaskStatusValue */
-/** @typedef {import('@/types/task.js').TaskPriority} TaskPriorityValue */
-
-/**
- * @typedef {Object} TaskFilters
- * @property {TaskStatusValue | null} status
- * @property {TaskPriorityValue | null} priority
- */
-
-const router = useRouter();
-
-const isOpen = ref(true);
-const isRail = ref(false);
-const unreadNotifications = ref(4);
-
-const projectsStore = useProjectsStore();
-
-onMounted(() => {
-    projectsStore.fetch();
-});
-
-const projects = computed(() => projectsStore.items);
-
-/** @type {TaskFilters} */
-const taskFilters = reactive({
-    status: null,
-    priority: null,
-});
-
-/** @param {TaskStatusValue} value */
-function setStatusFilter(value) {
-    taskFilters.status = taskFilters.status === value ? null : value;
-    router.push({ path: "/tasks", query: { ...taskFilters } });
-}
-
-/** @param {TaskPriorityValue} value */
-function setPriorityFilter(value) {
-    taskFilters.priority = taskFilters.priority === value ? null : value;
-    router.push({ path: "/tasks", query: { ...taskFilters } });
-}
-
-const MIN_WIDTH = 220;
-const MAX_WIDTH = 440;
-const drawerWidth = ref(280);
-
-let startX = 0;
-let startWidth = 0;
-
-/** @param {MouseEvent} event */
-function startResize(event) {
-    startX = event.clientX;
-    startWidth = drawerWidth.value;
-    window.addEventListener("mousemove", handleResize);
-    window.addEventListener("mouseup", stopResize);
-}
-
-/** @param {MouseEvent} event */
-function handleResize(event) {
-    const delta = event.clientX - startX;
-    const next = startWidth + delta;
-    drawerWidth.value = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, next));
-}
-
-function stopResize() {
-    window.removeEventListener("mousemove", handleResize);
-    window.removeEventListener("mouseup", stopResize);
-}
-</script>
 
 <style scoped>
 .app-sidebar {

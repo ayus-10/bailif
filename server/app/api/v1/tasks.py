@@ -2,16 +2,16 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.db.task import Task
-from app.repositories.tasks import services
-from app.repositories.tasks.dependencies import get_task_by_id
-from app.repositories.tasks.schemas import (
+from app.features.tasks import services
+from app.features.tasks.dependencies import get_task_by_id
+from app.features.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
     TaskListResponse,
     TaskRead,
     TaskUpdate,
 )
+from app.models.db.task import Task
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -22,7 +22,11 @@ def create_task(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> Task:
-    return services.create_task(db, payload, background_tasks)
+    task = services.create_task(db, payload)
+
+    background_tasks.add_task(services.generate_and_save_task_embedding, task.id)
+
+    return task
 
 
 @router.get("", response_model=TaskListResponse)
@@ -44,7 +48,16 @@ def update_task(
     task: Task = Depends(get_task_by_id),
     db: Session = Depends(get_db),
 ) -> Task:
-    return services.update_task(db, task, payload, background_tasks)
+    task, updated_field_count = services.update_task(
+        db,
+        task,
+        payload,
+    )
+
+    if updated_field_count > 0:
+        background_tasks.add_task(services.generate_and_save_task_embedding, task.id)
+
+    return task
 
 
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
