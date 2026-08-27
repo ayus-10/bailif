@@ -9,7 +9,6 @@ from app.features.taskboard.dependencies import get_taskboard_by_id
 from app.features.taskboard.schemas import (
     TaskAssignment,
     TaskboardCreate,
-    TaskboardListRead,
     TaskboardListResponse,
     TaskboardRead,
     TaskboardTaskRead,
@@ -35,10 +34,10 @@ def create_taskboard(
 
 @router.get(
     "",
-    response_model=list[TaskboardListRead],
+    response_model=TaskboardListResponse,
 )
 def list_taskboards(
-    project_id: UUID | None = Query(default=None),
+    project_id: UUID = Query(),
     db: Session = Depends(get_db),
 ) -> TaskboardListResponse:
     return services.list_taskboards(db, project_id)

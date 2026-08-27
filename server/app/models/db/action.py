@@ -1,11 +1,16 @@
+import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from sqlalchemy import JSON, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.db import User
 
 
 class Action(Base):
@@ -17,11 +22,13 @@ class Action(Base):
         default=uuid4,
     )
 
-    # user_id: Mapped[UUID] = mapped_column(
-    #     ForeignKey("users.id", ondelete="CASCADE"),
-    #     nullable=False,
-    #     index=True,
-    # )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    user: Mapped[User] = relationship()
 
     project_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("projects.id", ondelete="CASCADE"),

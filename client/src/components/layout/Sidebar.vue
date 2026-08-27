@@ -1,7 +1,9 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
+import { taskboardColors } from "@/constants/sidebarMeta";
 import { useProjectsStore } from "@/stores/projects.store";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
 
 const emit = defineEmits(["create-board"]);
 
@@ -12,14 +14,15 @@ const isRail = ref(false);
 const unreadNotifications = ref(4);
 
 const projectsStore = useProjectsStore();
-
-const taskBoards = [];
+const taskboardStore = useTaskboardsStore();
 
 onMounted(() => {
     projectsStore.fetch();
+    taskboardStore.fetch({ projectId: "a1a1a1a1-0003-4000-8000-000000000003" });
 });
 
 const projects = computed(() => projectsStore.items);
+const taskBoards = computed(() => taskboardStore.items);
 
 const MIN_WIDTH = 220;
 const MAX_WIDTH = 440;
@@ -147,7 +150,7 @@ function createBoard() {
                 >
                     <template #prepend>
                         <v-icon
-                            :color="board.color"
+                            :color="board.color || taskboardColors[0]"
                             icon="mdi-circle"
                             size="small"
                         />

@@ -3,9 +3,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import JSON, UUID, DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import UUID, DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, backref, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.enums.shared import (
@@ -66,27 +66,33 @@ class Task(Base):
     )  # RRULE string, e.g. "FREQ=WEEKLY;BYDAY=MO"
 
     parent_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=True
+        UUID(as_uuid=True),
+        ForeignKey("tasks.id", ondelete="SET NULL"),
+        nullable=True,
     )
-    subtasks: Mapped[list[Task]] = relationship(
-        "Task",
-        backref=backref("parent", remote_side=[id]),
+    subtasks: Mapped[list["Task"]] = relationship(
+        back_populates="parent",
+    )
+    parent: Mapped["Task | None"] = relationship(
+        back_populates="subtasks",
+        remote_side="Task.id",
     )
 
     outgoing_dependencies: Mapped[list[TaskDependency]] = relationship(
-        "TaskDependency",
         foreign_keys="TaskDependency.task_id",
         back_populates="task",
         cascade="all, delete-orphan",
     )
+    incoming_dependencies: Mapped[list["TaskDependency"]] = relationship(
+        foreign_keys="TaskDependency.depends_on_id",
+        back_populates="depends_on",
+    )
 
     # Project link
-    project_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=False
     )
-    project: Mapped[Project | None] = relationship(
-        "Project", back_populates="tasks", lazy="joined"
-    )
+    project: Mapped[Project] = relationship(back_populates="tasks")
 
     # Agentic layer
     created_by: Mapped[CreatedBy] = mapped_column(
@@ -130,19 +136,24 @@ class TaskDependency(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    task_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=False
-    )
-    depends_on_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("tasks.id"), nullable=False
-    )
     dependency_type: Mapped[DependencyType] = mapped_column(
         Enum(DependencyType, name="dependency_type_enum"),
         default=DependencyType.BLOCKS,
         nullable=False,
     )
 
-    task: Mapped[Task] = relationship(
-        "Task", foreign_keys=[task_id], back_populates="outgoing_dependencies"
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tasks.id")
     )
-    depends_on: Mapped[Task] = relationship("Task", foreign_keys=[depends_on_id])
+    depends_on_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tasks.id")
+    )
+
+    task: Mapped["Task"] = relationship(
+        foreign_keys="TaskDependency.task_id",
+        back_populates="outgoing_dependencies",
+    )
+    depends_on: Mapped["Task"] = relationship(
+        foreign_keys="TaskDependency.depends_on_id",
+        back_populates="incoming_dependencies",
+    )

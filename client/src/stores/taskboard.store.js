@@ -39,18 +39,16 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
     actions: {
         /**
-         * @param {Object} [options]
-         * @param {string} [options.projectId]
+         * @param {Object} options
+         * @param {string} options.projectId
          * @param {boolean} [options.forceRefresh=false]
          */
-        async fetch({ projectId, forceRefresh = false } = {}) {
+        async fetch({ projectId, forceRefresh = false }) {
             if (this.status === "loading" && !forceRefresh) return;
             this.status = "loading";
             this.error = null;
 
-            const cacheKey = projectId
-                ? `taskboards:project:${projectId}`
-                : "taskboards:all";
+            const cacheKey = `taskboards:project:${projectId}`;
 
             try {
                 const data = await cachedRequest(

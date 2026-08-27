@@ -1,5 +1,8 @@
 <script setup>
 import { computed, ref } from "vue";
+import { taskboardColors } from "@/constants/sidebarMeta";
+
+/** @typedef {import('@/types/taskboard').TaskboardForm} TaskboardForm */
 
 const props = defineProps({
     modelValue: {
@@ -10,23 +13,12 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "submit"]);
 
-const colors = [
-    "#6366F1",
-    "#8B5CF6",
-    "#EC4899",
-    "#EF4444",
-    "#F97316",
-    "#EAB308",
-    "#22C55E",
-    "#14B8A6",
-    "#06B6D4",
-    "#3B82F6",
-];
-
+/** @type {import("vue").Ref<TaskboardForm>} */
 const form = ref({
     name: "",
     description: "",
-    color: colors[0],
+    color: taskboardColors[0],
+    project_id: "id",
 });
 
 const canSubmit = computed(() => form.value.name.trim().length > 0);
@@ -47,7 +39,8 @@ function submit() {
     form.value = {
         name: "",
         description: "",
-        color: colors[0],
+        color: taskboardColors[0],
+        project_id: "",
     };
 
     close();
@@ -61,9 +54,7 @@ function submit() {
         @update:model-value="emit('update:modelValue', $event)"
     >
         <v-card rounded="xl">
-            <v-card-title class="pa-5 pb-2">
-                Create task board
-            </v-card-title>
+            <v-card-title class="pa-5 pb-2"> Create task board </v-card-title>
 
             <v-card-text class="pa-5">
                 <v-text-field
@@ -90,19 +81,16 @@ function submit() {
                 />
 
                 <div class="mt-5">
-                    <div class="text-subtitle-2 mb-2">
-                        Color
-                    </div>
+                    <div class="text-subtitle-2 mb-2">Color</div>
 
                     <div class="d-flex flex-wrap ga-2">
                         <button
-                            v-for="color in colors"
+                            v-for="color in taskboardColors"
                             :key="color"
                             type="button"
                             class="color-option"
                             :class="{
-                                'color-option--selected':
-                                    form.color === color,
+                                'color-option--selected': form.color === color,
                             }"
                             :style="{ '--color': color }"
                             :aria-label="`Select ${color}`"
@@ -122,9 +110,7 @@ function submit() {
             <v-card-actions class="pa-5 pt-0">
                 <v-spacer />
 
-                <v-btn variant="text" @click="close">
-                    Cancel
-                </v-btn>
+                <v-btn variant="text" @click="close"> Cancel </v-btn>
 
                 <v-btn
                     color="primary"

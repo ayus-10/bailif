@@ -32,22 +32,20 @@ class Taskboard(Base):
     color: Mapped[str | None] = mapped_column(String(7), nullable=True)
 
     # Project link
-    project_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    project: Mapped[Project | None] = relationship(
-        "Project", back_populates="taskboards", lazy="joined"
-    )
+    project: Mapped[Project] = relationship(back_populates="taskboards")
 
     # Relationships
     task_associations: Mapped[list[TaskboardTask]] = relationship(
-        "TaskboardTask",
         back_populates="taskboard",
         cascade="all, delete-orphan",
         foreign_keys="TaskboardTask.taskboard_id",
     )
     tasks: Mapped[list[Task]] = relationship(
-        "Task",
         secondary="taskboard_tasks",
         viewonly=True,
     )
@@ -79,10 +77,8 @@ class TaskboardTask(Base):
     position: Mapped[int] = mapped_column(Integer, default=0)
 
     # Relationships
-    taskboard: Mapped[Taskboard] = relationship(
-        "Taskboard", back_populates="task_associations", lazy="joined"
-    )
-    task: Mapped[Task] = relationship(lazy="joined")
+    taskboard: Mapped[Taskboard] = relationship(back_populates="task_associations")
+    task: Mapped[Task] = relationship()
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

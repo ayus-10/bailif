@@ -20,6 +20,7 @@ from app.models.db.taskboard import (  # noqa: F401
     Taskboard,
     TaskboardTask,
 )
+from app.models.db.user import User  # noqa: F401
 
 config = context.config
 
