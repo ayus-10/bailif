@@ -60,7 +60,9 @@ class Project(Base):
 
     # Relations
     tasks: Mapped[list[Task]] = relationship("Task", back_populates="project")
-    taskboards: Mapped[list[Taskboard]] = relationship("Taskboard", back_populates="project")
+    taskboards: Mapped[list[Taskboard]] = relationship(
+        "Taskboard", back_populates="project"
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

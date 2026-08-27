@@ -57,7 +57,7 @@ def update_taskboard(
 
 def list_taskboards(
     db: Session,
-    project_id: UUID | None = None,
+    project_id: UUID,
 ) -> TaskboardListResponse:
     stmt = (
         select(

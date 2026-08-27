@@ -12,7 +12,7 @@ class TaskboardCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = Field(default="", max_length=5000)
     color: str | None = Field(None, pattern=r"#[0-9a-fA-F]{6}")
-    project_id: UUID | None = None
+    project_id: UUID
 
 
 class TaskboardUpdate(BaseModel):
@@ -38,7 +38,7 @@ class TaskboardRead(BaseModel):
     name: str
     description: str
     color: str | None
-    project_id: UUID | None
+    project_id: UUID
     created_at: datetime
     updated_at: datetime
     tasks: List[TaskboardTaskRead] = []
@@ -52,7 +52,7 @@ class TaskboardListRead(BaseModel):
     name: str
     description: str
     color: str | None
-    project_id: UUID | None
+    project_id: UUID
     task_count: int
 
     class Config:

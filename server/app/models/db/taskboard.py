@@ -32,8 +32,10 @@ class Taskboard(Base):
     color: Mapped[str | None] = mapped_column(String(7), nullable=True)
 
     # Project link
-    project_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("projects.id"), nullable=True
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
     )
     project: Mapped[Project | None] = relationship(
         "Project", back_populates="taskboards", lazy="joined"

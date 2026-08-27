@@ -127,7 +127,7 @@ export async function removeTaskFromBoard(boardId, taskId) {
         `${API_URL}/taskboards/${boardId}/tasks/${taskId}`,
         {
             method: "DELETE",
-        },
+        }
     );
 
     if (!response.ok) {
@@ -149,7 +149,7 @@ export async function repositionTask(boardId, payload) {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(payload),
-        },
+        }
     );
 
     if (!response.ok) {

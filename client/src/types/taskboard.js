@@ -1,11 +1,19 @@
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 
 /**
+ * @typedef {Object} TaskboardForm
+ * @property {string} name
+ * @property {string} description
+ * @property {string} color
+ * @property {string} project_id
+ */
+
+/**
  * @typedef {Object} TaskboardCreate
  * @property {string} name
  * @property {string | null} [description]
  * @property {string | null} [color]
- * @property {string | null} [project_id]
+ * @property {string} project_id
  */
 
 /**
@@ -29,7 +37,7 @@
  * @property {string} name
  * @property {string} description
  * @property {string | null} color
- * @property {string | null} project_id
+ * @property {string} project_id
  * @property {string} created_at
  * @property {string} updated_at
  * @property {TaskboardTaskRead[]} tasks
@@ -41,7 +49,7 @@
  * @property {string} name
  * @property {string} description
  * @property {string | null} color
- * @property {string | null} project_id
+ * @property {string} project_id
  * @property {number} task_count
  */
 

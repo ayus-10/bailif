@@ -38,7 +38,7 @@ def create_taskboard(
     response_model=list[TaskboardListRead],
 )
 def list_taskboards(
-    project_id: UUID | None = Query(default=None),
+    project_id: UUID = Query(),
     db: Session = Depends(get_db),
 ) -> TaskboardListResponse:
     return services.list_taskboards(db, project_id)

@@ -49,7 +49,7 @@ class TaskCreate(TaskFieldValidators):
     priority: TaskPriority = TaskPriority.MEDIUM
     type: TaskType = TaskType.TASK
     tags: str = ""
-    project_id: UUID | None = None
+    project_id: UUID
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
@@ -71,7 +71,7 @@ class TaskUpdate(TaskFieldValidators):
     priority: TaskPriority | None = None
     type: TaskType | None = None
     tags: str | None = None
-    project_id: UUID | None = None
+    project_id: UUID
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
@@ -90,7 +90,7 @@ class TaskRead(BaseModel):
     priority: TaskPriority
     type: TaskType
     tags: str
-    project_id: UUID | None
+    project_id: UUID
     parent_id: UUID | None
     due_date: datetime | None
     created_at: datetime
@@ -102,7 +102,7 @@ class TaskRead(BaseModel):
 
 
 class TaskFilterParams(BaseModel):
-    project_id: UUID | None = None
+    project_id: UUID
     status: TaskStatus | None = None
     priority: TaskPriority | None = None
     type: TaskType | None = None
