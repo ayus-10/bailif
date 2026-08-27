@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, Boolean, DateTime, Enum, String, Text, func
+from sqlalchemy import UUID, Boolean, DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,7 +11,7 @@ from app.models.enums.project import ProjectStatus
 from app.models.enums.shared import AgentPermissionLevel
 
 if TYPE_CHECKING:
-    from app.models.db import Task, Taskboard
+    from app.models.db import Task, Taskboard, User
 
 
 class Project(Base):
@@ -28,6 +28,12 @@ class Project(Base):
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus, name="project_status_enum"),
         default=ProjectStatus.ACTIVE,
+        nullable=False,
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
 
@@ -59,10 +65,9 @@ class Project(Base):
     external_refs: Mapped[dict] = mapped_column(JSONB, default=dict)
 
     # Relations
-    tasks: Mapped[list[Task]] = relationship("Task", back_populates="project")
-    taskboards: Mapped[list[Taskboard]] = relationship(
-        "Taskboard", back_populates="project"
-    )
+    tasks: Mapped[list[Task]] = relationship(back_populates="project")
+    taskboards: Mapped[list[Taskboard]] = relationship(back_populates="project")
+    user: Mapped[User] = relationship(back_populates="projects")
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
