@@ -67,7 +67,10 @@ class Project(Base):
     # Relations
     tasks: Mapped[list[Task]] = relationship(back_populates="project")
     taskboards: Mapped[list[Taskboard]] = relationship(back_populates="project")
-    user: Mapped[User] = relationship(back_populates="projects")
+    user: Mapped["User"] = relationship(
+        foreign_keys="Project.user_id",
+        back_populates="projects",
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

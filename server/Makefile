@@ -13,3 +13,6 @@ alembic-upgrade:
 
 dev:
 	poetry run uvicorn app.main:app --reload
+
+seed:
+	poetry run python -m sample_data.seed

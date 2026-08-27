@@ -1,7 +1,16 @@
 {
+  "users": [
+    {
+      "id": "c3c3c3c3-0001-4000-8000-000000000001",
+      "username": "yeezy",
+      "password": "$2b$12$F25m/GTNSQF6HFrC3DVwtuPFYxosrh/lWw10zYYzXgy89Vj/BLqzC",
+      "active_project_id": null
+    }
+  ],
   "projects": [
     {
       "id": "a1a1a1a1-0001-4000-8000-000000000001",
+      "user_id": "c3c3c3c3-0001-4000-8000-000000000001",
       "name": "Website Redesign",
       "description": "Refresh the marketing site with the new brand system.",
       "icon": "mdi-web",
@@ -10,6 +19,7 @@
     },
     {
       "id": "a1a1a1a1-0002-4000-8000-000000000002",
+      "user_id": "c3c3c3c3-0001-4000-8000-000000000001",
       "name": "Mobile App",
       "description": "Native iOS/Android companion app.",
       "icon": "mdi-cellphone",
@@ -18,6 +28,7 @@
     },
     {
       "id": "a1a1a1a1-0003-4000-8000-000000000003",
+      "user_id": "c3c3c3c3-0001-4000-8000-000000000001",
       "name": "Core Platform",
       "description": "Shared backend infrastructure: auth, security, and internal tooling.",
       "icon": "mdi-server",
@@ -29,7 +40,7 @@
     {
       "id": "b2b2b2b2-0001-4000-8000-000000000001",
       "title": "Design authentication flow",
-      "description": "Design and document end-to-end user authentication architecture. Define user workflows for secure login, registration, email verification, password reset, and session management. Outline token strategies (access/refresh tokens) and account lockout mechanisms to protect against brute-force attacks.",
+      "description": "Design and document end-to-end user authentication architecture.",
       "status": "in_progress",
       "priority": "high",
       "type": "task",
@@ -41,7 +52,7 @@
     {
       "id": "b2b2b2b2-0002-4000-8000-000000000002",
       "title": "Implement JWT middleware",
-      "description": "Develop and integrate custom middleware to intercept incoming HTTP requests, extract bearer tokens from request headers, and validate JSON Web Tokens (JWT). Handle signature validation, token expiration, payload decoding, and return appropriate HTTP error responses (401 Unauthorized, 403 Forbidden) when tokens are invalid or expired.",
+      "description": "Validate bearer tokens, handle expiration, and return appropriate authentication errors.",
       "status": "open",
       "priority": "high",
       "type": "task",
@@ -53,7 +64,7 @@
     {
       "id": "b2b2b2b2-0003-4000-8000-000000000003",
       "title": "Write database migrations",
-      "description": "Create, test, and apply Alembic migration scripts to accommodate recent schema changes, including new core tables, foreign key constraints, and performance indexes. Verify both upgrade and rollback operations against a staging database instance to prevent data loss or schema drift.",
+      "description": "Create and test Alembic migrations for recent schema changes.",
       "status": "done",
       "priority": "medium",
       "type": "task",
@@ -65,19 +76,19 @@
     {
       "id": "b2b2b2b2-0004-4000-8000-000000000004",
       "title": "Prepare weekly sprint planning",
-      "description": "Review the product backlog, refine story points, and prioritize user stories based on stakeholder input and team velocity. Populate and structure the active sprint board, assign tasks to team members, and prepare key discussion points for the upcoming sprint planning meeting.",
+      "description": "Review the backlog, refine priorities, and prepare the active sprint.",
       "status": "open",
       "priority": "medium",
       "type": "task",
       "tags": "planning,sprint",
       "due_date": "2026-08-01T10:00:00Z",
       "parent_id": null,
-      "project_id": null
+      "project_id": "a1a1a1a1-0003-4000-8000-000000000003"
     },
     {
       "id": "b2b2b2b2-0005-4000-8000-000000000005",
       "title": "Review pull requests",
-      "description": "Conduct thorough peer code reviews on open pull requests. Inspect code for correctness, adherence to team coding standards, test coverage, potential security vulnerabilities, and performance bottlenecks prior to approving merges into the target branch.",
+      "description": "Review open pull requests for correctness, security, tests, and performance.",
       "status": "open",
       "priority": "medium",
       "type": "task",
@@ -89,7 +100,7 @@
     {
       "id": "b2b2b2b2-0006-4000-8000-000000000006",
       "title": "Design onboarding screens",
-      "description": "Create low- and high-fidelity wireframes for the first-run user onboarding experience. Focus on highlighting core product features, collecting initial user preferences, and minimizing friction during initial application setup to boost conversion and retention rates.",
+      "description": "Create wireframes for the first-run onboarding experience.",
       "status": "open",
       "priority": "medium",
       "type": "task",
@@ -101,7 +112,7 @@
     {
       "id": "b2b2b2b2-0007-4000-8000-000000000007",
       "title": "Set up push notifications",
-      "description": "Configure Firebase Cloud Messaging (FCM) and Apple Push Notification service (APNs) integration for mobile clients. Set up event triggers to dispatch automated notifications for approaching task deadlines, direct messages, and system alerts.",
+      "description": "Configure FCM and APNs integration for mobile clients.",
       "status": "open",
       "priority": "low",
       "type": "task",
@@ -111,21 +122,58 @@
       "project_id": "a1a1a1a1-0002-4000-8000-000000000002"
     }
   ],
-  "task_dependencies": [
+  "taskboards": [
     {
+      "id": "d4d4d4d4-0001-4000-8000-000000000001",
+      "name": "Core Platform Sprint",
+      "description": "Active development board for the core platform.",
+      "color": "#DC2626",
+      "project_id": "a1a1a1a1-0003-4000-8000-000000000003"
+    },
+    {
+      "id": "d4d4d4d4-0002-4000-8000-000000000002",
+      "name": "Website Sprint",
+      "description": "Marketing website redesign tasks.",
+      "color": "#4F46E5",
+      "project_id": "a1a1a1a1-0001-4000-8000-000000000001"
+    }
+  ],
+  "taskboard_tasks": [
+    {
+      "id": "e5e5e5e5-0001-4000-8000-000000000001",
+      "taskboard_id": "d4d4d4d4-0001-4000-8000-000000000001",
       "task_id": "b2b2b2b2-0001-4000-8000-000000000001",
-      "depends_on_id": "b2b2b2b2-0002-4000-8000-000000000002",
-      "dependency_type": "blocks"
+      "position": 0
     },
     {
+      "id": "e5e5e5e5-0002-4000-8000-000000000002",
+      "taskboard_id": "d4d4d4d4-0001-4000-8000-000000000001",
       "task_id": "b2b2b2b2-0002-4000-8000-000000000002",
-      "depends_on_id": "b2b2b2b2-0003-4000-8000-000000000003",
-      "dependency_type": "blocks"
+      "position": 1
     },
     {
+      "id": "e5e5e5e5-0003-4000-8000-000000000003",
+      "taskboard_id": "d4d4d4d4-0001-4000-8000-000000000001",
+      "task_id": "b2b2b2b2-0003-4000-8000-000000000003",
+      "position": 2
+    },
+    {
+      "id": "e5e5e5e5-0004-4000-8000-000000000004",
+      "taskboard_id": "d4d4d4d4-0001-4000-8000-000000000001",
+      "task_id": "b2b2b2b2-0004-4000-8000-000000000004",
+      "position": 3
+    },
+    {
+      "id": "e5e5e5e5-0005-4000-8000-000000000005",
+      "taskboard_id": "d4d4d4d4-0001-4000-8000-000000000001",
+      "task_id": "b2b2b2b2-0005-4000-8000-000000000005",
+      "position": 4
+    },
+    {
+      "id": "e5e5e5e5-0006-4000-8000-000000000006",
+      "taskboard_id": "d4d4d4d4-0002-4000-8000-000000000002",
       "task_id": "b2b2b2b2-0006-4000-8000-000000000006",
-      "depends_on_id": "b2b2b2b2-0001-4000-8000-000000000001",
-      "dependency_type": "relates_to"
+      "position": 0
     }
   ]
 }

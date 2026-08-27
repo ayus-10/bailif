@@ -83,6 +83,10 @@ class Task(Base):
         back_populates="task",
         cascade="all, delete-orphan",
     )
+    incoming_dependencies: Mapped[list["TaskDependency"]] = relationship(
+        foreign_keys="TaskDependency.depends_on_id",
+        back_populates="depends_on",
+    )
 
     # Project link
     project_id: Mapped[uuid.UUID] = mapped_column(

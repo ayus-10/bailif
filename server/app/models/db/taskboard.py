@@ -46,7 +46,6 @@ class Taskboard(Base):
         foreign_keys="TaskboardTask.taskboard_id",
     )
     tasks: Mapped[list[Task]] = relationship(
-        back_populates="taskboards",
         secondary="taskboard_tasks",
         viewonly=True,
     )
