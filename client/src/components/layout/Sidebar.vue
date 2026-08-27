@@ -18,7 +18,7 @@ const taskboardStore = useTaskboardsStore();
 
 onMounted(() => {
     projectsStore.fetch();
-    taskboardStore.fetch();
+    taskboardStore.fetch({ projectId: "a1a1a1a1-0003-4000-8000-000000000003" });
 });
 
 const projects = computed(() => projectsStore.items);

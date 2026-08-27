@@ -38,7 +38,7 @@ class Taskboard(Base):
         nullable=False,
     )
     project: Mapped[Project | None] = relationship(
-        "Project", back_populates="taskboards", lazy="joined"
+        "Project", back_populates="taskboards", lazy="selectin"
     )
 
     # Relationships
