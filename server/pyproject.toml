@@ -18,7 +18,9 @@ dependencies = [
     "httpx==0.27.2",
     "python-dotenv==1.0.1",
     "boto3 (>=1.43.56,<2.0.0)",
-    "pwdlib[argon2]"
+    "pwdlib[argon2]",
+    "pyjwt (>=2.13.0,<3.0.0)",
+    "python-multipart (>=0.0.32,<0.0.33)"
 ]
 
 

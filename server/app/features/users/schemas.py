@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserCreate(BaseModel):
@@ -13,3 +15,11 @@ class UserCreate(BaseModel):
         max_length=128,
         strict=True,
     )
+
+
+class UserRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    username: str
+    active_project_id: UUID | None = None

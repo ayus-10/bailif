@@ -7,7 +7,7 @@ from app.features.users.exceptions import (
     UserAlreadyExistsError,
     UserPasswordHashError,
 )
-from app.features.users.schemas import UserCreate
+from app.features.users.schemas import UserCreate, UserRead
 from app.models.db.user import User
 
 password_hash = PasswordHash.recommended()
@@ -16,7 +16,7 @@ password_hash = PasswordHash.recommended()
 def create_user(
     db: Session,
     payload: UserCreate,
-) -> User:
+) -> UserRead:
     existing_user = db.scalar(select(User).where(User.username == payload.username))
 
     if existing_user:
@@ -38,4 +38,4 @@ def create_user(
     db.commit()
     db.refresh(user)
 
-    return user
+    return UserRead.model_validate(user)

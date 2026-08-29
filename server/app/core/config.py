@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg2://aayush:1234@localhost:5432/local"
 
+    jwt_secret_key: str = ""
+
     llm_provider: str = "local"
 
     ollama_base_url: str = "http://localhost:11434"
