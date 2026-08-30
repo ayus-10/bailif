@@ -1,9 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.features.auth.dependencies import get_current_user
+from app.features.projects.dependencies import get_project_by_id
 from app.features.taskboard import services
 from app.features.taskboard.dependencies import get_taskboard_by_id
 from app.features.taskboard.schemas import (
@@ -15,6 +17,7 @@ from app.features.taskboard.schemas import (
     TaskboardUpdate,
     TaskReposition,
 )
+from app.models.db import Project, User
 from app.models.db.taskboard import Taskboard, TaskboardTask
 
 router = APIRouter(prefix="/taskboards", tags=["taskboards"])
@@ -28,8 +31,9 @@ router = APIRouter(prefix="/taskboards", tags=["taskboards"])
 def create_taskboard(
     payload: TaskboardCreate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> Taskboard:
-    return services.create_taskboard(db, payload)
+    return services.create_taskboard(db, user, payload)
 
 
 @router.get(
@@ -37,10 +41,10 @@ def create_taskboard(
     response_model=TaskboardListResponse,
 )
 def list_taskboards(
-    project_id: UUID = Query(),
+    project: Project = Depends(get_project_by_id),
     db: Session = Depends(get_db),
 ) -> TaskboardListResponse:
-    return services.list_taskboards(db, project_id)
+    return services.list_taskboards(db, project.id)
 
 
 @router.get(
@@ -84,11 +88,13 @@ def delete_taskboard(
 def add_task_to_board(
     payload: TaskAssignment,
     board: Taskboard = Depends(get_taskboard_by_id),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> TaskboardTask:
     return services.add_task_to_board(
         db=db,
         board=board,
+        user=user,
         task_id=payload.task_id,
         position=payload.position,
     )

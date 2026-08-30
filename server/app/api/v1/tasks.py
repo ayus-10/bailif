@@ -2,6 +2,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.features.auth.dependencies import get_current_user
 from app.features.tasks import services
 from app.features.tasks.dependencies import get_task_by_id
 from app.features.tasks.schemas import (
@@ -11,6 +12,7 @@ from app.features.tasks.schemas import (
     TaskRead,
     TaskUpdate,
 )
+from app.models.db import User
 from app.models.db.task import Task
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -21,8 +23,9 @@ def create_task(
     payload: TaskCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> Task:
-    task = services.create_task(db, payload)
+    task = services.create_task(db, payload, user)
 
     background_tasks.add_task(services.generate_and_save_task_embedding, task.id)
 
@@ -31,9 +34,11 @@ def create_task(
 
 @router.get("", response_model=TaskListResponse)
 def list_tasks(
-    filters: TaskFilterParams = Depends(), db: Session = Depends(get_db)
+    filters: TaskFilterParams = Depends(),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> TaskListResponse:
-    return services.list_tasks(db, filters)
+    return services.list_tasks(db, user, filters)
 
 
 @router.get("/{task_id}", response_model=TaskRead)

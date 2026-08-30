@@ -3,6 +3,11 @@ class CoreError(Exception):
     error_code = "internal_error"
 
 
+class UnauthorizedError(CoreError):
+    status_code = 401
+    error_core = "unauthorized_error"
+
+
 class NotFoundError(CoreError):
     status_code = 404
     error_code = "not_found"
@@ -18,5 +23,5 @@ class ValidationError(CoreError):
     error_code = "validation_error"
 
 
-class InvalidCursorError(ValidationError):
-    error_code = "invalid_cursor"
+class InternalServerError(CoreError):
+    pass

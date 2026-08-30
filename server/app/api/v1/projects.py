@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.features.auth.dependencies import get_current_user
 from app.features.projects import services
 from app.features.projects.dependencies import get_project_by_id
 from app.features.projects.schemas import (
@@ -11,6 +12,7 @@ from app.features.projects.schemas import (
     ProjectRead,
     ProjectUpdate,
 )
+from app.models.db import User
 from app.models.db.project import Project
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -24,8 +26,9 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 def create_project(
     payload: ProjectCreate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> Project:
-    return services.create_project(db, payload)
+    return services.create_project(db, user, payload)
 
 
 @router.get(
@@ -35,8 +38,9 @@ def create_project(
 def list_projects(
     filters: ProjectFilterParams = Depends(),
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> ProjectListResponse:
-    return services.list_projects(db, filters)
+    return services.list_projects(db, user, filters)
 
 
 @router.get(

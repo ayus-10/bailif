@@ -3,6 +3,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import TypeAdapter, ValidationError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.agent.schemas.action_items import ActionItemUnion
@@ -103,7 +104,9 @@ async def accept_action(
     db: Session = Depends(get_db),
     # current_user: User = Depends(get_current_user),
 ) -> AcceptActionResponse:
-    action = db.query(Action).filter(Action.id == action_id).first()
+    action = db.execute(
+        select(Action).where(Action.id == action_id)
+    ).scalar_one_or_none()
     if action is None:
         raise HTTPException(404, "Action not found")
 

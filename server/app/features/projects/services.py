@@ -9,15 +9,16 @@ from app.features.projects.schemas import (
     ProjectRead,
     ProjectUpdate,
 )
+from app.models.db import User
 from app.models.db.project import Project
 from app.utils.date_validation import validate_project_dates
 
 
-def create_project(
-    db: Session,
-    payload: ProjectCreate,
-) -> Project:
-    project = Project(**payload.model_dump())
+def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
+    project = Project(
+        **payload.model_dump(),
+        user_id=user.id,
+    )
 
     try:
         validate_project_dates(project)
@@ -52,8 +53,12 @@ def update_project(
     return project
 
 
-def list_projects(db: Session, filters: ProjectFilterParams) -> ProjectListResponse:
-    stmt = select(Project)
+def list_projects(
+    db: Session,
+    user: User,
+    filters: ProjectFilterParams,
+) -> ProjectListResponse:
+    stmt = select(Project).where(Project.user_id == user.id)
     if filters.status is not None:
         stmt = stmt.where(Project.status == filters.status)
     if filters.agent_enabled is not None:

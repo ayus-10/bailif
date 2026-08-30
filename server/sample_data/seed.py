@@ -28,7 +28,7 @@ def seed_users(db, users: list[dict]) -> None:
             user = User(
                 id=parse_uuid(item["id"]),
                 username=item["username"],
-                password=item["password"],
+                password_hash=item["password_hash"],
                 active_project_id=parse_uuid(item.get("active_project_id")),
             )
             db.add(user)

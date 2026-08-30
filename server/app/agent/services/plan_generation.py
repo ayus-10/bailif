@@ -1,6 +1,7 @@
 import json
 
 from pydantic import ValidationError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.agent.llm.generation import complete
@@ -30,15 +31,20 @@ def _build_context(db, project_id: str | None) -> str:
     if not project_id:
         return "No project selected."
 
-    project = db.query(Project).filter(Project.id == project_id).first()
+    project = db.execute(
+        select(Project).where(Project.id == project_id)
+    ).scalar_one_or_none()
     if not project:
         return "Project not found."
 
     tasks = (
-        db.query(Task)
-        .filter(Task.project_id == project_id)
-        .order_by(Task.created_at.desc())
-        .limit(10)
+        db.execute(
+            select(Task)
+            .where(Task.project_id == project_id)
+            .order_by(Task.created_at.desc())
+            .limit(10)
+        )
+        .scalars()
         .all()
     )
 

@@ -114,6 +114,12 @@ class TaskFilterParams(BaseModel):
     cursor: str | None = None
     limit: int = Field(default=50, ge=1, le=200)
 
+    @model_validator(mode="after")
+    def validate_parent_filters(self):
+        if self.only_root and self.parent_id is not None:
+            raise ValueError("only_root and parent_id cannot be used together")
+        return self
+
 
 class TaskListResponse(BaseModel):
     items: list[TaskRead]
