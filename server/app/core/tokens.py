@@ -5,7 +5,7 @@ import jwt
 from app.core.config import settings
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 43200 # TODO: set lower after implementing refresh tokens
+ACCESS_TOKEN_EXPIRE_MINUTES = 43200  # TODO: set lower after implementing refresh tokens
 
 
 def encode(payload: dict) -> str:

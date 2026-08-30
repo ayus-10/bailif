@@ -16,6 +16,7 @@ from app.features.taskboard.schemas import (
     TaskboardUpdate,
 )
 from app.features.tasks.exceptions import TaskNotFoundError
+from app.models.db import User
 from app.models.db.project import Project
 from app.models.db.task import Task
 from app.models.db.taskboard import Taskboard, TaskboardTask
@@ -23,12 +24,18 @@ from app.models.db.taskboard import Taskboard, TaskboardTask
 
 def create_taskboard(
     db: Session,
+    user: User,
     payload: TaskboardCreate,
 ) -> Taskboard:
-    if payload.project_id is not None:
-        project = db.get(Project, payload.project_id)
-        if project is None:
-            raise ProjectNotFoundError(f"Project {payload.project_id} not found")
+    project = db.execute(
+        select(Project).where(
+            Project.id == payload.project_id,
+            Project.user_id == user.id,
+        )
+    ).scalar_one_or_none()
+
+    if project is None:
+        raise ProjectNotFoundError(str(payload.project_id))
 
     board = Taskboard(**payload.model_dump())
 
@@ -110,13 +117,21 @@ def delete_taskboard(
 def add_task_to_board(
     db: Session,
     board: Taskboard,
+    user: User,
     task_id: UUID,
     position: int | None = None,
 ) -> TaskboardTask:
-    task = db.get(Task, task_id)
+    task = db.execute(
+        select(Task)
+        .join(Project, Task.project_id == Project.id)
+        .where(
+            Task.id == task_id,
+            Project.user_id == user.id,
+        )
+    ).scalar_one_or_none()
 
     if task is None:
-        raise TaskNotFoundError(f"Task {task_id} not found")
+        raise TaskNotFoundError(str(task_id))
 
     stmt = select(TaskboardTask).where(
         TaskboardTask.taskboard_id == board.id,
