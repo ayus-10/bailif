@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.features.auth.dependencies import get_current_user
 from app.features.task_dependencies import services
 from app.features.task_dependencies.dependencies import get_task_dependency_by_id
 from app.features.task_dependencies.schemas import (
@@ -9,6 +10,7 @@ from app.features.task_dependencies.schemas import (
     TaskDependencyRead,
 )
 from app.features.tasks.dependencies import get_task_by_id
+from app.models.db import User
 from app.models.db.task import Task, TaskDependency
 
 router = APIRouter(
@@ -26,8 +28,9 @@ def create_dependency(
     payload: TaskDependencyCreate,
     task: Task = Depends(get_task_by_id),
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> TaskDependency:
-    return services.create_dependency(db, task, payload)
+    return services.create_dependency(db, task, user, payload)
 
 
 @router.get(

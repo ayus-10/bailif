@@ -1,4 +1,3 @@
-from collections import deque
 from uuid import UUID
 
 from sqlalchemy import or_, select
@@ -12,6 +11,7 @@ from app.features.task_dependencies.exceptions import (
 )
 from app.features.task_dependencies.schemas import TaskDependencyCreate
 from app.features.tasks.exceptions import TaskNotFoundError
+from app.models.db import Project, User
 from app.models.db.task import Task, TaskDependency
 from app.models.enums.task import DependencyType
 
@@ -32,12 +32,23 @@ def _would_create_cycle(db: Session, from_id: UUID, to_id: UUID) -> bool:
 
 
 def create_dependency(
-    db: Session, task: Task, payload: TaskDependencyCreate
+    db: Session,
+    task: Task,
+    user: User,
+    payload: TaskDependencyCreate,
 ) -> TaskDependency:
     if task.id == payload.depends_on_id:
         raise SelfDependencyError(f"Task {task.id} cannot depend on itself")
 
-    dependency_task = db.get(Task, payload.depends_on_id)
+    dependency_task = db.execute(
+        select(Task)
+        .join(Project, Project.id == Task.project_id)
+        .where(
+            Task.id == payload.depends_on_id,
+            Project.user_id == user.id,
+        )
+    ).scalar_one_or_none()
+
     if dependency_task is None:
         raise TaskNotFoundError(str(payload.depends_on_id))
 
