@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
 from app.core.exceptions import ValidationError
+from app.features.projects.exceptions import ProjectNotFoundError
 from app.features.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
@@ -14,6 +15,7 @@ from app.features.tasks.schemas import (
     TaskRead,
     TaskUpdate,
 )
+from app.models.db import Project, User
 from app.models.db.task import Task
 from app.utils.date_validation import validate_task_dates
 from app.utils.pagination import decode_cursor, encode_cursor
@@ -62,7 +64,18 @@ def generate_and_save_task_embedding(task_id: UUID):
 def create_task(
     db: Session,
     payload: TaskCreate,
+    user: User,
 ) -> Task:
+    project_exists = db.execute(
+        select(Project.id).where(
+            Project.id == payload.project_id,
+            Project.user_id == user.id,
+        )
+    ).scalar_one_or_none()
+
+    if project_exists is None:
+        raise ProjectNotFoundError(str(payload.project_id))
+
     task = Task(**payload.model_dump())
 
     try:
@@ -100,11 +113,16 @@ def update_task(
     return task, updated_field_count
 
 
-def list_tasks(db: Session, filters: TaskFilterParams) -> TaskListResponse:
-    stmt = select(Task)
+def list_tasks(db: Session, user: User, filters: TaskFilterParams) -> TaskListResponse:
+    stmt = (
+        select(Task)
+        .join(Project, Task.project_id == Project.id)
+        .where(
+            Project.user_id == user.id,
+            Task.project_id == filters.project_id,
+        )
+    )
 
-    if filters.project_id is not None:
-        stmt = stmt.where(Task.project_id == filters.project_id)
     if filters.status is not None:
         stmt = stmt.where(Task.status == filters.status)
     if filters.priority is not None:
