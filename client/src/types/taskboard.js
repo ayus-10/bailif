@@ -11,16 +11,16 @@
 /**
  * @typedef {Object} TaskboardCreate
  * @property {string} name
- * @property {string | null} [description]
- * @property {string | null} [color]
  * @property {string} project_id
+ * @property {string | null} [description]
+ * @property {string | null} [color] Hex color string
  */
 
 /**
  * @typedef {Object} TaskboardUpdate
- * @property {string} [name]
- * @property {string} [description]
- * @property {string | null} [color]
+ * @property {string | null} [name]
+ * @property {string | null} [description]
+ * @property {string | null} [color] Hex color string
  */
 
 /**
@@ -38,9 +38,9 @@
  * @property {string} description
  * @property {string | null} color
  * @property {string} project_id
- * @property {string} created_at
- * @property {string} updated_at
- * @property {TaskboardTaskRead[]} tasks
+ * @property {string} created_at ISO datetime
+ * @property {string} updated_at ISO datetime
+ * @property {TaskboardTaskRead[]} [tasks]
  */
 
 /**

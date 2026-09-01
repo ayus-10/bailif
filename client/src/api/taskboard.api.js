@@ -1,4 +1,5 @@
 import { API_URL } from "@/config";
+import { parseJson } from "./shared.api";
 
 /** @typedef {import('@/types/taskboard').TaskboardCreate} TaskboardCreate */
 /** @typedef {import('@/types/taskboard').TaskboardUpdate} TaskboardUpdate */
@@ -10,28 +11,14 @@ import { API_URL } from "@/config";
 /** @typedef {import('@/types/taskboard').TaskboardListResponse} TaskboardListResponse */
 
 /**
- * @param {Response} response
- * @returns {Promise<any>}
- */
-async function parseJson(response) {
-    if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
-    }
-
-    return response.json();
-}
-
-/**
- * @param {string} [projectId]
+ * @param {string} projectId
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskboardListResponse>}
  */
 export async function listTaskboards(projectId, signal) {
     const search = new URLSearchParams();
 
-    if (projectId != null) {
-        search.set("project_id", projectId);
-    }
+    search.set("project_id", projectId);
 
     const response = await fetch(`${API_URL}/taskboards?${search}`, {
         signal,
