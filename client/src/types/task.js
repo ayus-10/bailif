@@ -11,8 +11,7 @@
  */
 
 /**
- *
- @typedef {'blocks' | 'blocked_by' | 'relates_to'} DependencyType
+ * @typedef {'blocks' | 'blocked_by' | 'relates_to'} DependencyType
  */
 
 /**
@@ -21,31 +20,31 @@
 
 /**
  * @typedef {Object} TaskRead
- * @property {string} id UUID
+ * @property {string} id
  * @property {string} title
  * @property {string} description
  * @property {TaskStatus} status
  * @property {TaskPriority} priority
  * @property {TaskType} type
  * @property {string} tags
- * @property {string | null} project_id UUID
- * @property {string | null} parent_id UUID
+ * @property {string} project_id
+ * @property {string | null} parent_id
  * @property {string | null} start_date ISO datetime
  * @property {string | null} due_date ISO datetime
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
- * @property {ProjectRead | null} project
+ * @property {ProjectRead | null} [project]
  */
 
 /**
  * @typedef {Object} TaskCreate
  * @property {string} title
+ * @property {string} project_id
  * @property {string} [description]
  * @property {TaskStatus} [status]
  * @property {TaskPriority} [priority]
  * @property {TaskType} [type]
  * @property {string} [tags]
- * @property {string | null} [project_id]
  * @property {string | null} [parent_id]
  * @property {string | null} [start_date] ISO datetime
  * @property {string | null} [due_date] ISO datetime
@@ -53,16 +52,16 @@
 
 /**
  * @typedef {Object} TaskUpdate
+ * @property {string} project_id
  * @property {string} [title]
  * @property {string | null} [description]
- * @property {TaskStatus} [status]
- * @property {TaskPriority} [priority]
- * @property {TaskType} [type]
- * @property {string} [tags]
- * @property {string | null} [project_id]
+ * @property {TaskStatus | null} [status]
+ * @property {TaskPriority | null} [priority]
+ * @property {TaskType | null} [type]
+ * @property {string | null} [tags]
  * @property {string | null} [parent_id]
- * @property {string | null} [start_date]
- * @property {string | null} [due_date]
+ * @property {string | null} [start_date] ISO datetime
+ * @property {string | null} [due_date] ISO datetime
  */
 
 /**
@@ -73,29 +72,30 @@
 
 /**
  * @typedef {Object} TaskListParams
- * @property {string} [project_id]
- * @property {TaskStatus} [status]
- * @property {TaskPriority} [priority]
- * @property {TaskType} [type]
- * @property {string} [tag]
- * @property {string} [parent_id]
- * @property {string} [due_before]
- * @property {string} [due_after]
+ * @property {string} project_id
+ * @property {TaskStatus | null} [status]
+ * @property {TaskPriority | null} [priority]
+ * @property {TaskType | null} [type]
+ * @property {string | null} [tag]
+ * @property {string | null} [parent_id]
+ * @property {boolean} [only_root]
+ * @property {string | null} [due_before] ISO datetime
+ * @property {string | null} [due_after] ISO datetime
  * @property {string | null} [cursor]
  * @property {number} [limit]
  */
 
 /**
  * @typedef {Object} TaskDependencyRead
- * @property {string} id UUID
- * @property {string} task_id UUID
- * @property {string} depends_on_id UUID
+ * @property {string} id
+ * @property {string} task_id
+ * @property {string} depends_on_id
  * @property {DependencyType} dependency_type
  */
 
 /**
  * @typedef {Object} TaskDependencyCreate
- * @property {string} depends_on_id UUID
+ * @property {string} depends_on_id
  * @property {DependencyType} dependency_type
  */
 

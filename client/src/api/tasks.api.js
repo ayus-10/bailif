@@ -1,4 +1,5 @@
 import { API_URL } from "@/config";
+import { parseJson } from "./shared.api";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskListResponse} TaskListResponse */
@@ -9,26 +10,14 @@ import { API_URL } from "@/config";
 /** @typedef {import('@/types/task').TaskDependencyCreate} TaskDependencyCreate */
 
 /**
- * @param {Response} response
- * @returns {Promise<any>}
- */
-async function parseJson(response) {
-    if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
-    }
-
-    return response.json();
-}
-
-/**
- * @param {TaskListParams} [params]
+ * @param {TaskListParams} params
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskListResponse>}
  */
-export async function listTasks(params = {}, signal) {
+export async function listTasks(params, signal) {
     const search = new URLSearchParams();
 
-    for (const [key, value] of Object.entries(params)) {
+    for (const [key, value] of Object.entries(params || {})) {
         if (value != null) {
             search.set(key, String(value));
         }

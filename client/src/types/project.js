@@ -1,5 +1,5 @@
 /**
- * @typedef {'active' | 'completed' | 'archived'} ProjectStatus
+ * @typedef {'active' | 'on_hold' | 'completed' | 'archived'} ProjectStatus
  */
 
 /**
@@ -8,23 +8,18 @@
 
 /**
  * @typedef {Object} ProjectRead
- * @property {string} id UUID
- *
+ * @property {string} id
  * @property {string} name
  * @property {string} description
  * @property {string} icon
  * @property {string | null} color
  * @property {ProjectStatus} status
- *
  * @property {string | null} start_date ISO datetime
  * @property {string | null} target_end_date ISO datetime
  * @property {string | null} actual_end_date ISO datetime
  * @property {string | null} timezone
- *
  * @property {boolean} agent_enabled
  * @property {AgentPermissionLevel} default_agent_permission_level
- * @property {Object} external_refs
- *
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
  * @property {string | null} archived_at ISO datetime
@@ -37,43 +32,37 @@
  * @property {string} [icon]
  * @property {string | null} [color]
  * @property {ProjectStatus} [status]
- *
- * @property {string | null} [start_date]
- * @property {string | null} [target_end_date]
- * @property {string | null} [actual_end_date]
+ * @property {string | null} [start_date] ISO datetime
+ * @property {string | null} [target_end_date] ISO datetime
+ * @property {string | null} [actual_end_date] ISO datetime
  * @property {string | null} [timezone]
- *
  * @property {boolean} [agent_enabled]
  * @property {AgentPermissionLevel} [default_agent_permission_level]
- * @property {Object} [external_refs]
  */
 
 /**
  * @typedef {Object} ProjectUpdate
- * @property {string} [name]
+ * @property {string | null} [name]
  * @property {string | null} [description]
  * @property {string | null} [icon]
  * @property {string | null} [color]
- * @property {ProjectStatus} [status]
- *
- * @property {string | null} [start_date]
- * @property {string | null} [target_end_date]
- * @property {string | null} [actual_end_date]
+ * @property {ProjectStatus | null} [status]
+ * @property {string | null} [start_date] ISO datetime
+ * @property {string | null} [target_end_date] ISO datetime
+ * @property {string | null} [actual_end_date] ISO datetime
  * @property {string | null} [timezone]
- *
- * @property {boolean} [agent_enabled]
- * @property {AgentPermissionLevel} [default_agent_permission_level]
- * @property {Object | null} [external_refs]
+ * @property {boolean | null} [agent_enabled]
+ * @property {AgentPermissionLevel | null} [default_agent_permission_level]
  */
 
 /**
  * @typedef {Object} ProjectFilterParams
- * @property {ProjectStatus} [status]
- * @property {boolean} [agent_enabled]
- * @property {string} [start_date_before]
- * @property {string} [start_date_after]
- * @property {string} [target_end_date_before]
- * @property {string} [target_end_date_after]
+ * @property {ProjectStatus | null} [status]
+ * @property {boolean | null} [agent_enabled]
+ * @property {string | null} [start_date_before] ISO datetime
+ * @property {string | null} [start_date_after] ISO datetime
+ * @property {string | null} [target_end_date_before] ISO datetime
+ * @property {string | null} [target_end_date_after] ISO datetime
  * @property {boolean} [archived]
  */
 

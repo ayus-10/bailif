@@ -1,20 +1,9 @@
 import { API_URL } from "@/config";
+import { parseJson } from "./shared.api";
 
 /** @typedef {import('@/types/ai-actions').ChatRequest} ChatRequest */
 /** @typedef {import('@/types/ai-actions').ChatResponse} ChatResponse */
 /** @typedef {import('@/types/ai-actions').ChatMode} ChatMode */
-
-/**
- * @param {Response} response
- * @returns {Promise<any>}
- */
-async function parseJson(response) {
-    if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
-    }
-
-    return response.json();
-}
 
 /**
  * @param {ChatRequest} payload
