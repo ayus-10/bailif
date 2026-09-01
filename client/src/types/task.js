@@ -1,3 +1,5 @@
+/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
+
 /**
  * @typedef {'open' | 'in_progress' | 'in_review' | 'done' | 'blocked' | 'cancelled'} TaskStatus
  */
@@ -108,6 +110,31 @@
  * @property {TaskPriority | null} priority
  * @property {string | null} start_date
  * @property {string | null} due_date
+ */
+
+/**
+ * @typedef {Object} TaskFetchOptions
+ * @property {"root-tasks" | "child-tasks"} [queryMode="root-tasks"]
+ * @property {string} [parentId]
+ * @property {import("@/types/task").TaskStatus | null} [status]
+ * @property {import("@/types/task").TaskPriority | null} [priority]
+ * @property {import("@/types/task").TaskType | null} [type]
+ * @property {string | null} [tag]
+ * @property {string | null} [dueBefore]
+ * @property {string | null} [dueAfter]
+ * @property {string | null} [cursor]
+ * @property {boolean} [append=false]
+ * @property {boolean} [forceRefresh=false]
+ */
+
+/**
+ * @typedef {Object} TasksState
+ * @property {Record<string, TaskRead[]>} items
+ * @property {Record<string, string | null>} nextCursor
+ * @property {Record<string, TaskFetchOptions>} queries
+ * @property {TaskRead | null} currentTask
+ * @property {Record<string, FetchStatus>} status
+ * @property {Record<string, any>} errors
  */
 
 export {};

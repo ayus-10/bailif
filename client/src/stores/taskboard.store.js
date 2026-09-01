@@ -45,6 +45,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          */
         async fetch({ projectId, forceRefresh = false }) {
             if (this.status === "loading" && !forceRefresh) return;
+
             this.status = "loading";
             this.error = null;
 
@@ -59,6 +60,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 this.items = data.items;
                 this.status = "success";
+
                 return data;
             } catch (err) {
                 this.error = err;
@@ -79,7 +81,9 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     () => getTaskboard(boardId),
                     { forceRefresh }
                 );
+
                 this.currentTaskboard = board;
+
                 return board;
             } catch (err) {
                 this.error = err;
@@ -94,9 +98,13 @@ export const useTaskboardsStore = defineStore("taskboards", {
         async create(payload) {
             try {
                 const board = await createTaskboard(payload);
+
                 this.items = [...this.items, { ...board, task_count: 0 }]; // TODO: figure out if this is safe
 
-                invalidateRequestCache("taskboards:all");
+                invalidateRequestCache(
+                    `taskboards:project:${payload.project_id}`
+                );
+
                 return board;
             } catch (err) {
                 this.error = err;
@@ -121,7 +129,10 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 this.items = [
                     ...this.items.slice(0, index),
-                    { ...board, task_count: this.items[index].task_count }, // TODO: figure out if this is safe
+                    {
+                        ...board,
+                        task_count: this.items[index].task_count,
+                    }, // TODO: figure out if this is safe
                     ...this.items.slice(index + 1),
                 ];
 
@@ -130,7 +141,9 @@ export const useTaskboardsStore = defineStore("taskboards", {
                 }
 
                 invalidateRequestCache(`taskboard:${boardId}`);
-                invalidateRequestCache("taskboards:all");
+                invalidateRequestCache(
+                    `taskboards:project:${board.project_id}`
+                );
 
                 return board;
             } catch (err) {
@@ -144,6 +157,9 @@ export const useTaskboardsStore = defineStore("taskboards", {
          */
         async remove(boardId) {
             try {
+                const board = this.items.find((item) => item.id === boardId);
+                if (!board) return;
+
                 await deleteTaskboard(boardId);
 
                 this.items = this.items.filter((item) => item.id !== boardId);
@@ -153,7 +169,9 @@ export const useTaskboardsStore = defineStore("taskboards", {
                 }
 
                 invalidateRequestCache(`taskboard:${boardId}`);
-                invalidateRequestCache("taskboards:all");
+                invalidateRequestCache(
+                    `taskboards:project:${board.project_id}`
+                );
             } catch (err) {
                 this.error = err;
                 this.status = "error";
@@ -197,7 +215,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     this.currentTaskboard = {
                         ...this.currentTaskboard,
                         tasks: (this.currentTaskboard.tasks ?? []).filter(
-                            (t) => t.id !== taskId
+                            (t) => t.task_id !== taskId
                         ),
                     };
                 }
@@ -217,13 +235,29 @@ export const useTaskboardsStore = defineStore("taskboards", {
             try {
                 await repositionTask(boardId, payload);
 
-                // TODO: this shit is borked
+                if (this.currentTaskboard?.id === boardId) {
+                    const tasks = [...(this.currentTaskboard.tasks ?? [])];
 
-                // if (this.currentTaskboard?.id === boardId) {
-                //     this.currentTaskboard = null;
-                // }
+                    const fromIndex = tasks.findIndex(
+                        (task) => task.task_id === payload.task_id
+                    );
 
-                // invalidateRequestCache(`taskboard:${boardId}`);
+                    if (fromIndex !== -1) {
+                        const [movedTask] = tasks.splice(fromIndex, 1);
+
+                        tasks.splice(payload.position, 0, movedTask);
+
+                        this.currentTaskboard = {
+                            ...this.currentTaskboard,
+                            tasks: tasks.map((task, index) => ({
+                                ...task,
+                                position: index,
+                            })),
+                        };
+                    }
+                }
+
+                invalidateRequestCache(`taskboard:${boardId}`);
             } catch (err) {
                 this.error = err;
                 this.status = "error";

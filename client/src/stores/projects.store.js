@@ -11,7 +11,8 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
 /** @typedef {import("@/types/project").ProjectRead} ProjectRead */
 /** @typedef {import("@/types/project").ProjectCreate} ProjectCreate */
 /** @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate */
-/** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
+/** @typedef {import("@/types/project").ProjectFilterParams} ProjectFilterParams */
+/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
 
 /**
  * @typedef {Object} ProjectsState
@@ -33,23 +34,33 @@ export const useProjectsStore = defineStore("projects", {
     actions: {
         /**
          * @param {Object} [options]
+         * @param {ProjectFilterParams} [options.params]
          * @param {boolean} [options.forceRefresh=false]
          */
-        async fetch({ forceRefresh = false } = {}) {
+        async fetch({ params = {}, forceRefresh = false } = {}) {
             if (this.status === "loading" && !forceRefresh) return;
+
             this.status = "loading";
             this.error = null;
 
-            const cacheKey = `projects:all`;
+            const filterKey = Object.entries(params)
+                .filter(([_, value]) => value != null)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([key, value]) => `${key}=${value}`)
+                .join("&");
+
+            const cacheKey = `projects:all${filterKey ? `:${filterKey}` : ""}`;
 
             try {
                 const data = await cachedRequest(
                     cacheKey,
-                    () => listProjects(),
-                    { forceRefresh: false }
+                    () => listProjects(params),
+                    { forceRefresh }
                 );
+
                 this.items = data.items;
                 this.status = "success";
+
                 return data;
             } catch (err) {
                 this.error = err;
