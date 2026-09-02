@@ -1,45 +1,33 @@
 <script setup>
-import { onMounted, reactive, ref } from "vue";
+import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
-import IconInput from "@/components/common/IconInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
 
-/** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
+/** @typedef {import('@/types/taskboard').TaskboardForm} TaskboardForm */
 
 const emit = defineEmits(["submit"]);
 
 const formRef = ref(null);
+const isLoading = ref(false);
 
-/** @type {import("vue").Reactive<ProjectCreate>} */
+/** @type {import("vue").Reactive<TaskboardForm>} */
 const form = reactive({
     name: "",
     description: "",
-    icon: "",
     color: DEFAULT_COLORS[0].value,
-    agent_enabled: false,
-    status: "active",
-    start_date: null,
-    target_end_date: null,
-    actual_end_date: null,
-    timezone: null,
+    project_id: "",
 });
 
 const rules = {
-    required: (/** @type {string} */ v) => !!v || "Project name is required",
+    required: (/** @type {string} */ v) => !!v || "Taskboard name is required",
 };
-
-const isLoading = ref(false);
-
-onMounted(() => {
-    const today = new Date().toUTCString();
-    form.start_date = today;
-    form.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-});
 
 async function handleSubmit() {
     const { valid } = await formRef.value.validate();
     if (!valid) return;
+
     isLoading.value = true;
+
     try {
         emit("submit", { ...form });
     } finally {
@@ -49,15 +37,15 @@ async function handleSubmit() {
 </script>
 
 <template>
-    <div class="new-project-wrapper">
-        <v-card class="new-project-card" variant="outlined">
+    <div class="new-taskboard-wrapper">
+        <v-card class="new-taskboard-card" variant="outlined">
             <div class="card-header">
                 <h1 class="text-h6 font-weight-bold card-title">
-                    Create New Project
+                    Create New Taskboard
                 </h1>
+
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">
-                    Set up basic details and assistant capabilities for your
-                    workspace.
+                    Organize your project work into a dedicated taskboard.
                 </p>
             </div>
 
@@ -68,12 +56,13 @@ async function handleSubmit() {
                     <div class="form-section">
                         <div class="form-group mb-4">
                             <label class="field-label">
-                                Project Name
+                                Taskboard Name
                                 <span class="required-mark">*</span>
                             </label>
+
                             <v-text-field
                                 v-model="form.name"
-                                placeholder="e.g. System Architecture"
+                                placeholder="e.g. Sprint Planning"
                                 :rules="[rules.required]"
                                 variant="outlined"
                                 density="compact"
@@ -84,10 +73,11 @@ async function handleSubmit() {
                         </div>
 
                         <div class="form-group mb-4">
-                            <label class="field-label">Description</label>
+                            <label class="field-label"> Description </label>
+
                             <v-textarea
                                 v-model="form.description"
-                                placeholder="Brief summary of project scope"
+                                placeholder="Brief summary of what this taskboard is for"
                                 variant="outlined"
                                 density="compact"
                                 rows="2"
@@ -101,33 +91,8 @@ async function handleSubmit() {
                             <div class="section-label mb-3">Appearance</div>
 
                             <div class="appearance-controls">
-                                <IconInput v-model="form.icon" />
-
                                 <ColorInput v-model="form.color" />
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="settings-box mb-5">
-                        <div class="d-flex align-center justify-space-between">
-                            <div>
-                                <div
-                                    class="text-subtitle-2 font-weight-semibold"
-                                >
-                                    Enable Agent
-                                </div>
-                                <div class="text-caption text-medium-emphasis">
-                                    Allow automated task actions for this
-                                    project
-                                </div>
-                            </div>
-                            <v-switch
-                                v-model="form.agent_enabled"
-                                color="primary"
-                                density="compact"
-                                hide-details
-                                inset
-                            />
                         </div>
                     </div>
 
@@ -141,7 +106,7 @@ async function handleSubmit() {
                             :loading="isLoading"
                             :disabled="isLoading"
                         >
-                            Next Step
+                            Create Taskboard
                         </v-btn>
                     </div>
                 </v-form>
@@ -151,7 +116,7 @@ async function handleSubmit() {
 </template>
 
 <style scoped>
-.new-project-wrapper {
+.new-taskboard-wrapper {
     min-height: 100%;
     display: flex;
     align-items: center;
@@ -160,7 +125,7 @@ async function handleSubmit() {
     background-color: #f4f5f7;
 }
 
-.new-project-card {
+.new-taskboard-card {
     width: 100%;
     max-width: 32.5rem;
     background-color: #fff;
@@ -193,13 +158,6 @@ async function handleSubmit() {
 
 .required-mark {
     color: #d92d20;
-}
-
-.settings-box {
-    padding: 0.875rem 1rem;
-    background-color: #f8f9fa;
-    border: 1px solid #eaecf0;
-    border-radius: 0.375rem;
 }
 
 .appearance-section {

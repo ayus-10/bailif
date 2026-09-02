@@ -10,8 +10,22 @@ const routes = [
 
     {
         path: "/onboarding",
-        name: "onboarding",
+        redirect: { name: "new-project" },
         component: () => import("@/views/Onboarding.vue"),
+        children: [
+            {
+                path: "new-project",
+                name: "new-project",
+                component: () =>
+                    import("@/components/onboarding/NewProject.vue"),
+            },
+            {
+                path: "new-taskboard",
+                name: "new-taskboard",
+                component: () =>
+                    import("@/components/onboarding/NewTaskboard.vue"),
+            },
+        ],
     },
 
     {
