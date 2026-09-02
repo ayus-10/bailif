@@ -4,8 +4,14 @@ const routes = [
     {
         path: "/",
         redirect: {
-            name: "dashboard",
+            name: "onboarding",
         },
+    },
+
+    {
+        path: "/onboarding",
+        name: "onboarding",
+        component: () => import("@/views/Onboarding.vue"),
     },
 
     {
