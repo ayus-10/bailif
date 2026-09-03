@@ -57,7 +57,7 @@ async function handleSubmit() {
         // TODO: switch to session, once auth is implemented
         localStorage.setItem("project_id", project.id);
 
-        router.push("/onboarding/new-taskboard");
+        router.push("/onboarding/taskboard");
     } catch {
         alert("Something went wrong.");
     } finally {

@@ -1,8 +1,65 @@
-<script>
-const taskBoards = [];
-const projects = [];
+<script setup>
+/** @typedef {import("@/stores/taskboard.store").TaskboardRead} TaskboardRead */
 
-const unreadNotifications = null;
+defineProps({
+    taskBoards: {
+        /** @type {import('vue').PropType<TaskboardRead[]>} */
+        type: Array,
+        default: () => [],
+    },
+    unreadNotifications: {
+        type: Number,
+        default: 0,
+    },
+});
+
+const emit = defineEmits(["toggle-rail", "new-board"]);
+
+const mainNavItems = [
+    {
+        title: "Overview",
+        value: "overview",
+        routeName: "overview",
+        icon: "mdi-view-dashboard-outline",
+    },
+    {
+        title: "Projects",
+        value: "projects",
+        routeName: "projects",
+        icon: "mdi-folder-outline",
+    },
+    {
+        title: "Tasks",
+        value: "tasks",
+        icon: "mdi-checkbox-marked-circle-outline",
+        isGroup: true,
+    },
+];
+
+const secondaryNavItems = [
+    {
+        title: "Calendar",
+        value: "calendar",
+        routeName: "calendar",
+        icon: "mdi-calendar-blank-outline",
+    },
+    {
+        title: "Notifications",
+        value: "notifications",
+        routeName: "notifications",
+        icon: "mdi-bell-outline",
+        hasBadge: true,
+    },
+];
+
+const footerNavItems = [
+    {
+        title: "Settings",
+        value: "settings",
+        routeName: "settings",
+        icon: "mdi-cog-outline",
+    },
+];
 </script>
 
 <template>
@@ -23,11 +80,11 @@ const unreadNotifications = null;
                 </v-avatar>
                 <span class="brand-title">App</span>
             </div>
-
             <button
                 type="button"
                 class="rail-toggle-btn"
                 aria-label="Toggle rail mode"
+                @click="emit('toggle-rail')"
             >
                 <v-icon icon="mdi-chevron-left" size="1.125rem" />
             </button>
@@ -36,139 +93,120 @@ const unreadNotifications = null;
         <v-divider class="sidebar-divider" />
 
         <v-list density="compact" nav class="sidebar-list">
-            <v-list-item
-                to="/dashboard"
-                value="dashboard"
-                active-color="primary"
-                class="nav-item"
-            >
-                <template #prepend>
-                    <v-icon icon="mdi-view-dashboard-outline" size="1.125rem" />
-                </template>
-                <v-list-item-title class="nav-title"
-                    >Dashboard</v-list-item-title
+            <template v-for="item in mainNavItems" :key="item.value">
+                <v-list-group
+                    v-if="item.isGroup"
+                    :value="item.value"
+                    class="nav-group"
                 >
-            </v-list-item>
-
-            <v-list-group value="projects" class="nav-group">
-                <template #activator="{ props: groupProps }">
-                    <v-list-item v-bind="groupProps" class="nav-item">
-                        <template #prepend>
-                            <v-icon icon="mdi-folder-outline" size="1.125rem" />
-                        </template>
-                        <v-list-item-title class="nav-title"
-                            >Projects</v-list-item-title
-                        >
-                    </v-list-item>
-                </template>
-
-                <v-list-item
-                    v-for="project in projects"
-                    :key="project.id"
-                    :to="`/projects/${project.id}`"
-                    :value="`project-${project.id}`"
-                    class="nav-item sub-item"
-                >
-                    <template #prepend>
-                        <span
-                            class="project-dot"
-                            :style="{
-                                backgroundColor:
-                                    project.color || 'var(--v-theme-primary)',
-                            }"
-                        />
+                    <template #activator="{ props: groupProps }">
+                        <v-list-item v-bind="groupProps" class="nav-item">
+                            <template #prepend>
+                                <v-icon :icon="item.icon" size="1.125rem" />
+                            </template>
+                            <v-list-item-title class="nav-title">
+                                {{ item.title }}
+                            </v-list-item-title>
+                        </v-list-item>
                     </template>
-                    <v-list-item-title class="nav-title">{{
-                        project.name
-                    }}</v-list-item-title>
-                </v-list-item>
-            </v-list-group>
 
-            <v-list-group value="tasks" class="nav-group">
-                <template #activator="{ props: groupProps }">
-                    <v-list-item v-bind="groupProps" class="nav-item">
+                    <template v-if="taskBoards && taskBoards.length > 0">
+                        <v-list-item
+                            v-for="board in taskBoards"
+                            :key="board.id"
+                            :to="{ name: 'tasks', query: { board: board.id } }"
+                            :value="`board-${board.id}`"
+                            class="nav-item sub-item"
+                        >
+                            <template #prepend>
+                                <v-icon
+                                    :icon="
+                                        board.icon || 'mdi-view-column-outline'
+                                    "
+                                    size="1rem"
+                                    :style="{
+                                        color:
+                                            board.color ||
+                                            'var(--v-theme-on-surface-variant)',
+                                    }"
+                                />
+                            </template>
+
+                            <v-list-item-title class="nav-title">
+                                {{ board.name }}
+                            </v-list-item-title>
+                        </v-list-item>
+                    </template>
+
+                    <v-list-item
+                        v-else
+                        class="nav-item sub-item empty-boards-message"
+                        disabled
+                    >
                         <template #prepend>
                             <v-icon
-                                icon="mdi-checkbox-marked-circle-outline"
-                                size="1.125rem"
+                                icon="mdi-information-outline"
+                                size="1rem"
                             />
                         </template>
-                        <v-list-item-title class="nav-title"
-                            >Tasks</v-list-item-title
-                        >
-                    </v-list-item>
-                </template>
 
-                <v-list-subheader class="nav-subheader"
-                    >Task boards</v-list-subheader
-                >
+                        <v-list-item-title class="nav-title">
+                            No boards yet
+                        </v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item
+                        class="nav-item sub-item action-item"
+                        @click="emit('new-board')"
+                    >
+                        <template #prepend>
+                            <v-icon
+                                icon="mdi-plus"
+                                size="1rem"
+                                class="text-primary"
+                            />
+                        </template>
+
+                        <v-list-item-title
+                            class="nav-title text-primary font-weight-semibold"
+                        >
+                            New Board
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-list-group>
 
                 <v-list-item
-                    v-for="board in taskBoards"
-                    :key="board.id"
-                    :to="`/boards/${board.id}`"
-                    :value="`board-${board.id}`"
-                    class="nav-item sub-item"
+                    v-else
+                    :to="{ name: item.routeName }"
+                    :value="item.value"
+                    active-color="primary"
+                    class="nav-item"
                 >
                     <template #prepend>
-                        <v-icon
-                            :icon="board.icon || 'mdi-view-column-outline'"
-                            size="1rem"
-                            :style="{
-                                color:
-                                    board.color ||
-                                    'var(--v-theme-on-surface-variant)',
-                            }"
-                        />
+                        <v-icon :icon="item.icon" size="1.125rem" />
                     </template>
-                    <v-list-item-title class="nav-title">{{
-                        board.name
-                    }}</v-list-item-title>
-                </v-list-item>
-
-                <v-list-item class="nav-item sub-item action-item">
-                    <template #prepend>
-                        <v-icon
-                            icon="mdi-plus"
-                            size="1rem"
-                            class="text-primary"
-                        />
-                    </template>
-                    <v-list-item-title
-                        class="nav-title text-primary font-weight-semibold"
-                    >
-                        New Board
+                    <v-list-item-title class="nav-title">
+                        {{ item.title }}
                     </v-list-item-title>
                 </v-list-item>
-            </v-list-group>
+            </template>
 
             <v-list-item
-                to="/calendar"
-                value="calendar"
+                v-for="item in secondaryNavItems"
+                :key="item.value"
+                :to="{ name: item.routeName }"
+                :value="item.value"
                 active-color="primary"
                 class="nav-item"
             >
                 <template #prepend>
-                    <v-icon icon="mdi-calendar-blank-outline" size="1.125rem" />
+                    <v-icon :icon="item.icon" size="1.125rem" />
                 </template>
-                <v-list-item-title class="nav-title"
-                    >Calendar</v-list-item-title
-                >
-            </v-list-item>
+                <v-list-item-title class="nav-title">
+                    {{ item.title }}
+                </v-list-item-title>
 
-            <v-list-item
-                to="/notifications"
-                value="notifications"
-                active-color="primary"
-                class="nav-item"
-            >
-                <template #prepend>
-                    <v-icon icon="mdi-bell-outline" size="1.125rem" />
-                </template>
-                <v-list-item-title class="nav-title"
-                    >Notifications</v-list-item-title
-                >
-                <template #append>
+                <template v-if="item.hasBadge" #append>
                     <span v-if="unreadNotifications > 0" class="unread-badge">
                         {{ unreadNotifications }}
                     </span>
@@ -181,17 +219,19 @@ const unreadNotifications = null;
 
         <v-list density="compact" nav class="sidebar-list sidebar-footer">
             <v-list-item
-                to="/settings"
-                value="settings"
+                v-for="item in footerNavItems"
+                :key="item.value"
+                :to="{ name: item.routeName }"
+                :value="item.value"
                 active-color="primary"
                 class="nav-item"
             >
                 <template #prepend>
-                    <v-icon icon="mdi-cog-outline" size="1.125rem" />
+                    <v-icon :icon="item.icon" size="1.125rem" />
                 </template>
-                <v-list-item-title class="nav-title"
-                    >Settings</v-list-item-title
-                >
+                <v-list-item-title class="nav-title">
+                    {{ item.title }}
+                </v-list-item-title>
             </v-list-item>
         </v-list>
 
