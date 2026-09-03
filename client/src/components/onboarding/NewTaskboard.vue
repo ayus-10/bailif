@@ -1,13 +1,19 @@
 <script setup>
+import { useRouter } from "vue-router";
 import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
 
 /** @typedef {import('@/types/taskboard').TaskboardForm} TaskboardForm */
 
-const emit = defineEmits(["submit"]);
-
+/** @type {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} */
 const formRef = ref(null);
+
+const taskboardsStore = useTaskboardsStore();
+
+const router = useRouter();
+
 const isLoading = ref(false);
 
 /** @type {import("vue").Reactive<TaskboardForm>} */
@@ -15,7 +21,7 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_id: "",
+    project_id: localStorage.getItem("project_id") || "",
 });
 
 const rules = {
@@ -23,13 +29,20 @@ const rules = {
 };
 
 async function handleSubmit() {
+    if (!formRef.value) return;
+
     const { valid } = await formRef.value.validate();
     if (!valid) return;
 
     isLoading.value = true;
 
     try {
-        emit("submit", { ...form });
+        const taskboard = await taskboardsStore.create(form);
+        if (!taskboard) throw new Error("No response from the API");
+
+        router.push("/dashboard");
+    } catch {
+        alert("Something went wrong.");
     } finally {
         isLoading.value = false;
     }

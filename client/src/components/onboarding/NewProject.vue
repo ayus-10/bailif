@@ -1,20 +1,25 @@
 <script setup>
+import { useRouter } from "vue-router";
 import { onMounted, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import IconInput from "@/components/common/IconInput.vue";
-import { DEFAULT_COLORS } from "@/constants/globals";
+import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
+import { useProjectsStore } from "@/stores/projects.store";
 
 /** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
 
-const emit = defineEmits(["submit"]);
-
+/** @type {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} */
 const formRef = ref(null);
+
+const projectsStore = useProjectsStore();
+
+const router = useRouter();
 
 /** @type {import("vue").Reactive<ProjectCreate>} */
 const form = reactive({
     name: "",
     description: "",
-    icon: "",
+    icon: DEFAULT_ICONS[0].value,
     color: DEFAULT_COLORS[0].value,
     agent_enabled: false,
     status: "active",
@@ -31,17 +36,30 @@ const rules = {
 const isLoading = ref(false);
 
 onMounted(() => {
-    const today = new Date().toUTCString();
-    form.start_date = today;
+    // TODO: figure out what to do here
+    // const today = new Date().toUTCString();
+    // form.start_date = today;
     form.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 });
 
 async function handleSubmit() {
+    if (!formRef.value) return;
+
     const { valid } = await formRef.value.validate();
     if (!valid) return;
+
     isLoading.value = true;
+
     try {
-        emit("submit", { ...form });
+        const project = await projectsStore.create(form);
+        if (!project) throw new Error("No response from the API");
+
+        // TODO: switch to session, once auth is implemented
+        localStorage.setItem("project_id", project.id);
+
+        router.push("/onboarding/new-taskboard");
+    } catch {
+        alert("Something went wrong.");
     } finally {
         isLoading.value = false;
     }
@@ -93,6 +111,7 @@ async function handleSubmit() {
                                 rows="2"
                                 no-resize
                                 hide-details
+                                auto-grow
                                 class="custom-field"
                             />
                         </div>
