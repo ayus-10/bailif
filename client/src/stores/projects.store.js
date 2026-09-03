@@ -94,6 +94,7 @@ export const useProjectsStore = defineStore("projects", {
         /**
          * @param {ProjectCreate} payload
          * @returns {Promise<ProjectRead | undefined>}
+         * @throws {Error}
          */
         async create(payload) {
             try {
@@ -105,8 +106,7 @@ export const useProjectsStore = defineStore("projects", {
 
                 return project;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
@@ -114,6 +114,7 @@ export const useProjectsStore = defineStore("projects", {
          * @param {string} projectId
          * @param {ProjectUpdate} payload
          * @returns {Promise<ProjectRead | undefined>}
+         * @throws {Error}
          */
         async update(projectId, payload) {
             try {
@@ -140,13 +141,13 @@ export const useProjectsStore = defineStore("projects", {
 
                 return project;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
         /**
          * @param {string} projectId
+         * @throws {Error}
          */
         async remove(projectId) {
             try {
@@ -161,8 +162,7 @@ export const useProjectsStore = defineStore("projects", {
                 invalidateRequestCache(`projects:all`);
                 invalidateRequestCache(`project:${projectId}`);
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
     },

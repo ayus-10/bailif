@@ -94,6 +94,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
         /**
          * @param {TaskboardCreate} payload
          * @returns {Promise<TaskboardRead | undefined>}
+         * @throws {Error}
          */
         async create(payload) {
             try {
@@ -107,8 +108,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 return board;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
@@ -116,6 +116,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {string} boardId
          * @param {TaskboardUpdate} payload
          * @returns {Promise<TaskboardRead | undefined>}
+         * @throws {Error}
          */
         async update(boardId, payload) {
             try {
@@ -147,13 +148,13 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 return board;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
         /**
          * @param {string} boardId
+         * @throws {Error}
          */
         async remove(boardId) {
             try {
@@ -173,8 +174,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     `taskboards:project:${board.project_id}`
                 );
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
@@ -182,6 +182,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {string} boardId
          * @param {TaskAssignment} payload
          * @returns {Promise<TaskboardTaskRead | undefined>}
+         * @throws {Error}
          */
         async addTask(boardId, payload) {
             try {
@@ -198,14 +199,14 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 return task;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
         /**
          * @param {string} boardId
          * @param {string} taskId
+         * @throws {Error}
          */
         async removeTask(boardId, taskId) {
             try {
@@ -222,14 +223,14 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 invalidateRequestCache(`taskboard:${boardId}`);
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
 
         /**
          * @param {string} boardId
          * @param {TaskReposition} payload
+         * @throws {Error}
          */
         async repositionTask(boardId, payload) {
             try {
@@ -259,8 +260,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 invalidateRequestCache(`taskboard:${boardId}`);
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                throw err;
             }
         },
     },
