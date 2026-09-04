@@ -25,7 +25,8 @@ const form = reactive({
 });
 
 const rules = {
-    required: (/** @type {string} */ v) => !!v || "Taskboard name is required",
+    required: (/** @type {string} */ v) =>
+        !!v?.trim() || "Taskboard name is required",
 };
 
 async function handleSubmit() {

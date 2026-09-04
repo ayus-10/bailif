@@ -1,7 +1,8 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
 
 /** @typedef {import('@/types/taskboard').TaskboardForm} TaskboardForm */
 
@@ -17,7 +18,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["close", "submit"]);
+const emit = defineEmits(["close"]);
 
 /** @type {import("vue").Reactive<TaskboardForm>} */
 const form = reactive({
@@ -26,6 +27,9 @@ const form = reactive({
     color: DEFAULT_COLORS[0].value,
     project_id: props.projectId,
 });
+
+const taskboardsStore = useTaskboardsStore();
+const isLoading = ref(false); // TODO: fix this someday
 
 const rules = {
     required: (/** @type {string} */ v) =>
@@ -46,12 +50,11 @@ function resetForm() {
 async function submit() {
     if (!form.name.trim()) return;
 
-    emit("submit", {
-        name: form.name.trim(),
-        description: form.description.trim() || null,
-        color: form.color,
-        project_id: form.project_id,
-    });
+    isLoading.value = true;
+
+    await taskboardsStore.create(form);
+
+    isLoading.value = false;
 
     resetForm();
     close();
@@ -133,6 +136,8 @@ async function submit() {
                     variant="flat"
                     class="text-none font-weight-medium px-5"
                     @click="submit"
+                    :disabled="isLoading"
+                    :loading="isLoading"
                 >
                     Create Taskboard
                 </v-btn>

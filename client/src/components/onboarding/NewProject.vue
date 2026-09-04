@@ -30,7 +30,8 @@ const form = reactive({
 });
 
 const rules = {
-    required: (/** @type {string} */ v) => !!v || "Project name is required",
+    required: (/** @type {string} */ v) =>
+        !!v?.trim() || "Project name is required",
 };
 
 const isLoading = ref(false);

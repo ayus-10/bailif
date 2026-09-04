@@ -8,9 +8,10 @@ const taskboardsStore = useTaskboardsStore();
 
 const showTaskboardModal = ref(false);
 
+const projectId = ref(localStorage.getItem("project_id") ?? undefined);
+
 onMounted(() => {
-    const projectId = localStorage.getItem("project_id");
-    if (projectId) taskboardsStore.fetch({ projectId });
+    if (projectId.value) taskboardsStore.fetch({ projectId: projectId.value });
 });
 
 function openTaskboardModal() {
@@ -31,6 +32,7 @@ function closeTaskboardModal() {
 
         <CreateTaskBoardModel
             :model-value="showTaskboardModal"
+            :project-id="projectId"
             @close="closeTaskboardModal"
         />
     </aside>
