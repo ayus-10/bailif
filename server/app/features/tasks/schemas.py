@@ -108,6 +108,7 @@ class TaskFilterParams(BaseModel):
     type: TaskType | None = None
     tag: str | None = None
     parent_id: UUID | None = None
+    taskboard_id: UUID | None = None
     only_root: bool = False
     due_before: datetime | None = None
     due_after: datetime | None = None
