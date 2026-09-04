@@ -130,6 +130,7 @@ async function dropTask(targetStatus) {
 
 function openNewTask() {
     pendingTask.value = {
+        project_id: projectId.value,
         title: "",
         status: "open",
     };

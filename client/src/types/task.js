@@ -58,7 +58,6 @@
 
 /**
  * @typedef {Object} TaskUpdate
- * @property {string} project_id
  * @property {string} [title]
  * @property {string | null} [description]
  * @property {TaskStatus | null} [status]

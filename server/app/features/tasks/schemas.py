@@ -71,7 +71,6 @@ class TaskUpdate(TaskFieldValidators):
     priority: TaskPriority | None = None
     type: TaskType | None = None
     tags: str | None = None
-    project_id: UUID
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
