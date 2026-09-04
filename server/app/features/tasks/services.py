@@ -15,7 +15,7 @@ from app.features.tasks.schemas import (
     TaskRead,
     TaskUpdate,
 )
-from app.models.db import Project, Taskboard, User
+from app.models.db import Project, TaskboardTask, User
 from app.models.db.task import Task
 from app.utils.date_validation import validate_task_dates
 from app.utils.pagination import decode_cursor, encode_cursor
@@ -124,9 +124,10 @@ def list_tasks(db: Session, user: User, filters: TaskFilterParams) -> TaskListRe
     )
 
     if filters.taskboard_id is not None:
-        stmt = stmt.join(Taskboard, Taskboard.c.task_id == Task.id).where(
-            Taskboard.c.taskboard_id == filters.taskboard_id
-        )
+        stmt = stmt.join(
+            TaskboardTask,
+            TaskboardTask.task_id == Task.id,
+        ).where(TaskboardTask.taskboard_id == filters.taskboard_id)
 
     if filters.status is not None:
         stmt = stmt.where(Task.status == filters.status)
