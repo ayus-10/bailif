@@ -304,4 +304,42 @@ export const useTasksStore = defineStore("tasks", {
             }
         },
     },
+
+    getters: {
+        /**
+         * @param {TasksState} state
+         * @returns {(projectId: string, options?: TaskFetchOptions) => TaskRead[]}
+         */
+        tasksByQuery:
+            (state) =>
+            (projectId, options = {}) => {
+                const key = collectionKey(projectId, options);
+
+                return state.items[key] ?? [];
+            },
+
+        /**
+         * @param {TasksState} state
+         * @returns {(projectId: string, options?: TaskFetchOptions) => FetchStatus | null}
+         */
+        statusByQuery:
+            (state) =>
+            (projectId, options = {}) => {
+                const key = collectionKey(projectId, options);
+
+                return state.status[key] ?? null;
+            },
+
+        /**
+         * @param {TasksState} state
+         * @returns {(projectId: string, options?: TaskFetchOptions) => unknown}
+         */
+        errorByQuery:
+            (state) =>
+            (projectId, options = {}) => {
+                const key = collectionKey(projectId, options);
+
+                return state.errors[key] ?? null;
+            },
+    },
 });

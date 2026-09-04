@@ -8,7 +8,7 @@ const taskboardsStore = useTaskboardsStore();
 
 const showTaskboardModal = ref(false);
 
-const projectId = ref(localStorage.getItem("project_id") ?? undefined);
+const projectId = ref(localStorage.getItem("project_id") ?? undefined); // TODO: replace with session
 
 onMounted(() => {
     if (projectId.value) taskboardsStore.fetch({ projectId: projectId.value });

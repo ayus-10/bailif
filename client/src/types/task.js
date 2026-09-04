@@ -17,6 +17,10 @@
  */
 
 /**
+ * @typedef {"root-tasks" | "child-tasks"} TaskQueryMode
+ */
+
+/**
  * @typedef {import("@/api/projects.api").ProjectRead} ProjectRead
  */
 
@@ -114,7 +118,7 @@
 
 /**
  * @typedef {Object} TaskFetchOptions
- * @property {"root-tasks" | "child-tasks"} [queryMode="root-tasks"]
+ * @property {TaskQueryMode} [queryMode="root-tasks"]
  * @property {string} [parentId]
  * @property {string | null} [taskboardId]
  * @property {import("@/types/task").TaskStatus | null} [status]
