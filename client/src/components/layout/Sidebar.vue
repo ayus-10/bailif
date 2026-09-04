@@ -64,6 +64,8 @@ const sidebar = {
     },
 
     boards: {
+        allRoute: { title: "All", path: "taskboards-all" },
+
         fallbackIcon: "mdi-view-column-outline",
 
         emptyState: {
@@ -93,8 +95,8 @@ const navigation = {
             icon: "mdi-folder-outline",
         },
         {
-            title: "Tasks",
-            value: "tasks",
+            title: "Taskboards",
+            value: "taskboards",
             icon: "mdi-checkbox-marked-circle-outline",
             type: "boards",
         },
@@ -186,7 +188,7 @@ const navigation = {
                             :key="board.id"
                             :to="{
                                 name: item.value,
-                                query: { board: board.id },
+                                params: { id: board.id },
                             }"
                             :value="`board-${board.id}`"
                             class="nav-item sub-item"
@@ -208,6 +210,24 @@ const navigation = {
 
                             <v-list-item-title class="nav-title">
                                 {{ board.name }}
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item
+                            :to="{
+                                name: sidebar.boards.allRoute.path,
+                            }"
+                            value="boards-all"
+                            class="nav-item sub-item"
+                        >
+                            <template #prepend>
+                                <v-icon
+                                    :icon="sidebar.boards.fallbackIcon"
+                                    size="1rem"
+                                />
+                            </template>
+
+                            <v-list-item-title class="nav-title">
+                                {{ sidebar.boards.allRoute.title }}
                             </v-list-item-title>
                         </v-list-item>
                     </template>

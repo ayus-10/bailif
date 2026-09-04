@@ -46,8 +46,13 @@ const routes = [
                 props: true,
             },
             {
-                path: "tasks",
-                name: "tasks",
+                path: "taskboards/all",
+                name: "taskboards-all",
+                component: () => import("@/views/TaskBoard.vue"),
+            },
+            {
+                path: "taskboards/:id",
+                name: "taskboards",
                 component: () => import("@/views/TaskBoard.vue"),
             },
             {
