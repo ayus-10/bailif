@@ -71,7 +71,6 @@ class TaskUpdate(TaskFieldValidators):
     priority: TaskPriority | None = None
     type: TaskType | None = None
     tags: str | None = None
-    project_id: UUID
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
@@ -108,6 +107,7 @@ class TaskFilterParams(BaseModel):
     type: TaskType | None = None
     tag: str | None = None
     parent_id: UUID | None = None
+    taskboard_id: UUID | None = None
     only_root: bool = False
     due_before: datetime | None = None
     due_after: datetime | None = None

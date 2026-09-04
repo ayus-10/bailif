@@ -30,7 +30,8 @@ const form = reactive({
 });
 
 const rules = {
-    required: (/** @type {string} */ v) => !!v || "Project name is required",
+    required: (/** @type {string} */ v) =>
+        !!v?.trim() || "Project name is required",
 };
 
 const isLoading = ref(false);
@@ -57,7 +58,7 @@ async function handleSubmit() {
         // TODO: switch to session, once auth is implemented
         localStorage.setItem("project_id", project.id);
 
-        router.push("/onboarding/new-taskboard");
+        router.push("/onboarding/taskboard");
     } catch {
         alert("Something went wrong.");
     } finally {

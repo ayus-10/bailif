@@ -10,12 +10,12 @@ const router = useRouter();
 
 const steps = [
     {
-        name: "new-project",
+        name: "project",
         component: NewProject,
         skippable: false,
     },
     {
-        name: "new-taskboard",
+        name: "taskboard",
         component: NewTaskboard,
         skippable: true,
     },

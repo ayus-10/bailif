@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
-import Sidebar from "@/components/layout/Sidebar.vue";
 
 /** @param {MouseEvent} event */
 function preventContextMenu(event) {
@@ -18,8 +17,6 @@ onUnmounted(() => {
 
 <template>
     <v-app>
-        <Sidebar />
-
         <v-main>
             <router-view />
         </v-main>

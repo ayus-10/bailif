@@ -21,11 +21,12 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_id: localStorage.getItem("project_id") || "",
+    project_id: localStorage.getItem("project_id") || "", // TODO: replace with session
 });
 
 const rules = {
-    required: (/** @type {string} */ v) => !!v || "Taskboard name is required",
+    required: (/** @type {string} */ v) =>
+        !!v?.trim() || "Taskboard name is required",
 };
 
 async function handleSubmit() {

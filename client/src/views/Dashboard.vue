@@ -1,12 +1,43 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import Sidebar from "@/components/layout/Sidebar.vue";
+import CreateTaskBoardModel from "@/components/taskboards/CreateTaskBoardModel.vue";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
+
+const taskboardsStore = useTaskboardsStore();
+
+const showTaskboardModal = ref(false);
+
+const projectId = ref(localStorage.getItem("project_id") ?? undefined); // TODO: replace with session
+
+onMounted(() => {
+    if (projectId.value) taskboardsStore.fetch({ projectId: projectId.value });
+});
+
+function openTaskboardModal() {
+    showTaskboardModal.value = true;
+}
+
+function closeTaskboardModal() {
+    showTaskboardModal.value = false;
+}
+</script>
+
 <template>
-    <v-container fluid class="pa-6">
-        <div class="d-flex align-center mb-6">
-            <div>
-                <h1 class="text-h5 font-weight-medium">Dashboard</h1>
-                <span class="text-body-2 text-medium-emphasis">
-                    Here's what's happening across your projects
-                </span>
-            </div>
-        </div>
-    </v-container>
+    <aside>
+        <Sidebar
+            :task-boards="taskboardsStore.items"
+            @new-board="openTaskboardModal"
+        />
+
+        <CreateTaskBoardModel
+            :model-value="showTaskboardModal"
+            :project-id="projectId"
+            @close="closeTaskboardModal"
+        />
+    </aside>
+
+    <main class="main-content">
+        <router-view />
+    </main>
 </template>

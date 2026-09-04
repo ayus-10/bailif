@@ -25,6 +25,7 @@ function collectionKey(projectId, options = {}) {
     const {
         queryMode = "root-tasks",
         parentId = null,
+        taskboardId = null,
         status = null,
         priority = null,
         type = null,
@@ -37,6 +38,7 @@ function collectionKey(projectId, options = {}) {
         projectId,
         queryMode,
         parentId ?? "root",
+        taskboardId ?? "all",
         status ?? "all",
         priority ?? "all",
         type ?? "all",
@@ -67,6 +69,7 @@ export const useTasksStore = defineStore("tasks", {
             {
                 queryMode = "root-tasks",
                 parentId,
+                taskboardId = null,
                 status = null,
                 priority = null,
                 type = null,
@@ -91,6 +94,7 @@ export const useTasksStore = defineStore("tasks", {
             const query = {
                 queryMode,
                 parentId,
+                taskboardId,
                 status,
                 priority,
                 type,
@@ -117,6 +121,7 @@ export const useTasksStore = defineStore("tasks", {
                 ...(queryMode === "child-tasks"
                     ? { parent_id: parentId }
                     : { only_root: true }),
+                ...(taskboardId != null ? { taskboard_id: taskboardId } : {}),
                 ...(status != null ? { status } : {}),
                 ...(priority != null ? { priority } : {}),
                 ...(type != null ? { type } : {}),
@@ -298,5 +303,43 @@ export const useTasksStore = defineStore("tasks", {
                 this.status[projectId] = "error";
             }
         },
+    },
+
+    getters: {
+        /**
+         * @param {TasksState} state
+         * @returns {(projectId: string, options?: TaskFetchOptions) => TaskRead[]}
+         */
+        tasksByQuery:
+            (state) =>
+            (projectId, options = {}) => {
+                const key = collectionKey(projectId, options);
+
+                return state.items[key] ?? [];
+            },
+
+        /**
+         * @param {TasksState} state
+         * @returns {(projectId: string, options?: TaskFetchOptions) => FetchStatus | null}
+         */
+        statusByQuery:
+            (state) =>
+            (projectId, options = {}) => {
+                const key = collectionKey(projectId, options);
+
+                return state.status[key] ?? null;
+            },
+
+        /**
+         * @param {TasksState} state
+         * @returns {(projectId: string, options?: TaskFetchOptions) => unknown}
+         */
+        errorByQuery:
+            (state) =>
+            (projectId, options = {}) => {
+                const key = collectionKey(projectId, options);
+
+                return state.errors[key] ?? null;
+            },
     },
 });

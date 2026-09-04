@@ -1,201 +1,342 @@
-<script>
-const taskBoards = [];
-const projects = [];
+<script setup>
+import { onUnmounted, ref } from "vue";
 
-const unreadNotifications = null;
+/** @typedef {import("@/stores/taskboard.store").TaskboardListRead} TaskboardListRead */
+
+const props = defineProps({
+    taskBoards: {
+        /** @type {import('vue').PropType<TaskboardListRead[]>} */
+        type: Array,
+        default: () => [],
+    },
+    unreadNotifications: {
+        type: Number,
+        default: 0,
+    },
+});
+
+const emit = defineEmits(["toggle-rail", "new-board"]);
+
+// Resizing Logic
+const drawerWidth = ref(240);
+const minWidth = 180;
+const maxWidth = 450;
+const isResizing = ref(false);
+
+/** @param {MouseEvent} e */
+function startResize(e) {
+    isResizing.value = true;
+    document.addEventListener("mousemove", handleResize);
+    document.addEventListener("mouseup", stopResize);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+}
+
+/** @param {MouseEvent} e */
+function handleResize(e) {
+    if (!isResizing.value) return;
+    if (e.clientX >= minWidth && e.clientX <= maxWidth) {
+        drawerWidth.value = e.clientX;
+    }
+}
+
+function stopResize() {
+    isResizing.value = false;
+    document.removeEventListener("mousemove", handleResize);
+    document.removeEventListener("mouseup", stopResize);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+}
+
+onUnmounted(() => {
+    stopResize();
+});
+
+const sidebar = {
+    brand: {
+        title: "App",
+        icon: "mdi-layers-triple",
+    },
+
+    railToggle: {
+        ariaLabel: "Toggle rail mode",
+        icon: "mdi-chevron-left",
+    },
+
+    boards: {
+        allRoute: { title: "All", path: "taskboards-all" },
+
+        fallbackIcon: "mdi-view-column-outline",
+
+        emptyState: {
+            title: "No boards yet",
+            icon: "mdi-information-outline",
+        },
+
+        createAction: {
+            title: "New Board",
+            icon: "mdi-plus",
+        },
+    },
+};
+
+const navigation = {
+    main: [
+        {
+            title: "Overview",
+            value: "overview",
+            routeName: "overview",
+            icon: "mdi-view-dashboard-outline",
+        },
+        {
+            title: "Projects",
+            value: "projects",
+            routeName: "projects",
+            icon: "mdi-folder-outline",
+        },
+        {
+            title: "Taskboards",
+            value: "taskboards",
+            icon: "mdi-checkbox-marked-circle-outline",
+            type: "boards",
+        },
+    ],
+
+    secondary: [
+        {
+            title: "Calendar",
+            value: "calendar",
+            routeName: "calendar",
+            icon: "mdi-calendar-blank-outline",
+        },
+        {
+            title: "Notifications",
+            value: "notifications",
+            routeName: "notifications",
+            icon: "mdi-bell-outline",
+            badge: true,
+        },
+    ],
+
+    footer: [
+        {
+            title: "Settings",
+            value: "settings",
+            routeName: "settings",
+            icon: "mdi-cog-outline",
+        },
+    ],
+};
 </script>
 
 <template>
     <v-navigation-drawer
         class="sidebar-drawer"
         elevation="0"
-        width="240"
+        :width="drawerWidth"
         rail-width="56"
     >
         <div class="sidebar-header">
             <div class="brand-container">
                 <v-avatar size="1.625rem" rounded="auto" class="brand-avatar">
                     <v-icon
-                        icon="mdi-layers-triple"
+                        :icon="sidebar.brand.icon"
                         size="1.125rem"
                         color="primary"
                     />
                 </v-avatar>
-                <span class="brand-title">App</span>
+
+                <span class="brand-title">
+                    {{ sidebar.brand.title }}
+                </span>
             </div>
 
             <button
                 type="button"
                 class="rail-toggle-btn"
-                aria-label="Toggle rail mode"
+                :aria-label="sidebar.railToggle.ariaLabel"
+                @click="emit('toggle-rail')"
             >
-                <v-icon icon="mdi-chevron-left" size="1.125rem" />
+                <v-icon :icon="sidebar.railToggle.icon" size="1.125rem" />
             </button>
         </div>
 
         <v-divider class="sidebar-divider" />
 
         <v-list density="compact" nav class="sidebar-list">
-            <v-list-item
-                to="/dashboard"
-                value="dashboard"
-                active-color="primary"
-                class="nav-item"
-            >
-                <template #prepend>
-                    <v-icon icon="mdi-view-dashboard-outline" size="1.125rem" />
-                </template>
-                <v-list-item-title class="nav-title"
-                    >Dashboard</v-list-item-title
+            <template v-for="item in navigation.main" :key="item.value">
+                <v-list-group
+                    v-if="item.type === 'boards'"
+                    :value="item.value"
+                    class="nav-group"
                 >
-            </v-list-item>
+                    <template #activator="{ props: groupProps }">
+                        <v-list-item v-bind="groupProps" class="nav-item">
+                            <template #prepend>
+                                <v-icon :icon="item.icon" size="1.125rem" />
+                            </template>
 
-            <v-list-group value="projects" class="nav-group">
-                <template #activator="{ props: groupProps }">
-                    <v-list-item v-bind="groupProps" class="nav-item">
-                        <template #prepend>
-                            <v-icon icon="mdi-folder-outline" size="1.125rem" />
-                        </template>
-                        <v-list-item-title class="nav-title"
-                            >Projects</v-list-item-title
-                        >
-                    </v-list-item>
-                </template>
-
-                <v-list-item
-                    v-for="project in projects"
-                    :key="project.id"
-                    :to="`/projects/${project.id}`"
-                    :value="`project-${project.id}`"
-                    class="nav-item sub-item"
-                >
-                    <template #prepend>
-                        <span
-                            class="project-dot"
-                            :style="{
-                                backgroundColor:
-                                    project.color || 'var(--v-theme-primary)',
-                            }"
-                        />
+                            <v-list-item-title class="nav-title">
+                                {{ item.title }}
+                            </v-list-item-title>
+                        </v-list-item>
                     </template>
-                    <v-list-item-title class="nav-title">{{
-                        project.name
-                    }}</v-list-item-title>
-                </v-list-item>
-            </v-list-group>
 
-            <v-list-group value="tasks" class="nav-group">
-                <template #activator="{ props: groupProps }">
-                    <v-list-item v-bind="groupProps" class="nav-item">
+                    <template v-if="props.taskBoards.length">
+                        <v-list-item
+                            v-for="board in props.taskBoards"
+                            :key="board.id"
+                            :to="{
+                                name: item.value,
+                                params: { id: board.id },
+                            }"
+                            :value="`board-${board.id}`"
+                            class="nav-item sub-item"
+                        >
+                            <template #prepend>
+                                <v-icon
+                                    :icon="
+                                        board.icon ||
+                                        sidebar.boards.fallbackIcon
+                                    "
+                                    size="1rem"
+                                    :style="{
+                                        color:
+                                            board.color ||
+                                            'var(--v-theme-on-surface-variant)',
+                                    }"
+                                />
+                            </template>
+
+                            <v-list-item-title class="nav-title">
+                                {{ board.name }}
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item
+                            :to="{
+                                name: sidebar.boards.allRoute.path,
+                            }"
+                            value="boards-all"
+                            class="nav-item sub-item"
+                        >
+                            <template #prepend>
+                                <v-icon
+                                    :icon="sidebar.boards.fallbackIcon"
+                                    size="1rem"
+                                />
+                            </template>
+
+                            <v-list-item-title class="nav-title">
+                                {{ sidebar.boards.allRoute.title }}
+                            </v-list-item-title>
+                        </v-list-item>
+                    </template>
+
+                    <v-list-item
+                        v-else
+                        class="nav-item sub-item empty-boards-message"
+                        disabled
+                    >
                         <template #prepend>
                             <v-icon
-                                icon="mdi-checkbox-marked-circle-outline"
-                                size="1.125rem"
+                                :icon="sidebar.boards.emptyState.icon"
+                                size="1rem"
                             />
                         </template>
-                        <v-list-item-title class="nav-title"
-                            >Tasks</v-list-item-title
-                        >
-                    </v-list-item>
-                </template>
 
-                <v-list-subheader class="nav-subheader"
-                    >Task boards</v-list-subheader
-                >
+                        <v-list-item-title class="nav-title">
+                            {{ sidebar.boards.emptyState.title }}
+                        </v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item
+                        class="nav-item sub-item action-item"
+                        @click="emit('new-board')"
+                    >
+                        <template #prepend>
+                            <v-icon
+                                :icon="sidebar.boards.createAction.icon"
+                                size="1rem"
+                                class="text-primary"
+                            />
+                        </template>
+
+                        <v-list-item-title
+                            class="nav-title text-primary font-weight-semibold"
+                        >
+                            {{ sidebar.boards.createAction.title }}
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-list-group>
 
                 <v-list-item
-                    v-for="board in taskBoards"
-                    :key="board.id"
-                    :to="`/boards/${board.id}`"
-                    :value="`board-${board.id}`"
-                    class="nav-item sub-item"
+                    v-else
+                    :to="{ name: item.routeName }"
+                    :value="item.value"
+                    active-color="primary"
+                    class="nav-item"
                 >
                     <template #prepend>
-                        <v-icon
-                            :icon="board.icon || 'mdi-view-column-outline'"
-                            size="1rem"
-                            :style="{
-                                color:
-                                    board.color ||
-                                    'var(--v-theme-on-surface-variant)',
-                            }"
-                        />
+                        <v-icon :icon="item.icon" size="1.125rem" />
                     </template>
-                    <v-list-item-title class="nav-title">{{
-                        board.name
-                    }}</v-list-item-title>
-                </v-list-item>
 
-                <v-list-item class="nav-item sub-item action-item">
-                    <template #prepend>
-                        <v-icon
-                            icon="mdi-plus"
-                            size="1rem"
-                            class="text-primary"
-                        />
-                    </template>
-                    <v-list-item-title
-                        class="nav-title text-primary font-weight-semibold"
-                    >
-                        New Board
+                    <v-list-item-title class="nav-title">
+                        {{ item.title }}
                     </v-list-item-title>
                 </v-list-item>
-            </v-list-group>
+            </template>
 
             <v-list-item
-                to="/calendar"
-                value="calendar"
+                v-for="item in navigation.secondary"
+                :key="item.value"
+                :to="{ name: item.routeName }"
+                :value="item.value"
                 active-color="primary"
                 class="nav-item"
             >
                 <template #prepend>
-                    <v-icon icon="mdi-calendar-blank-outline" size="1.125rem" />
+                    <v-icon :icon="item.icon" size="1.125rem" />
                 </template>
-                <v-list-item-title class="nav-title"
-                    >Calendar</v-list-item-title
-                >
-            </v-list-item>
 
-            <v-list-item
-                to="/notifications"
-                value="notifications"
-                active-color="primary"
-                class="nav-item"
-            >
-                <template #prepend>
-                    <v-icon icon="mdi-bell-outline" size="1.125rem" />
-                </template>
-                <v-list-item-title class="nav-title"
-                    >Notifications</v-list-item-title
-                >
-                <template #append>
-                    <span v-if="unreadNotifications > 0" class="unread-badge">
-                        {{ unreadNotifications }}
+                <v-list-item-title class="nav-title">
+                    {{ item.title }}
+                </v-list-item-title>
+
+                <template v-if="item.badge" #append>
+                    <span
+                        v-if="props.unreadNotifications > 0"
+                        class="unread-badge"
+                    >
+                        {{ props.unreadNotifications }}
                     </span>
                 </template>
             </v-list-item>
         </v-list>
 
         <div class="sidebar-spacer" />
+
         <v-divider class="sidebar-divider" />
 
         <v-list density="compact" nav class="sidebar-list sidebar-footer">
             <v-list-item
-                to="/settings"
-                value="settings"
+                v-for="item in navigation.footer"
+                :key="item.value"
+                :to="{ name: item.routeName }"
+                :value="item.value"
                 active-color="primary"
                 class="nav-item"
             >
                 <template #prepend>
-                    <v-icon icon="mdi-cog-outline" size="1.125rem" />
+                    <v-icon :icon="item.icon" size="1.125rem" />
                 </template>
-                <v-list-item-title class="nav-title"
-                    >Settings</v-list-item-title
-                >
+
+                <v-list-item-title class="nav-title">
+                    {{ item.title }}
+                </v-list-item-title>
             </v-list-item>
         </v-list>
 
-        <div class="resize-handle" />
+        <div class="resize-handle" @mousedown="startResize" />
     </v-navigation-drawer>
 </template>
 
@@ -234,6 +375,7 @@ const unreadNotifications = null;
     font-weight: 700;
     color: var(--v-theme-on-surface, #1a1f2c);
     letter-spacing: -0.01em;
+    user-select: none;
 }
 
 .rail-toggle-btn {
@@ -247,6 +389,8 @@ const unreadNotifications = null;
     background-color: var(--v-theme-surface, #ffffff);
     color: var(--v-theme-on-surface-variant, #475467);
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
     transition:
         border-color 0.15s ease,
         background-color 0.15s ease;
@@ -271,6 +415,8 @@ const unreadNotifications = null;
     border-radius: 0.375rem;
     margin-bottom: 0.125rem;
     color: var(--v-theme-on-surface-variant, #344054);
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .nav-item:hover {
@@ -281,6 +427,8 @@ const unreadNotifications = null;
     font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: normal;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .sub-item {
@@ -289,24 +437,6 @@ const unreadNotifications = null;
 
 .action-item {
     cursor: pointer;
-}
-
-.nav-subheader {
-    font-size: 0.6875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--v-theme-on-surface-variant, #8c929d);
-    height: 1.5rem;
-    padding-left: 2.25rem;
-    line-height: 1.5rem;
-}
-
-.project-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    display: inline-block;
 }
 
 .unread-badge {
@@ -321,6 +451,8 @@ const unreadNotifications = null;
     font-weight: 700;
     background-color: rgba(var(--v-theme-primary, 25, 118, 210), 0.12);
     color: var(--v-theme-primary, #1976d2);
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .sidebar-spacer {

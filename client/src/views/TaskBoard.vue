@@ -3,30 +3,57 @@ import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
-import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
+/** @typedef {import('@/types/task').TaskQueryMode} TaskQueryMode */
 
 const route = useRoute();
 const router = useRouter();
 
-const tasksStore = useTasksStore();
-const projectsStore = useProjectsStore();
+const projectId = ref(localStorage.getItem("project_id") ?? ""); // TODO: replace with session
 
-const boardId = computed(() => String(route.params.boardId ?? "default"));
+const currentBoard = computed(() => {
+    const id = route.params.id;
 
-onMounted(() => {
-    tasksStore.fetch(boardId.value);
-    projectsStore.fetch();
+    if (!id || id === "all") {
+        return { type: "all" };
+    }
+
+    return {
+        type: "board",
+        id: Array.isArray(id) ? id[0] : id,
+    };
 });
 
-const tasks = computed(() => tasksStore.items[boardId.value] ?? []);
-const projects = computed(() => projectsStore.items ?? []);
+/** @type {import('vue').Ref<TaskQueryMode>} */
+const preferredQueryMode = ref("root-tasks"); // TODO: it was supposed to allow all, but wtf is going on?
 
-const status = computed(() => tasksStore.status[boardId.value]);
-const error = computed(() => tasksStore.errors[boardId.value]);
+const query = computed(() => ({
+    queryMode: preferredQueryMode.value,
+    taskboardId:
+        currentBoard.value.type === "board" ? currentBoard.value.id : null,
+    // TODO: add more TaskFetchOptions
+}));
+
+const tasksStore = useTasksStore();
+
+onMounted(() => {
+    tasksStore.fetch(projectId.value, query.value);
+});
+
+const tasks = computed(() =>
+    tasksStore.tasksByQuery(projectId.value, query.value)
+);
+
+const status = computed(() =>
+    tasksStore.statusByQuery(projectId.value, query.value)
+);
+
+const error = computed(() =>
+    tasksStore.errorByQuery(projectId.value, query.value)
+);
 
 const filteredTasks = computed(() => {
     return tasks.value.filter((task) => {
@@ -55,10 +82,7 @@ const draggedTask = ref(/** @type {TaskRead | null} */ (null));
 const pendingTask = ref(null);
 
 function retry() {
-    tasksStore.fetch(boardId.value, {
-        forceRefresh: true,
-    });
-    projectsStore.fetch({ forceRefresh: true });
+    tasksStore.fetch(projectId.value, { ...query.value, forceRefresh: true });
 }
 
 /** @param {string} key */
@@ -93,7 +117,7 @@ async function dropTask(targetStatus) {
     task.status = targetStatus;
 
     try {
-        await tasksStore.update(boardId.value, task.id, {
+        await tasksStore.update(task.id, {
             status: targetStatus,
         });
     } catch (err) {
@@ -106,6 +130,7 @@ async function dropTask(targetStatus) {
 
 function openNewTask() {
     pendingTask.value = {
+        project_id: projectId.value,
         title: "",
         status: "open",
     };

@@ -17,6 +17,10 @@
  */
 
 /**
+ * @typedef {"root-tasks" | "child-tasks"} TaskQueryMode
+ */
+
+/**
  * @typedef {import("@/api/projects.api").ProjectRead} ProjectRead
  */
 
@@ -54,7 +58,6 @@
 
 /**
  * @typedef {Object} TaskUpdate
- * @property {string} project_id
  * @property {string} [title]
  * @property {string | null} [description]
  * @property {TaskStatus | null} [status]
@@ -114,8 +117,9 @@
 
 /**
  * @typedef {Object} TaskFetchOptions
- * @property {"root-tasks" | "child-tasks"} [queryMode="root-tasks"]
+ * @property {TaskQueryMode} [queryMode="root-tasks"]
  * @property {string} [parentId]
+ * @property {string | null} [taskboardId]
  * @property {import("@/types/task").TaskStatus | null} [status]
  * @property {import("@/types/task").TaskPriority | null} [priority]
  * @property {import("@/types/task").TaskType | null} [type]
