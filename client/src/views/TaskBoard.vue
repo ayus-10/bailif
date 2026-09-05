@@ -3,7 +3,6 @@ import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
-import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
@@ -57,14 +56,10 @@ const query = computed(() => ({
 }));
 
 const tasksStore = useTasksStore();
-const projectsStore = useProjectsStore();
 
 onMounted(() => {
     tasksStore.fetch(projectId.value, query.value);
-    projectsStore.fetch();
 });
-
-const projects = computed(() => projectsStore.items);
 
 const tasks = computed(() =>
     tasksStore.tasksByQuery(projectId.value, query.value)
@@ -106,7 +101,6 @@ const pendingTask = ref(null);
 
 function retry() {
     tasksStore.fetch(projectId.value, { ...query.value, forceRefresh: true });
-    projectsStore.fetch({ forceRefresh: true });
 }
 
 /** @param {string} key */
@@ -198,7 +192,10 @@ function handleClear() {
                     :column="column"
                     :tasks="tasksByStatus[column.status] ?? []"
                     :pending-task="pendingTask"
-                    :projects="projects"
+                    :project-id="projectId"
+                    :taskboard-id="
+                        currentBoard.type === 'board' ? currentBoard.id : null
+                    "
                     @drag-start="startDrag"
                     @drop="dropTask"
                     @clear-pending-task="handleClear"

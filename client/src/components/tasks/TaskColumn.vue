@@ -23,13 +23,15 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    projectId: {
+        type: String,
+    },
+    taskboardId: {
+        type: [String, null],
+        default: null,
+    },
     tasks: {
         /** @type {import('vue').PropType<TaskRead[]>} */
-        type: Array,
-        required: true,
-    },
-    projects: {
-        /** @type {import('vue').PropType<ProjectRead[]>} */
         type: Array,
         required: true,
     },
@@ -145,7 +147,8 @@ function handleCancel() {
         >
             <PendingTaskCard
                 v-if="pendingTask?.status === column.status"
-                :projects="projects"
+                :project-id="props.projectId"
+                :taskboard-id="props.taskboardId"
                 @submit="handleCreate"
                 @cancel="handleCancel"
             />

@@ -50,6 +50,7 @@ class TaskCreate(TaskFieldValidators):
     type: TaskType = TaskType.TASK
     tags: str = ""
     project_id: UUID
+    taskboard_id: UUID | None = None
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
@@ -71,6 +72,7 @@ class TaskUpdate(TaskFieldValidators):
     priority: TaskPriority | None = None
     type: TaskType | None = None
     tags: str | None = None
+    taskboard_id: UUID | None = None
     parent_id: UUID | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
