@@ -51,7 +51,6 @@
  * @property {TaskPriority} [priority]
  * @property {TaskType} [type]
  * @property {string} [tags]
- * @property {string | null} [taskboard_id]
  * @property {string | null} [parent_id]
  * @property {string | null} [start_date] ISO datetime
  * @property {string | null} [due_date] ISO datetime
@@ -65,7 +64,6 @@
  * @property {TaskPriority | null} [priority]
  * @property {TaskType | null} [type]
  * @property {string | null} [tags]
- * @property {string | null} [taskboard_id]
  * @property {string | null} [parent_id]
  * @property {string | null} [start_date] ISO datetime
  * @property {string | null} [due_date] ISO datetime

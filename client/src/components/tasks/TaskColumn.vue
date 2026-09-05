@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
 
@@ -43,6 +44,7 @@ const props = defineProps({
 });
 
 const tasksStore = useTasksStore();
+const taskboardsStore = useTaskboardsStore();
 
 const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
 
@@ -100,9 +102,15 @@ function handleDragEnd() {
     isDragOver.value = false;
 }
 
-/** @param {TaskCreate} task */
-async function handleCreate(task) {
-    await tasksStore.create(task);
+/** @param {TaskCreate} payload */
+async function handleCreate(payload) {
+    const task = await tasksStore.create(payload);
+
+    if (!task) return;
+
+    if (props.taskboardId)
+        await taskboardsStore.addTask(props.taskboardId, { task_id: task.id });
+
     emit("clear-pending-task");
 }
 
