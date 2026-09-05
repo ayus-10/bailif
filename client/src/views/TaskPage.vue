@@ -2,20 +2,14 @@
 import { QuillEditor } from "@vueup/vue-quill";
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import EditableVChip from "@/components/layout/EditableVChip.vue";
+import EditableVChip from "@/components/common/EditableVChip.vue";
 import SubtaskPanel from "@/components/tasks/SubtaskPanel.vue";
 import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
 import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
 import { isHtmlEmpty } from "@/utils/htmlFormatters";
-import {
-    formatDate,
-    formatDuration,
-    isTaskOverdue,
-    parseTags,
-} from "@/utils/taskFormatters";
+import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import "@/components/quill-editor.css";
-import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
@@ -28,17 +22,14 @@ import { useTasksStore } from "@/stores/tasks.store";
 const route = useRoute();
 const router = useRouter();
 const tasksStore = useTasksStore();
-const projectsStore = useProjectsStore();
 
 const taskId = String(route.params.id);
-const boardId = computed(() => String(route.params.boardId ?? "default"));
+const projectId = ref(localStorage.getItem("project_id") ?? ""); // TODO: replace with session
 
 onMounted(() => {
-    tasksStore.get(boardId.value, taskId);
-    projectsStore.fetch();
+    tasksStore.get(taskId);
 });
 
-const projects = computed(() => projectsStore.items);
 const task = computed(() => tasksStore.currentTask);
 
 const editMode = ref(/** @type {EditMode} */ ("none"));
@@ -201,7 +192,7 @@ async function saveChanges() {
     try {
         const payload = buildUpdatePayload(draft, originalDraft);
 
-        await tasksStore.update(boardId.value, taskId, payload);
+        await tasksStore.update(taskId, payload);
 
         copyDraftValues(originalDraft, draft);
 
@@ -248,7 +239,7 @@ async function updateTaskField(field, item, localRef, savingRef) {
     savingRef.value = true;
 
     try {
-        await tasksStore.update(boardId.value, taskId, { [field]: item.value });
+        await tasksStore.update(taskId, { [field]: item.value });
     } catch (error) {
         localRef.value = previousValue;
         throw error;
@@ -463,18 +454,6 @@ function onPriorityChange(item) {
                     </dl>
 
                     <div v-else class="detail-editor">
-                        <v-select
-                            v-model="draft.project_id"
-                            :items="projects"
-                            item-title="name"
-                            item-value="id"
-                            label="Project"
-                            variant="outlined"
-                            density="compact"
-                            hide-details
-                            clearable
-                        />
-
                         <v-text-field
                             v-model="startDate"
                             label="Start"
@@ -510,7 +489,7 @@ function onPriorityChange(item) {
                     </div>
                 </section>
 
-                <SubtaskPanel :task-id="taskId" />
+                <SubtaskPanel :task-id="taskId" :project-id="projectId" />
             </aside>
         </div>
     </div>

@@ -84,7 +84,6 @@ function submit() {
         project_id: String(props.projectId), // TODO: fix this, someday
         parent_id: props.parentId,
         priority: form.value.priority,
-        taskboard_id: props.taskboardId,
         tags: form.value.tags
             .split(",")
             .map((tag) => tag.trim())
