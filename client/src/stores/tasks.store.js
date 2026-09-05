@@ -199,6 +199,7 @@ export const useTasksStore = defineStore("tasks", {
         /**
          * @param {TaskCreate} payload
          * @returns {Promise<TaskRead | undefined>}
+         * @throws {Error}
          */
         async create(payload) {
             const projectId = payload?.project_id;
@@ -223,10 +224,7 @@ export const useTasksStore = defineStore("tasks", {
 
                 return task;
             } catch (err) {
-                const key = projectId ?? "unknown";
-
-                this.errors[key] = err;
-                this.status[key] = "error";
+                throw err;
             }
         },
 
@@ -234,14 +232,9 @@ export const useTasksStore = defineStore("tasks", {
          * @param {string} taskId
          * @param {TaskUpdate} payload
          * @returns {Promise<TaskRead | undefined>}
+         * @throws {Error}
          */
         async update(taskId, payload) {
-            const projectId = payload?.project_id;
-
-            if (!projectId) {
-                throw new Error("project_id is required");
-            }
-
             try {
                 const task = await updateTask(taskId, payload);
 
@@ -265,18 +258,18 @@ export const useTasksStore = defineStore("tasks", {
                 }
 
                 invalidateRequestCache(`task:${taskId}`);
-                invalidateRequestCache(`tasks:${projectId}:`);
+                invalidateRequestCache(`tasks:${task.project_id}:`);
 
                 return task;
             } catch (err) {
-                this.errors[projectId] = err;
-                this.status[projectId] = "error";
+                throw err;
             }
         },
 
         /**
          * @param {string} taskId
          * @param {string} projectId
+         * @throws {Error}
          */
         async remove(taskId, projectId) {
             if (!projectId) {
@@ -299,8 +292,7 @@ export const useTasksStore = defineStore("tasks", {
                 invalidateRequestCache(`task:${taskId}`);
                 invalidateRequestCache(`tasks:${projectId}:`);
             } catch (err) {
-                this.errors[projectId] = err;
-                this.status[projectId] = "error";
+                throw err;
             }
         },
     },
