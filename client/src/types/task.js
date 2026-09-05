@@ -118,7 +118,7 @@
 /**
  * @typedef {Object} TaskFetchOptions
  * @property {TaskQueryMode} [queryMode="root-tasks"]
- * @property {string} [parentId]
+ * @property {string | null} [parentId]
  * @property {string | null} [taskboardId]
  * @property {import("@/types/task").TaskStatus | null} [status]
  * @property {import("@/types/task").TaskPriority | null} [priority]

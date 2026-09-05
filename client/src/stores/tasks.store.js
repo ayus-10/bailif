@@ -68,7 +68,7 @@ export const useTasksStore = defineStore("tasks", {
             projectId,
             {
                 queryMode = "root-tasks",
-                parentId,
+                parentId = null,
                 taskboardId = null,
                 status = null,
                 priority = null,
@@ -118,7 +118,7 @@ export const useTasksStore = defineStore("tasks", {
             const params = {
                 project_id: projectId,
                 cursor,
-                ...(queryMode === "child-tasks"
+                ...(queryMode === "child-tasks" && parentId
                     ? { parent_id: parentId }
                     : { only_root: true }),
                 ...(taskboardId != null ? { taskboard_id: taskboardId } : {}),
