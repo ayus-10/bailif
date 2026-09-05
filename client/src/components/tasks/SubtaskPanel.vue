@@ -15,6 +15,10 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    projectId: {
+        type: String,
+        required: true,
+    },
 });
 
 const route = useRoute();
@@ -85,13 +89,14 @@ function openSubtask(subtask) {
 /** @param {TaskCreate} task */
 async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
-    await tasksStore.create(boardId.value, task);
+    await tasksStore.create(task);
     pendingSubTask.value = null;
 }
 
 function handleNewSubtask() {
     pendingSubTask.value = {
         title: "",
+        project_id: props.projectId,
         status: "open",
     };
 }

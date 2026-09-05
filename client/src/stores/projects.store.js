@@ -22,6 +22,32 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  * @property {any} error
  */
 
+/**
+ * @param {ProjectFilterParams} params
+ * @returns {string}
+ */
+function createFilterKey(params = {}) {
+    const {
+        status = null,
+        agent_enabled = null,
+        start_date_before = null,
+        start_date_after = null,
+        target_end_date_before = null,
+        target_end_date_after = null,
+        archived = null,
+    } = params;
+
+    return [
+        status ?? "all",
+        agent_enabled ?? "all",
+        start_date_before ?? "none",
+        start_date_after ?? "none",
+        target_end_date_before ?? "none",
+        target_end_date_after ?? "none",
+        archived ?? "all",
+    ].join(":");
+}
+
 export const useProjectsStore = defineStore("projects", {
     /** @returns {ProjectsState} */
     state: () => ({
@@ -43,11 +69,7 @@ export const useProjectsStore = defineStore("projects", {
             this.status = "loading";
             this.error = null;
 
-            const filterKey = Object.entries(params)
-                .filter(([_, value]) => value != null)
-                .sort(([a], [b]) => a.localeCompare(b))
-                .map(([key, value]) => `${key}=${value}`)
-                .join("&");
+            const filterKey = createFilterKey(params);
 
             const cacheKey = `projects:all${filterKey ? `:${filterKey}` : ""}`;
 

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
 
@@ -8,18 +9,30 @@ import TaskCard from "./TaskCard.vue";
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 /** @typedef {import('@/types/project').ProjectRead} ProjectRead */
 
+const COLUMN_CONFIG = {
+    iconSize: "1.125rem",
+    countChipSize: "x-small",
+    menuIcon: "mdi-dots-horizontal",
+    menuButtonSize: "small",
+    emptyStateIcon: "mdi-inbox-outline",
+    emptyStateIconSize: "1.25rem",
+    resizeLabel: "Resize column",
+};
+
 const props = defineProps({
     column: {
         type: Object,
         required: true,
     },
+    projectId: {
+        type: String,
+    },
+    taskboardId: {
+        type: [String, null],
+        default: null,
+    },
     tasks: {
         /** @type {import('vue').PropType<TaskRead[]>} */
-        type: Array,
-        required: true,
-    },
-    projects: {
-        /** @type {import('vue').PropType<ProjectRead[]>} */
         type: Array,
         required: true,
     },
@@ -30,7 +43,8 @@ const props = defineProps({
     },
 });
 
-const store = useTasksStore();
+const tasksStore = useTasksStore();
+const taskboardsStore = useTaskboardsStore();
 
 const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
 
@@ -88,9 +102,15 @@ function handleDragEnd() {
     isDragOver.value = false;
 }
 
-/** @param {TaskCreate} task */
-async function handleCreate(task) {
-    await store.create("default", task);
+/** @param {TaskCreate} payload */
+async function handleCreate(payload) {
+    const task = await tasksStore.create(payload);
+
+    if (!task) return;
+
+    if (props.taskboardId)
+        await taskboardsStore.addTask(props.taskboardId, { task_id: task.id });
+
     emit("clear-pending-task");
 }
 
@@ -100,29 +120,43 @@ function handleCancel() {
 </script>
 
 <template>
-    <v-col cols="12" md="4">
-        <div class="d-flex align-center mb-2">
-            <v-icon :icon="column.icon" size="18" class="mr-2" />
+    <v-sheet class="task-column" rounded border>
+        <div class="task-column__header">
+            <div class="d-flex align-center">
+                <v-icon
+                    :icon="column.icon"
+                    :size="COLUMN_CONFIG.iconSize"
+                    class="mr-2"
+                />
 
-            <span class="text-subtitle-2 font-weight-medium">
-                {{ column.label }}
-            </span>
+                <span class="text-subtitle-2 font-weight-medium">
+                    {{ column.label }}
+                </span>
 
-            <v-chip size="x-small" class="ml-2">
-                {{ tasks.length }}
-            </v-chip>
+                <v-chip :size="COLUMN_CONFIG.countChipSize" class="ml-2">
+                    {{ tasks.length }}
+                </v-chip>
+            </div>
+
+            <v-btn
+                :icon="COLUMN_CONFIG.menuIcon"
+                :size="COLUMN_CONFIG.menuButtonSize"
+                variant="text"
+            />
         </div>
 
+        <v-divider />
+
         <div
-            class="task-column"
-            :class="{ 'task-column--drag-over': isDragOver }"
+            class="task-column__body"
             @dragover.prevent="handleDragOver"
             @dragleave="handleDragLeave"
             @drop="handleDrop"
         >
             <PendingTaskCard
-                v-if="pendingTask && pendingTask.status === column.status"
-                :projects="projects"
+                v-if="pendingTask?.status === column.status"
+                :project-id="props.projectId"
+                :taskboard-id="props.taskboardId"
                 @submit="handleCreate"
                 @cancel="handleCancel"
             />
@@ -137,44 +171,76 @@ function handleCancel() {
             />
 
             <v-sheet
-                v-if="tasks.length === 0"
-                class="task-column__empty text-center text-caption text-medium-emphasis"
+                v-if="
+                    tasks.length === 0 && pendingTask?.status !== column.status
+                "
+                class="task-column__empty"
                 border
                 rounded
             >
-                No tasks here
+                <v-icon
+                    :icon="COLUMN_CONFIG.emptyStateIcon"
+                    :size="COLUMN_CONFIG.emptyStateIconSize"
+                />
+
+                <span class="text-caption text-medium-emphasis">
+                    {{ column.emptyLabel }}
+                </span>
             </v-sheet>
         </div>
-    </v-col>
+
+        <div
+            class="task-column__resize-handle"
+            role="separator"
+            :aria-label="COLUMN_CONFIG.resizeLabel"
+        />
+    </v-sheet>
 </template>
 
 <style scoped>
 .task-column {
+    position: relative;
+    flex: 0 0 33.333%;
+    min-width: 18rem;
+    max-width: 48rem;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-height: 100%;
-    padding: 10px;
-    gap: 10px;
-    border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-    border-radius: 10px;
-    background: rgba(var(--v-theme-on-surface), 0.015);
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        box-shadow 0.15s ease;
+}
+
+.task-column__header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.task-column__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .task-column__empty {
-    margin-top: auto;
-    margin-bottom: auto;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 6rem;
 }
 
-.task-column--drag-over {
-    background: rgba(var(--v-theme-primary), 0.06);
-    border-color: rgba(var(--v-theme-primary), 0.4);
-    box-shadow:
-        inset 0 0 0 1px rgba(var(--v-theme-primary), 0.12),
-        0 0 0 2px rgba(var(--v-theme-primary), 0.04);
+.task-column__resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 0.375rem;
+    cursor: col-resize;
+    user-select: none;
+    touch-action: none;
 }
 </style>

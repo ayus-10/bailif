@@ -9,6 +9,24 @@ import { useTasksStore } from "@/stores/tasks.store";
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 /** @typedef {import('@/types/task').TaskQueryMode} TaskQueryMode */
 
+const BOARD_CONFIG = {
+    createButton: {
+        label: "Create task",
+        icon: "mdi-plus",
+        color: "primary",
+    },
+    column: {
+        initialWidth: "33.333%",
+        minWidth: "18rem",
+        maxWidth: "48rem",
+    },
+};
+
+const board = {
+    name: "Project Tasks",
+    description: "Plan, prioritize, and track work across the project.",
+};
+
 const route = useRoute();
 const router = useRouter();
 
@@ -142,73 +160,85 @@ function handleClear() {
 </script>
 
 <template>
-    <v-container fluid class="pa-6">
-        <div class="d-flex align-center mb-4">
+    <v-container fluid class="task-board">
+        <div class="task-board__header">
             <div>
-                <h1 class="text-h5 font-weight-medium">Task Board</h1>
-                <span class="text-body-2 text-medium-emphasis">
-                    {{ filteredTasks.length }} task{{
-                        filteredTasks.length === 1 ? "" : "s"
-                    }}
-                    <span v-if="route.query.status || route.query.priority">
-                        matching filters
-                    </span>
-                </span>
+                <h1 class="text-h6 font-weight-bold">
+                    {{ board.name }}
+                </h1>
+
+                <p class="text-caption text-medium-emphasis mb-0 mt-1">
+                    {{ board.description }}
+                </p>
             </div>
-            <v-spacer />
+
             <v-btn
-                color="primary"
-                prepend-icon="mdi-plus"
+                :color="BOARD_CONFIG.createButton.color"
+                :prepend-icon="BOARD_CONFIG.createButton.icon"
                 variant="flat"
+                density="comfortable"
+                class="text-none font-weight-medium"
                 @click="openNewTask"
-                >New Task
+            >
+                {{ BOARD_CONFIG.createButton.label }}
             </v-btn>
         </div>
 
-        <div v-if="route.query.status || route.query.priority" class="mb-4">
-            <v-chip
-                v-if="route.query.status"
-                closable
-                size="small"
-                class="mr-2"
-                @click:close="clearFilter('status')"
-            >
-                Status: {{ route.query.status }}
-            </v-chip>
-            <v-chip
-                v-if="route.query.priority"
-                closable
-                size="small"
-                @click:close="clearFilter('priority')"
-            >
-                Priority: {{ route.query.priority }}
-            </v-chip>
+        <div class="task-board__content">
+            <div class="task-board__columns">
+                <TaskColumn
+                    v-for="column in TASK_COLUMNS"
+                    :key="column.status"
+                    :column="column"
+                    :tasks="tasksByStatus[column.status] ?? []"
+                    :pending-task="pendingTask"
+                    :project-id="projectId"
+                    :taskboard-id="
+                        currentBoard.type === 'board' ? currentBoard.id : null
+                    "
+                    @drag-start="startDrag"
+                    @drop="dropTask"
+                    @clear-pending-task="handleClear"
+                />
+            </div>
         </div>
-
-        <div v-if="status === 'loading'" class="d-flex justify-center py-12">
-            <v-progress-circular indeterminate />
-        </div>
-
-        <v-alert v-else-if="status === 'error'" type="error" class="mb-4">
-            {{ error?.message }}
-
-            <template #append>
-                <v-btn size="small" @click="retry"> Retry </v-btn>
-            </template>
-        </v-alert>
-
-        <v-row v-else>
-            <TaskColumn
-                v-for="column in TASK_COLUMNS"
-                :key="column.status"
-                :column="column"
-                :tasks="tasksByStatus[column.status] ?? []"
-                :pendingTask="pendingTask"
-                :projects="projects"
-                @drag-start="startDrag"
-                @drop="dropTask"
-                @clear-pending-task="handleClear"
-            />
-        </v-row>
     </v-container>
 </template>
+
+<style scoped>
+.task-board {
+    height: 100%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.task-board__header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.task-board__content {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.task-board__columns {
+    height: 100%;
+    min-width: max-content;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.task-board__columns > :deep(.task-column) {
+    flex: 0 0 33.333%;
+}
+</style>
