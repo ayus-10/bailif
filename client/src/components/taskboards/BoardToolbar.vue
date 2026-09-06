@@ -64,9 +64,19 @@ function handleNewTask() {
                 :hide-details="CONFIG.search.hideDetails"
                 variant="outlined"
                 class="board-toolbar__search"
-            />
+            >
+                <template #append-inner>
+                    <span
+                        class="board-toolbar__search-shortcut"
+                        aria-label="Command S"
+                    >
+                        <kbd>⌘</kbd><kbd>S</kbd>
+                    </span>
+                </template>
+            </v-text-field>
 
             <button
+                v-ripple
                 type="button"
                 class="board-toolbar__button"
                 :class="{
@@ -86,6 +96,7 @@ function handleNewTask() {
             </button>
 
             <button
+                v-ripple
                 type="button"
                 class="board-toolbar__button"
                 @click="handleAction(CONFIG.actions.sort.key)"
@@ -98,6 +109,7 @@ function handleNewTask() {
             </button>
 
             <button
+                v-ripple
                 type="button"
                 class="board-toolbar__button"
                 @click="handleAction(CONFIG.actions.view.key)"
@@ -118,7 +130,7 @@ function handleNewTask() {
             :color="CONFIG.createButton.color"
             :prepend-icon="CONFIG.createButton.icon"
             variant="flat"
-            density="compact"
+            density="comfortable"
             class="text-none board-toolbar__new-task"
             @click="handleNewTask"
         >
@@ -135,7 +147,8 @@ function handleNewTask() {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    border-bottom: 0.0625rem solid var(--v-theme-outline-variant, #eaecf0);
+    border-bottom: 0.0625rem solid
+        rgb(var(--v-theme-outline-variant, 234, 236, 240));
 }
 
 .board-toolbar__left {
@@ -143,68 +156,182 @@ function handleNewTask() {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-}
-
-.board-toolbar__search {
-    width: 16rem;
-    margin-right: 0.375rem;
+    flex: 1 1 auto;
 }
 
 .board-toolbar__button {
-    min-height: 2rem;
+    min-height: 2.25rem;
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0 0.625rem;
+    padding: 0 0.75rem;
     border: 0.0625rem solid transparent;
-    border-radius: 0.375rem;
+    border-radius: 0.5rem;
     background: transparent;
-    color: var(--v-theme-on-surface-variant, #475467);
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1rem;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .board-toolbar__button:hover {
-    border-color: var(--v-theme-outline, #e1e4e8);
-    background: var(--v-theme-surface-variant, #f8f9fa);
-    color: var(--v-theme-on-surface, #1a1f2c);
+    background: rgb(var(--v-theme-on-surface), 0.05);
+    background: rgba(25, 118, 210, 0.06);
+    color: rgb(var(--v-theme-on-surface, 26, 31, 44));
+}
+
+.board-toolbar__button:focus-visible {
+    outline: none;
+    border-color: rgba(25, 118, 210, 0.5);
+    box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15);
 }
 
 .board-toolbar__button--active {
-    border-color: var(--v-theme-accent, #7c3aed);
-    color: var(--v-theme-accent, #7c3aed);
+    border-color: rgba(25, 118, 210, 0.35);
+    background: rgba(25, 118, 210, 0.08);
+    color: #1976d2;
+}
+
+.board-toolbar__button--active:hover {
+    background: rgba(25, 118, 210, 0.12);
 }
 
 .board-toolbar__count {
-    min-width: 1rem;
-    height: 1rem;
+    min-width: 1.125rem;
+    height: 1.125rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0.25rem;
-    border-radius: 0.125rem;
-    background: var(--v-theme-accent, #7c3aed);
-    color: var(--v-theme-on-primary, #ffffff);
+    padding: 0 0.3125rem;
+    border-radius: 999px;
+    background: #1976d2;
+    color: #ffffff;
     font-size: 0.6875rem;
     font-weight: 700;
     line-height: 1rem;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .board-toolbar__new-task {
     flex: 0 0 auto;
+    border-radius: 0.5rem;
+}
+
+.board-toolbar__new-task :deep(.v-btn__content) {
+    user-select: none;
+}
+
+.board-toolbar__search {
+    flex: 0 1 17rem;
+    min-width: 12rem;
+    margin-right: 0.375rem;
 }
 
 :deep(.board-toolbar__search .v-field) {
     --v-field-border-opacity: 1;
+
+    min-height: 2.375rem;
+    border-radius: 0.625rem;
+    background: rgb(var(--v-theme-surface));
+
+    outline: none !important;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+:deep(.board-toolbar__search input),
+:deep(.board-toolbar__search input:focus),
+:deep(.board-toolbar__search input:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 :deep(.board-toolbar__search .v-field__outline) {
-    color: var(--v-theme-outline, #e1e4e8);
+    color: rgb(var(--v-theme-outline, 225, 228, 232));
+}
+
+:deep(.board-toolbar__search .v-field__outline__start),
+:deep(.board-toolbar__search .v-field__outline__end) {
+    border-color: currentColor;
+    opacity: 1;
+}
+
+:deep(.board-toolbar__search .v-field__outline__notch)::before,
+:deep(.board-toolbar__search .v-field__outline__notch)::after {
+    border-color: currentColor;
+}
+
+:deep(.board-toolbar__search .v-field:hover .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 0.55;
+}
+
+:deep(.board-toolbar__search .v-field--focused) {
+    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
 }
 
 :deep(.board-toolbar__search .v-field--focused .v-field__outline) {
-    color: var(--v-theme-primary, #1976d2);
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
+}
+
+:deep(.board-toolbar__search .v-field__prepend-inner) {
+    padding-inline-start: 0.75rem;
+}
+
+:deep(.board-toolbar__search .v-field__prepend-inner .v-icon) {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 1.125rem;
+    opacity: 0.9;
+    transition:
+        color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+:deep(
+    .board-toolbar__search .v-field--focused .v-field__prepend-inner .v-icon
+) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
+}
+
+.board-toolbar__search-shortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1875rem;
+    margin-right: 0.125rem;
+    pointer-events: none;
+}
+
+.board-toolbar__search-shortcut kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.25rem;
+    border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
+    border-radius: 0.3125rem;
+    background: rgb(245, 246, 248);
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-family: inherit;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    opacity: 0.85;
 }
 </style>

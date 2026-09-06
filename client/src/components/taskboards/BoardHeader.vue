@@ -91,6 +91,7 @@ function handleAction(action) {
 
         <div class="board-header__actions">
             <button
+                v-ripple
                 type="button"
                 class="board-header__icon-button"
                 :aria-label="CONFIG.actions.share.label"
@@ -102,6 +103,7 @@ function handleAction(action) {
             </button>
 
             <button
+                v-ripple
                 type="button"
                 class="board-header__icon-button"
                 :aria-label="CONFIG.actions.settings.label"
@@ -116,8 +118,8 @@ function handleAction(action) {
                 :color="CONFIG.buttons.invite.color"
                 :prepend-icon="CONFIG.buttons.invite.icon"
                 variant="flat"
-                density="compact"
-                class="text-none board-header__invite"
+                density="comfortable"
+                class="text-none board-toolbar__invite"
                 @click="handleAction(CONFIG.actions.invite.key)"
             >
                 {{ CONFIG.buttons.invite.label }}
@@ -155,7 +157,7 @@ function handleAction(action) {
     border: 0.0625rem solid var(--v-theme-outline, #e1e4e8);
     border-radius: 0.375rem;
     background: var(--v-theme-surface-variant, #f8f9fa);
-    color: var(--v-theme-on-surface-variant, #475467);
+    color: var(--v-theme-text-secondary, #475467);
 }
 
 .board-header__identity-content {
@@ -186,18 +188,20 @@ function handleAction(action) {
     padding: 0.125rem 0.375rem;
     border: 0.0625rem solid var(--v-theme-outline-variant, #eaecf0);
     border-radius: 0.125rem;
-    color: var(--v-theme-on-surface-variant, #475467);
+    color: var(--v-theme-text-secondary, #475467);
     font-size: 0.6875rem;
     font-weight: 700;
     line-height: 1rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .board-header__description {
     margin: 0.125rem 0 0;
     overflow: hidden;
-    color: var(--v-theme-on-surface-variant, #475467);
+    color: var(--v-theme-text-secondary, #475467);
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1rem;
@@ -222,17 +226,29 @@ function handleAction(action) {
     border: 0.0625rem solid transparent;
     border-radius: 0.375rem;
     background: transparent;
-    color: var(--v-theme-on-surface-variant, #475467);
+    color: var(--v-theme-text-secondary, #475467);
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    transition: color 0.15s ease;
 }
 
 .board-header__icon-button:hover {
-    border-color: var(--v-theme-outline, #e1e4e8);
-    background: var(--v-theme-surface-variant, #f8f9fa);
-    color: var(--v-theme-on-surface, #1a1f2c);
+    color: #1976d2;
 }
 
-.board-header__invite {
-    margin-left: 0.25rem;
+.board-header__icon-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15);
+}
+
+.board-toolbar__invite {
+    flex: 0 0 auto;
+    border-radius: 0.5rem;
+}
+
+.board-toolbar__invite :deep(.v-btn__content) {
+    user-select: none;
 }
 </style>
