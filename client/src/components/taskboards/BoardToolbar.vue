@@ -326,7 +326,7 @@ function handleNewTask() {
     padding: 0 0.25rem;
     border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
     border-radius: 0.3125rem;
-    background: rgb(245, 246, 248);
+    background: rgb(var(--v-theme-grey-lighten-4, 245, 246, 248));
     color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
     font-family: inherit;
     font-size: 0.6875rem;
