@@ -8,6 +8,7 @@ import TaskCard from "./TaskCard.vue";
 /** @typedef {import('@/types/task').TaskRead} TaskRead */
 /** @typedef {import('@/types/task').TaskCreate} TaskCreate */
 /** @typedef {import('@/types/project').ProjectRead} ProjectRead */
+/** @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig */
 
 const COLUMN_CONFIG = {
     iconSize: "1.125rem",
@@ -21,6 +22,7 @@ const COLUMN_CONFIG = {
 
 const props = defineProps({
     column: {
+        /** @type {import("vue").PropType<TaskColumnConfig>} */
         type: Object,
         required: true,
     },
@@ -39,7 +41,7 @@ const props = defineProps({
     pendingTask: {
         /** @type {import('vue').PropType<TaskCreate | null>} */
         type: Object,
-        required: false,
+        default: null,
     },
 });
 
@@ -202,10 +204,13 @@ function handleCancel() {
     display: flex;
     flex-direction: column;
     border-radius: 0.75rem !important;
+    --column-color: v-bind("column.color.value");
     border-color: rgb(var(--v-theme-outline-variant, 234, 236, 240)) !important;
 }
 
 .task-column__header {
+    position: relative;
+    isolation: isolate;
     flex: 0 0 auto;
     display: flex;
     align-items: center;
@@ -214,15 +219,26 @@ function handleCancel() {
     padding: 0.75rem 0.875rem 0.625rem;
 }
 
-.task-column__header-icon {
-    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+.task-column__header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--column-color);
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    opacity: 0.12;
+    z-index: -1;
+}
+
+.task-column__header-icon,
+.task-column__label {
+    color: var(--column-color);
 }
 
 .task-column__label {
-    color: rgb(var(--v-theme-on-surface));
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: -0.005em;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     line-height: 1.25rem;
 }
 
@@ -289,7 +305,7 @@ function handleCancel() {
 .task-column__empty-label {
     color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1rem;
 }
 

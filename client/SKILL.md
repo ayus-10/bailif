@@ -26,14 +26,14 @@ Role: an expert Vue 3 and Vuetify 3 frontend developer specializing in clean, mo
 
 Never hardcode raw hex where a theme token exists. Vuetify theme variables are RGB channel triplets, not hex strings — wrap them: `rgb(var(--v-theme-[name], r, g, b))`, or they silently fail and you're just seeing the fallback.
 
-| Purpose | Token |
-|---|---|
-| Backgrounds | `rgb(var(--v-theme-surface))` / `rgb(var(--v-theme-surface-variant, 248, 249, 250))` |
-| Borders | `rgb(var(--v-theme-outline, 225, 228, 232))` / `rgb(var(--v-theme-outline-variant, 234, 236, 240))` |
-| Primary action / active-selected state | Vuetify default blue `#1976d2` (or `rgb(var(--v-theme-primary))`) — used sparingly: active filters, selected states, badges, the one primary CTA. Never a default hover color on neutral controls. |
-| Text (primary) | `rgb(var(--v-theme-on-surface))` |
-| Text (secondary/labels/descriptions) | `rgb(var(--v-theme-text-secondary, 71, 84, 103))` — not `on-surface-variant`, which renders too light |
-| Text (quiet/decorative icons, placeholder-weight content) | `rgb(var(--v-theme-text-disabled, 148, 157, 173))` |
+| Purpose                                                   | Token                                                                                                                                                                                              |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Backgrounds                                               | `rgb(var(--v-theme-surface))` / `rgb(var(--v-theme-surface-variant, 248, 249, 250))`                                                                                                               |
+| Borders                                                   | `rgb(var(--v-theme-outline, 225, 228, 232))` / `rgb(var(--v-theme-outline-variant, 234, 236, 240))`                                                                                                |
+| Primary action / active-selected state                    | Vuetify default blue `#1976d2` (or `rgb(var(--v-theme-primary))`) — used sparingly: active filters, selected states, badges, the one primary CTA. Never a default hover color on neutral controls. |
+| Text (primary)                                            | `rgb(var(--v-theme-on-surface))`                                                                                                                                                                   |
+| Text (secondary/labels/descriptions)                      | `rgb(var(--v-theme-text-secondary, 71, 84, 103))` — not `on-surface-variant`, which renders too light                                                                                              |
+| Text (quiet/decorative icons, placeholder-weight content) | `rgb(var(--v-theme-text-disabled, 148, 157, 173))`                                                                                                                                                 |
 
 Don't introduce a second accent color (e.g. purple). One accent used narrowly beats two competing accents.
 
@@ -55,7 +55,7 @@ Don't introduce a second accent color (e.g. purple). One accent used narrowly be
 
 ## Interaction states
 
-- **Hover:** subtle only. A neutral icon/text shifting to the accent color on hover is enough — avoid stacking a background fill *and* a color change *and* a border change on the same element at once.
+- **Hover:** subtle only. A neutral icon/text shifting to the accent color on hover is enough — avoid stacking a background fill _and_ a color change _and_ a border change on the same element at once.
 - **Focus:** must be visible for accessibility, but never a glowing halo. For buttons/icon-buttons, a quiet low-opacity ring is fine: `box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15)`. For text inputs, prefer shifting the border color/weight itself (muted grey → `on-surface`) over any shadow — reads as sharpening, not lighting up.
 - **Ripple:** use `v-ripple` on both `v-btn` and any native `<button>` acting as a button — it works on any element, no reason to skip it on custom buttons.
 - **Text selection:** any button or button-like control (including static badges inside a control row) gets `user-select: none; -webkit-user-select: none;`.
@@ -66,6 +66,7 @@ Don't introduce a second accent color (e.g. purple). One accent used narrowly be
 **Inputs** (`v-text-field`, `v-select`, `v-textarea`): `variant="outlined"`, `density="compact"`, `hide-details` or `hide-details="auto"`. Target the actual internal parts with `:deep()` — `.v-field__outline`, `.v-field__outline__start`, `.v-field__outline__end`, `.v-field__outline__notch::before`/`::after` — not just the parent `.v-field`, or overrides on the notch/label gap won't apply.
 
 **Buttons** (`v-btn`):
+
 - `variant="flat"` for primary actions, no custom shadow on top.
 - `variant="text"` for secondary/icon-only actions.
 - Primary CTA: `density="comfortable"`. Everything else: `density="compact"`.
