@@ -15,7 +15,7 @@ import { useTasksStore } from "@/stores/tasks.store";
 const route = useRoute();
 const router = useRouter();
 
-const projectId = ref(localStorage.getItem("project_id") ?? "");
+const projectId = ref(localStorage.getItem("project_id") ?? ""); // TODO: replace with session
 
 const currentBoard = computed(() => {
     const id = route.params.id;
@@ -206,7 +206,8 @@ function handleClear() {
     </v-container>
 </template>
 
-<style scoped>.task-board {
+<style scoped>
+.task-board {
     min-width: 0;
     display: flex;
     flex-direction: column;

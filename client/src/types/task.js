@@ -106,7 +106,6 @@
 
 /**
  * @typedef {Object} TaskDraft
- * @property {string | null} project_id
  * @property {string} title
  * @property {string} description
  * @property {TaskStatus | null} status
