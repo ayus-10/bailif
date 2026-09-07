@@ -206,9 +206,7 @@ function handleClear() {
     </v-container>
 </template>
 
-<style scoped>
-.task-board {
-    height: 100%;
+<style scoped>.task-board {
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -218,16 +216,12 @@ function handleClear() {
 }
 
 .task-board__content {
-    flex: 1 1 auto;
-    min-height: 0;
     min-width: 0;
+    min-height: 0;
     padding-top: 0.75rem;
-    overflow-x: auto;
-    overflow-y: hidden;
 }
 
 .task-board__columns {
-    height: 100%;
     min-width: max-content;
     display: flex;
     flex-wrap: nowrap;
@@ -237,5 +231,21 @@ function handleClear() {
 
 .task-board__columns > :deep(.task-column) {
     flex: 0 0 33%;
+}
+
+@media (min-width: 60rem) {
+    .task-board {
+        height: 100dvh;
+    }
+
+    .task-board__content {
+        flex: 1 1 auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .task-board__columns {
+        height: 100%;
+    }
 }
 </style>

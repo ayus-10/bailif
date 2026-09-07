@@ -17,12 +17,19 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    accentColor: {
+        type: String,
+        default: null,
+    },
 });
 
 const router = useRouter();
 
 const isOverdue = computed(() => isTaskOverdue(props.task));
 const tagCount = computed(() => parseTags(props.task.tags).length);
+
+// TODO: TaskRead doesn't define `progress` yet
+const progressValue = 67;
 
 const emit = defineEmits([
     "complete",
@@ -84,10 +91,11 @@ function handleDuplicate(e) {
         draggable="true"
         variant="outlined"
         rounded="lg"
-        class="task-row"
+        class="task-card"
+        :style="{ '--task-accent': accentColor }"
         :class="{
-            'task-row--overdue': isOverdue,
-            'task-row--complete': task.status === 'done',
+            'task-card--overdue': isOverdue,
+            'task-card--complete': task.status === 'done',
         }"
         tabindex="0"
         role="button"
@@ -100,125 +108,23 @@ function handleDuplicate(e) {
         @dragstart="$emit('dragstart', $event)"
         @dragend="$emit('dragend')"
     >
-        <div class="task-row__controls">
-            <button
-                class="task-row__drag"
-                type="button"
-                tabindex="-1"
-                aria-label="Drag to reorder"
-                @click.stop
-                @mousedown.stop
-            >
-                <v-icon icon="mdi-drag-vertical" size="16" />
-            </button>
-
-            <button
-                class="task-row__toggle"
-                type="button"
-                :aria-label="
-                    isExpanded ? 'Collapse description' : 'Expand description'
-                "
-                @click.stop="toggleDescription"
-            >
-                <v-icon
-                    :icon="
-                        isExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'
-                    "
-                    size="16"
-                />
-            </button>
-        </div>
-
-        <div class="task-row__body">
-            <div class="task-row__title-row">
-                <span class="task-row__title text-body-2 font-weight-medium">
-                    {{ task.title }}
-                </span>
-            </div>
-
-            <div class="task-row__meta-row">
-                <div class="task-row__meta-left">
-                    <div v-if="tagCount" class="task-row__meta">
-                        <v-icon icon="mdi-tag-outline" size="12" />
-                        <span>{{ tagCount }}</span>
-                    </div>
-
-                    <div
-                        v-if="task.due_date"
-                        class="task-row__meta"
-                        :class="{ overdue: isOverdue }"
-                    >
-                        <v-icon
-                            :icon="
-                                isOverdue
-                                    ? 'mdi-calendar-alert'
-                                    : 'mdi-calendar-blank-outline'
-                            "
-                            size="12"
-                        />
-                        <span>{{ formatDate(task.due_date) }}</span>
-                    </div>
-
-                    <v-chip
-                        size="x-small"
-                        variant="tonal"
-                        class="task-row__priority"
-                        :color="PRIORITY_COLORS[task.priority] ?? 'default'"
-                    >
-                        {{ task.priority.toUpperCase() }}
-                    </v-chip>
-                </div>
-            </div>
-
-            <p
-                v-if="isExpanded && task.description"
-                class="task-row__description text-caption"
-            >
-                {{ htmlPreview(task.description) }}
-            </p>
-        </div>
-
         <div
-            class="task-row__actions"
-            :class="{ 'task-row__actions--visible': isHovering }"
+            class="task-card__toolbar"
+            :class="{ 'task-card__toolbar--visible': isHovering }"
         >
-            <v-tooltip text="Snooze" location="left" v-if="isExpanded">
-                <template #activator="{ props: tip }">
-                    <button
-                        v-bind="tip"
-                        type="button"
-                        class="task-row__action-btn"
-                        @click="handleSnooze"
-                    >
-                        <v-icon icon="mdi-clock-outline" size="16" />
-                    </button>
-                </template>
-            </v-tooltip>
-
-            <v-tooltip text="Delete" location="left" v-if="isExpanded">
-                <template #activator="{ props: tip }">
-                    <button
-                        v-bind="tip"
-                        type="button"
-                        class="task-row__action-btn task-row__action-btn--danger"
-                        @click="handleDelete"
-                    >
-                        <v-icon icon="mdi-trash-can-outline" size="16" />
-                    </button>
-                </template>
-            </v-tooltip>
-
             <v-menu location="bottom end">
                 <template #activator="{ props: menuProps }">
                     <button
                         v-bind="menuProps"
                         type="button"
-                        class="task-row__action-btn"
+                        class="task-card__icon-btn"
+                        v-ripple
                         @click.stop
                     >
-                        <v-icon icon="mdi-dots-horizontal" size="16" />
+                        <v-icon icon="mdi-dots-horizontal" size="14" />
                     </button>
                 </template>
+
                 <v-list density="compact">
                     <v-list-item
                         prepend-icon="mdi-check"
@@ -248,6 +154,63 @@ function handleDuplicate(e) {
                     />
                 </v-list>
             </v-menu>
+        </div>
+
+        <div class="task-card__top">
+            <v-chip
+                size="x-small"
+                variant="tonal"
+                class="task-card__priority"
+                :color="PRIORITY_COLORS[task.priority] ?? 'default'"
+            >
+                {{ task.priority.toUpperCase() }}
+            </v-chip>
+
+            <span v-if="isOverdue" class="task-card__overdue-flag">
+                <v-icon icon="mdi-calendar-alert" size="12" />
+                Overdue
+            </span>
+        </div>
+
+        <h3 class="task-card__title">{{ task.title }}</h3>
+
+        <p v-if="task.description" class="task-card__description">
+            {{ htmlPreview(task.description) }}
+        </p>
+
+        <div class="task-card__progress-row">
+            <span class="task-card__progress-label">Progress</span>
+            <span class="task-card__progress-value">{{ progressValue }}%</span>
+        </div>
+
+        <div class="task-card__progress-track">
+            <div
+                class="task-card__progress-fill"
+                :style="{ width: progressValue + '%' }"
+            />
+        </div>
+
+        <div class="task-card__footer">
+            <div v-if="tagCount" class="task-card__meta">
+                <v-icon icon="mdi-tag-outline" size="12" />
+                <span>{{ tagCount }}</span>
+            </div>
+
+            <div
+                v-if="task.due_date"
+                class="task-card__meta"
+                :class="{ 'task-card__meta--overdue': isOverdue }"
+            >
+                <v-icon
+                    :icon="
+                        isOverdue
+                            ? 'mdi-calendar-alert'
+                            : 'mdi-calendar-blank-outline'
+                    "
+                    size="12"
+                />
+                <span>{{ formatDate(task.due_date) }}</span>
+            </div>
         </div>
 
         <v-menu v-model="contextMenuOpen" :target="contextMenuTarget">
@@ -284,186 +247,157 @@ function handleDuplicate(e) {
 </template>
 
 <style scoped>
-.task-row {
-    position: relative;
-    display: grid;
-    grid-template-columns: 20px minmax(0, 1fr) auto;
-    grid-auto-rows: auto;
-    align-items: stretch;
-    align-self: start;
-    column-gap: 8px;
-    width: 100%;
-    min-width: 0;
-    height: fit-content;
-    padding: 8px 12px;
-    overflow: hidden;
-    cursor: pointer;
-    user-select: none;
-    background-color: rgba(var(--v-theme-on-surface), 0.015);
-    border-color: rgba(var(--v-theme-on-surface), 0.08);
-    transition:
-        background-color 0.12s ease,
-        border-color 0.12s ease,
-        box-shadow 0.12s ease;
-}
+.task-card {
+    --task-accent: rgb(var(--v-theme-primary));
 
-.task-row__controls {
-    grid-column: 1;
-    grid-row: 1 / -1;
+    position: relative;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    min-width: 20px;
-    height: fit-content;
-    align-self: center;
-    gap: 2px;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 0.875rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    border-radius: 0.75rem;
+    background-color: rgb(var(--v-theme-surface));
+    border-color: rgb(var(--v-theme-outline-variant, 234, 236, 240));
+    transition:
+        border-color 0.12s ease,
+        background-color 0.12s ease;
 }
 
-.task-row:hover {
-    background-color: rgba(var(--v-theme-on-surface), 0.035);
-    border-color: rgba(var(--v-theme-on-surface), 0.14);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+.task-card:hover {
+    border-color: color-mix(
+        in srgb,
+        var(--task-accent) 22%,
+        rgb(var(--v-theme-outline-variant, 234, 236, 240))
+    );
+    background-color: color-mix(
+        in srgb,
+        var(--task-accent) 3%,
+        rgb(var(--v-theme-surface))
+    );
 }
 
-.task-row:focus {
+.task-card:focus {
     outline: none;
 }
 
-.task-row:focus-visible {
-    outline: 2px solid rgb(var(--v-theme-primary));
-    outline-offset: -1px;
+.task-card:focus-visible {
+    outline: 0.125rem solid
+        color-mix(in srgb, var(--task-accent) 55%, transparent);
+    outline-offset: 0.125rem;
 }
 
-.task-row--complete {
-    background-color: rgba(var(--v-theme-on-surface), 0.01);
-    border-color: rgba(var(--v-theme-on-surface), 0.07);
+.task-card--complete {
+    background-color: color-mix(
+        in srgb,
+        var(--task-accent) 2%,
+        rgb(var(--v-theme-grey-lighten-4, 245, 246, 248))
+    );
 }
 
-.task-row--complete .task-row__title {
-    color: rgba(var(--v-theme-on-surface), 0.5);
+.task-card--complete .task-card__title {
+    color: rgb(var(--v-theme-text-disabled, 148, 157, 173));
     text-decoration: line-through;
 }
 
-.task-row--overdue {
-    background-color: rgba(var(--v-theme-on-surface), 0.015);
-    border-color: rgba(var(--v-theme-on-surface), 0.08);
+.task-card--overdue {
+    border-color: rgba(var(--v-theme-error), 0.35);
 }
 
-.task-row--overdue:hover {
-    background-color: rgba(var(--v-theme-on-surface), 0.035);
-    border-color: rgba(var(--v-theme-on-surface), 0.14);
-}
-
-.task-row__drag,
-.task-row__toggle {
+.task-card__toolbar {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 20px;
-    min-width: 20px;
-    height: 20px;
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
-}
-
-.task-row__drag {
-    color: rgba(var(--v-theme-on-surface), 0.35);
-    cursor: grab;
     opacity: 0;
     transition: opacity 0.12s ease;
+    z-index: 1;
 }
 
-.task-row__toggle {
-    color: rgba(var(--v-theme-on-surface), 0.4);
-    opacity: 0;
-    transition:
-        opacity 0.12s ease,
-        color 0.12s ease;
-}
-
-.task-row__toggle:hover {
-    color: rgba(var(--v-theme-on-surface), 0.8);
-}
-
-.task-row:hover .task-row__drag,
-.task-row:focus-within .task-row__drag,
-.task-row:hover .task-row__toggle,
-.task-row:focus-within .task-row__toggle {
+.task-card__toolbar--visible,
+.task-card:focus-within .task-card__toolbar {
     opacity: 1;
 }
 
-.task-row__body {
-    grid-column: 2;
-    grid-row: 1 / -1;
-    min-width: 0;
-    width: 100%;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 2px 0;
-}
-
-.task-row__title-row {
+.task-card__icon-btn {
     display: flex;
     align-items: center;
-    min-height: 20px;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    background: rgb(var(--v-theme-surface));
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-.task-row__title {
-    min-width: 0;
+.task-card__icon-btn:hover {
+    background: rgb(var(--v-theme-grey-lighten-4, 245, 246, 248));
+    color: rgb(var(--v-theme-on-surface));
+}
+
+.task-card__icon-btn:focus-visible {
+    outline: 0.125rem solid
+        color-mix(in srgb, var(--task-accent) 55%, transparent);
+    outline-offset: 0.0625rem;
+}
+
+.task-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-right: 2rem;
+}
+
+.task-card__priority {
+    flex: 0 0 auto;
+    padding: 0.125rem 0.375rem;
+    border: 0.0625rem solid currentColor;
+    border-radius: 0.125rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.task-card__overdue-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: rgb(var(--v-theme-error));
+    font-size: 0.6875rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.task-card__title {
+    margin: 0;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.task-row__meta-row {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    width: 100%;
-    gap: 8px;
-}
-
-.task-row__meta-left {
-    display: flex;
-    align-items: center;
-    min-width: 0;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.task-row__meta {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.6875rem;
-    font-variant-numeric: tabular-nums;
-    color: rgba(var(--v-theme-on-surface), 0.6);
-    white-space: nowrap;
-}
-
-.task-row__meta.overdue {
-    color: rgb(var(--v-theme-error));
-    font-weight: 600;
-}
-
-.task-row__priority {
-    flex: 0 0 auto;
-    flex-shrink: 0;
-    font-weight: 600;
-}
-
-.task-row__description {
+.task-card__description {
     margin: 0;
-    min-width: 0;
-    max-width: 100%;
-    color: rgba(var(--v-theme-on-surface), 0.6);
-    line-height: 1.4;
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 0.8125rem;
+    line-height: 1.35rem;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -472,84 +406,43 @@ function handleDuplicate(e) {
     -webkit-box-orient: vertical;
 }
 
-.task-row__actions {
-    grid-column: 3;
-    grid-row: 1 / -1;
-    align-self: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-width: 28px;
-    height: fit-content;
-    padding: 2px 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.12s ease;
-}
-
-.task-row__actions--visible,
-.task-row:focus-within .task-row__actions {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.task-row__action-btn {
+.task-card__progress-row {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    border-radius: 6px;
-    background: none;
-    color: rgba(var(--v-theme-on-surface), 0.6);
-    cursor: pointer;
-    transition:
-        background-color 0.12s ease,
-        color 0.12s ease;
+    justify-content: space-between;
+    margin-top: 0.125rem;
 }
 
-.task-row__action-btn:hover {
-    background-color: rgba(var(--v-theme-on-surface), 0.06);
-    color: rgba(var(--v-theme-on-surface), 0.9);
+.task-card__progress-label {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 0.75rem;
+    font-weight: 600;
 }
 
-.task-row__action-btn--danger:hover {
-    background-color: rgba(var(--v-theme-error), 0.1);
-    color: rgb(var(--v-theme-error));
+.task-card__progress-value {
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }
 
-.task-row__action-btn:focus-visible {
-    outline: 2px solid rgb(var(--v-theme-primary));
-    outline-offset: 1px;
+.task-card__progress-track {
+    position: relative;
+    width: 100%;
+    height: 0.375rem;
+    border-radius: 999px;
+    background: rgb(var(--v-theme-grey-lighten-4, 245, 246, 248));
+    overflow: hidden;
 }
 
-@media (max-width: 640px) {
-    .task-row {
-        grid-template-columns: 20px minmax(0, 1fr) auto;
-        column-gap: 6px;
-        padding: 8px;
-        height: fit-content;
-        align-self: start;
-    }
+.task-card__progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--task-accent);
+    transition: width 0.2s ease;
+}
 
-    .task-row__body {
-        height: fit-content;
-    }
-
-    .task-row__meta-left {
-        gap: 8px;
-    }
-
-    .task-row__meta-left .task-row__meta:not(:first-child):not(:last-child) {
-        display: none;
-    }
-
-    .task-row__actions {
-        height: fit-content;
-    }
+.task-card--complete .task-card__progress-fill {
+    background: rgb(var(--v-theme-success, 76, 175, 80));
 }
 </style>

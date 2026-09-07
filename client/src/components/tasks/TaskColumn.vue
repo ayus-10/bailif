@@ -165,6 +165,7 @@ function handleCancel() {
                 v-for="task in tasks"
                 :key="task.id"
                 :task="task"
+                :accent-color="column.color.value"
                 draggable="true"
                 @dragstart="handleDragStart($event, task)"
                 @dragend="handleDragEnd"
@@ -272,12 +273,18 @@ function handleCancel() {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
     padding: 0.625rem 0.875rem 0.875rem;
     border-radius: 0 0 0.75rem 0.75rem;
     transition: background-color 0.15s ease;
+}
+
+.task-column__body > :deep(.v-card),
+.task-column__body > :deep(.task-card) {
+    flex-shrink: 0;
 }
 
 .task-column__body--drag-over {
