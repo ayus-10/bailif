@@ -1,5 +1,5 @@
 <script setup>
-/** @typedef {import('@/types/dashboard').DashboardMetric} DashboardMetric */
+/** @typedef {import("@/types/dashboard").DashboardMetric} DashboardMetric */
 
 const props = defineProps({
     metrics: {

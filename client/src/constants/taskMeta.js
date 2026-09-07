@@ -1,6 +1,6 @@
-/** @typedef {import('@/types/task').TaskType} TaskType */
-/** @typedef {import('@/types/task').TaskPriority} TaskPriority */
-/** @typedef {import('@/types/task').TaskStatus} TaskStatus */
+/** @typedef {import("@/types/task").TaskType} TaskType */
+/** @typedef {import("@/types/task").TaskPriority} TaskPriority */
+/** @typedef {import("@/types/task").TaskStatus} TaskStatus */
 
 /** @type {TaskPriority[]} */
 export const TASK_PRIORITIES = ["low", "medium", "high"];

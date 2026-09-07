@@ -1,54 +1,3 @@
-<template>
-    <v-menu
-        v-model="menuOpen"
-        :close-on-content-click="true"
-        :disabled="disabled"
-        location="bottom start"
-    >
-        <template #activator="{ props: activatorProps }">
-            <v-chip
-                v-bind="activatorProps"
-                :size="size"
-                :variant="variant"
-                :color="selected?.color"
-                :prepend-icon="selected?.icon"
-                :disabled="disabled"
-                class="editable-v-chip"
-                :class="{ 'editable-v-chip--editable': !disabled }"
-            >
-                {{ selected?.label ?? placeholder }}
-                <v-icon
-                    v-if="!disabled"
-                    icon="mdi-menu-down"
-                    size="x-small"
-                    class="ml-1"
-                />
-            </v-chip>
-        </template>
-
-        <v-list density="compact" min-width="180">
-            <v-list-item
-                v-for="item in items"
-                :key="item.value"
-                :active="item.value === internalValue"
-                @click="selectItem(item)"
-            >
-                <template #prepend>
-                    <v-icon
-                        :icon="item.icon"
-                        :color="item.color"
-                        size="small"
-                        class="mr-2"
-                    />
-                </template>
-                <v-list-item-title :class="`text-${item.color}`">
-                    {{ item.label }}
-                </v-list-item-title>
-            </v-list-item>
-        </v-list>
-    </v-menu>
-</template>
-
 <script setup>
 import { computed, ref, watch } from "vue";
 
@@ -56,7 +5,7 @@ import { computed, ref, watch } from "vue";
 
 const props = defineProps({
     items: {
-        /** @type {import('vue').PropType<SelectOption[]>} */
+        /** @type {import("vue").PropType<SelectOption[]>} */
         type: Array,
         required: true,
         validator: (
@@ -80,7 +29,7 @@ const props = defineProps({
         default: "small",
     },
     variant: {
-        type: /** @type {import('vue').PropType<"tonal" | "flat" | "text" | "elevated" | "outlined" | "plain">} */ (
+        type: /** @type {import("vue").PropType<"tonal" | "flat" | "text" | "elevated" | "outlined" | "plain">} */ (
             String
         ),
         default: "tonal",
@@ -136,8 +85,88 @@ function selectItem(item) {
 }
 </script>
 
+<template>
+    <v-menu
+        v-model="menuOpen"
+        :close-on-content-click="true"
+        :disabled="disabled"
+        location="bottom start"
+    >
+        <template #activator="{ props: activatorProps }">
+            <v-chip
+                v-bind="activatorProps"
+                :size="size"
+                :variant="variant"
+                :color="selected?.color"
+                :prepend-icon="selected?.icon"
+                :disabled="disabled"
+                class="editable-v-chip"
+                :class="{ 'editable-v-chip--editable': !disabled }"
+            >
+                {{ selected?.label ?? placeholder }}
+                <v-icon
+                    v-if="!disabled"
+                    icon="mdi-menu-down"
+                    size="x-small"
+                    class="editable-v-chip__caret"
+                />
+            </v-chip>
+        </template>
+        <v-list density="compact" min-width="180" class="editable-v-chip-list">
+            <v-list-item
+                v-for="item in items"
+                :key="item.value"
+                :active="item.value === internalValue"
+                class="editable-v-chip-list__item"
+                @click="selectItem(item)"
+            >
+                <template #prepend>
+                    <v-icon
+                        :icon="item.icon"
+                        :color="item.color"
+                        size="small"
+                        class="mr-2"
+                    />
+                </template>
+                <v-list-item-title :class="`text-${item.color}`">
+                    {{ item.label }}
+                </v-list-item-title>
+            </v-list-item>
+        </v-list>
+    </v-menu>
+</template>
+
 <style scoped>
+.editable-v-chip {
+    font-weight: 600;
+    letter-spacing: normal;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+        background-color 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
 .editable-v-chip--editable {
     cursor: pointer;
+}
+
+.editable-v-chip--editable:hover {
+    box-shadow: inset 0 0 0 0.0625rem currentColor;
+}
+
+.editable-v-chip__caret {
+    margin-left: 0.125rem;
+    opacity: 0.7;
+}
+
+.editable-v-chip-list {
+    border-radius: 0.625rem !important;
+    border: 0.0625rem solid rgb(var(--v-theme-outline-variant, 234, 236, 240));
+}
+
+.editable-v-chip-list__item {
+    border-radius: 0.5rem;
+    margin: 0.125rem 0.375rem;
 }
 </style>

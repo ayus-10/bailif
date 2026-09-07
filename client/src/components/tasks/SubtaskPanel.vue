@@ -6,9 +6,9 @@ import TaskCard from "@/components/tasks/TaskCard.vue";
 import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
-/** @typedef {import('@/types/shared').FetchStatus} FetchStatus */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
 
 const props = defineProps({
     taskId: {
@@ -53,14 +53,14 @@ watch(
     }
 );
 
-/** @type {import('vue').ComputedRef<TaskRead[]>} */
+/** @type {import("vue").ComputedRef<TaskRead[]>} */
 const subtasks = computed(() => tasksStore.items[boardId.value] ?? []);
 
 const hasSubtasks = computed(() => subtasks.value.length > 0);
 
 const projects = computed(() => projectsStore.items ?? []);
 
-/** @type {import('vue').ComputedRef<FetchStatus>} */
+/** @type {import("vue").ComputedRef<FetchStatus>} */
 const fetchStatus = computed(() => tasksStore.status[boardId.value] ?? "idle");
 const isLoading = computed(
     () =>
@@ -68,7 +68,7 @@ const isLoading = computed(
 );
 const fetchError = computed(() => tasksStore.errors[boardId.value] ?? null);
 
-/** @type {import('vue').Ref<TaskCreate | null>} */
+/** @type {import("vue").Ref<TaskCreate | null>} */
 const pendingSubTask = ref(null);
 
 const showSubtasks = computed(

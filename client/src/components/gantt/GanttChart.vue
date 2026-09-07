@@ -1,5 +1,5 @@
 <script setup>
-/** @typedef {import('@/types/gantt').GanttTask} GanttTask */
+/** @typedef {import("@/types/gantt").GanttTask} GanttTask */
 
 const props = defineProps({
     tasks: {

@@ -1,13 +1,13 @@
 import { API_URL } from "@/config";
 import { parseJson } from "./shared.api";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskListResponse} TaskListResponse */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
-/** @typedef {import('@/types/task').TaskUpdate} TaskUpdate */
-/** @typedef {import('@/types/task').TaskListParams} TaskListParams */
-/** @typedef {import('@/types/task').TaskDependencyRead} TaskDependencyRead */
-/** @typedef {import('@/types/task').TaskDependencyCreate} TaskDependencyCreate */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskListResponse} TaskListResponse */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/** @typedef {import("@/types/task").TaskUpdate} TaskUpdate */
+/** @typedef {import("@/types/task").TaskListParams} TaskListParams */
+/** @typedef {import("@/types/task").TaskDependencyRead} TaskDependencyRead */
+/** @typedef {import("@/types/task").TaskDependencyCreate} TaskDependencyCreate */
 
 /**
  * @param {TaskListParams} params

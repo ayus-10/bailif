@@ -1,6 +1,6 @@
 import { API_URL } from "@/config";
 
-/** @typedef {import('@/types/settings').Settings} Settings */
+/** @typedef {import("@/types/settings").Settings} Settings */
 
 /**
  * @param {string} scopeId

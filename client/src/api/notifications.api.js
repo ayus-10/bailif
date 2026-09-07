@@ -1,6 +1,6 @@
 import { API_URL } from "@/config";
 
-/** @typedef {import('@/types/notification').Notification} Notification */
+/** @typedef {import("@/types/notification").Notification} Notification */
 
 /**
  * @param {string} scopeId

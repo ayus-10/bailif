@@ -1,31 +1,16 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
+import BoardHeader from "@/components/taskboards/BoardHeader.vue";
+import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
+import { useTaskboardsStore } from "@/stores/taskboard.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
-/** @typedef {import('@/types/task').TaskQueryMode} TaskQueryMode */
-
-const BOARD_CONFIG = {
-    createButton: {
-        label: "Create task",
-        icon: "mdi-plus",
-        color: "primary",
-    },
-    column: {
-        initialWidth: "33.333%",
-        minWidth: "18rem",
-        maxWidth: "48rem",
-    },
-};
-
-const board = {
-    name: "Project Tasks",
-    description: "Plan, prioritize, and track work across the project.",
-};
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/** @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode */
 
 const route = useRoute();
 const router = useRouter();
@@ -45,21 +30,27 @@ const currentBoard = computed(() => {
     };
 });
 
-/** @type {import('vue').Ref<TaskQueryMode>} */
-const preferredQueryMode = ref("root-tasks"); // TODO: it was supposed to allow all, but wtf is going on?
+/** @type {import("vue").Ref<TaskQueryMode>} */
+const preferredQueryMode = ref("root-tasks");
 
 const query = computed(() => ({
     queryMode: preferredQueryMode.value,
     taskboardId:
         currentBoard.value.type === "board" ? currentBoard.value.id : null,
-    // TODO: add more TaskFetchOptions
 }));
 
+const taskboardsStore = useTaskboardsStore();
 const tasksStore = useTasksStore();
 
 onMounted(() => {
+    if (currentBoard.value.type === "board" && currentBoard.value.id) {
+        taskboardsStore.get(currentBoard.value.id);
+    }
+
     tasksStore.fetch(projectId.value, query.value);
 });
+
+const taskboard = computed(() => taskboardsStore.currentTaskboard);
 
 const tasks = computed(() =>
     tasksStore.tasksByQuery(projectId.value, query.value)
@@ -75,11 +66,13 @@ const error = computed(() =>
 
 const filteredTasks = computed(() => {
     return tasks.value.filter((task) => {
-        if (route.query.status && task.status !== route.query.status)
+        if (route.query.status && task.status !== route.query.status) {
             return false;
+        }
 
-        if (route.query.priority && task.priority !== route.query.priority)
+        if (route.query.priority && task.priority !== route.query.priority) {
             return false;
+        }
 
         return true;
     });
@@ -87,31 +80,51 @@ const filteredTasks = computed(() => {
 
 const tasksByStatus = computed(() => {
     return filteredTasks.value.reduce((acc, task) => {
-        if (!acc[task.status]) acc[task.status] = [];
+        if (!acc[task.status]) {
+            acc[task.status] = [];
+        }
 
         acc[task.status].push(task);
+
         return acc;
     }, /** @type {Record<string, TaskRead[]>} */ ({}));
 });
 
 const draggedTask = ref(/** @type {TaskRead | null} */ (null));
 
-/** @type {import('vue').Ref<TaskCreate | null>} */
+/** @type {import("vue").Ref<TaskCreate | null>} */
 const pendingTask = ref(null);
+/** @param {String} action */
+function handleBoardAction(action) {
+    console.log(action);
+}
+/** @param {String} action */
+function handleToolbarAction(action) {
+    console.log(action);
+}
 
 function retry() {
-    tasksStore.fetch(projectId.value, { ...query.value, forceRefresh: true });
+    if (currentBoard.value.type === "board" && currentBoard.value.id) {
+        taskboardsStore.get(currentBoard.value.id, {
+            forceRefresh: true,
+        });
+    }
+
+    tasksStore.fetch(projectId.value, {
+        ...query.value,
+        forceRefresh: true,
+    });
 }
 
 /** @param {string} key */
 function clearFilter(key) {
-    const query = { ...route.query };
+    const nextQuery = { ...route.query };
 
-    delete query[key];
+    delete nextQuery[key];
 
     router.push({
         path: route.path,
-        query,
+        query: nextQuery,
     });
 }
 
@@ -122,7 +135,9 @@ function startDrag(task) {
 
 /** @param {TaskRead["status"]} targetStatus */
 async function dropTask(targetStatus) {
-    if (!draggedTask.value) return;
+    if (!draggedTask.value) {
+        return;
+    }
 
     const task = draggedTask.value;
 
@@ -132,6 +147,7 @@ async function dropTask(targetStatus) {
     }
 
     const oldStatus = task.status;
+
     task.status = targetStatus;
 
     try {
@@ -161,30 +177,15 @@ function handleClear() {
 
 <template>
     <v-container fluid class="task-board">
-        <div class="task-board__header">
-            <div>
-                <h1 class="text-h6 font-weight-bold">
-                    {{ board.name }}
-                </h1>
+        <BoardHeader
+            @action="handleBoardAction"
+            :board-name="taskboard?.name"
+            :board-description="taskboard?.description"
+        />
 
-                <p class="text-caption text-medium-emphasis mb-0 mt-1">
-                    {{ board.description }}
-                </p>
-            </div>
+        <BoardToolbar @action="handleToolbarAction" @new-task="openNewTask" />
 
-            <v-btn
-                :color="BOARD_CONFIG.createButton.color"
-                :prepend-icon="BOARD_CONFIG.createButton.icon"
-                variant="flat"
-                density="comfortable"
-                class="text-none font-weight-medium"
-                @click="openNewTask"
-            >
-                {{ BOARD_CONFIG.createButton.label }}
-            </v-btn>
-        </div>
-
-        <div class="task-board__content">
+        <main class="task-board__content">
             <div class="task-board__columns">
                 <TaskColumn
                     v-for="column in TASK_COLUMNS"
@@ -201,44 +202,51 @@ function handleClear() {
                     @clear-pending-task="handleClear"
                 />
             </div>
-        </div>
+        </main>
     </v-container>
 </template>
 
 <style scoped>
 .task-board {
-    height: 100%;
     min-width: 0;
     display: flex;
     flex-direction: column;
-}
-
-.task-board__header {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    padding: 1rem;
+    background: var(--v-theme-surface, #ffffff);
+    color: var(--v-theme-on-surface, #1a1f2c);
 }
 
 .task-board__content {
-    flex: 1 1 auto;
-    min-height: 0;
     min-width: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
+    min-height: 0;
+    padding-top: 0.75rem;
 }
 
 .task-board__columns {
-    height: 100%;
     min-width: max-content;
     display: flex;
     flex-wrap: nowrap;
     align-items: stretch;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .task-board__columns > :deep(.task-column) {
-    flex: 0 0 33.333%;
+    flex: 0 0 33%;
+}
+
+@media (min-width: 60rem) {
+    .task-board {
+        height: 100dvh;
+    }
+
+    .task-board__content {
+        flex: 1 1 auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .task-board__columns {
+        height: 100%;
+    }
 }
 </style>

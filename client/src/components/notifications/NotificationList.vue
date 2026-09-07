@@ -1,5 +1,5 @@
 <script setup>
-/** @typedef {import('@/types/notification').Notification} Notification */
+/** @typedef {import("@/types/notification").Notification} Notification */
 
 const props = defineProps({
     notifications: {

@@ -1,9 +1,9 @@
 <script setup>
-/** @typedef {import('@/types/project').ProjectRead} ProjectRead */
+/** @typedef {import("@/types/project").ProjectRead} ProjectRead */
 
 const props = defineProps({
     project: {
-        /** @type {import('vue').PropType<ProjectRead>} */
+        /** @type {import("vue").PropType<ProjectRead>} */
         type: Object,
         required: true,
     },

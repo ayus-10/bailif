@@ -5,9 +5,10 @@ import { useTaskboardsStore } from "@/stores/taskboard.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
-/** @typedef {import('@/types/project').ProjectRead} ProjectRead */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/** @typedef {import("@/types/project").ProjectRead} ProjectRead */
+/** @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig */
 
 const COLUMN_CONFIG = {
     iconSize: "1.125rem",
@@ -21,6 +22,7 @@ const COLUMN_CONFIG = {
 
 const props = defineProps({
     column: {
+        /** @type {import("vue").PropType<TaskColumnConfig>} */
         type: Object,
         required: true,
     },
@@ -32,14 +34,14 @@ const props = defineProps({
         default: null,
     },
     tasks: {
-        /** @type {import('vue').PropType<TaskRead[]>} */
+        /** @type {import("vue").PropType<TaskRead[]>} */
         type: Array,
         required: true,
     },
     pendingTask: {
-        /** @type {import('vue').PropType<TaskCreate | null>} */
+        /** @type {import("vue").PropType<TaskCreate | null>} */
         type: Object,
-        required: false,
+        default: null,
     },
 });
 
@@ -126,22 +128,20 @@ function handleCancel() {
                 <v-icon
                     :icon="column.icon"
                     :size="COLUMN_CONFIG.iconSize"
-                    class="mr-2"
+                    class="task-column__header-icon mr-2"
                 />
-
-                <span class="text-subtitle-2 font-weight-medium">
+                <span class="task-column__label">
                     {{ column.label }}
                 </span>
-
-                <v-chip :size="COLUMN_CONFIG.countChipSize" class="ml-2">
+                <span class="task-column__count">
                     {{ tasks.length }}
-                </v-chip>
+                </span>
             </div>
-
             <v-btn
                 :icon="COLUMN_CONFIG.menuIcon"
                 :size="COLUMN_CONFIG.menuButtonSize"
                 variant="text"
+                class="task-column__menu-btn"
             />
         </div>
 
@@ -149,6 +149,7 @@ function handleCancel() {
 
         <div
             class="task-column__body"
+            :class="{ 'task-column__body--drag-over': isDragOver }"
             @dragover.prevent="handleDragOver"
             @dragleave="handleDragLeave"
             @drop="handleDrop"
@@ -160,30 +161,27 @@ function handleCancel() {
                 @submit="handleCreate"
                 @cancel="handleCancel"
             />
-
             <TaskCard
                 v-for="task in tasks"
                 :key="task.id"
                 :task="task"
+                :accent-color="column.color.value"
                 draggable="true"
                 @dragstart="handleDragStart($event, task)"
                 @dragend="handleDragEnd"
             />
-
             <v-sheet
                 v-if="
                     tasks.length === 0 && pendingTask?.status !== column.status
                 "
                 class="task-column__empty"
-                border
-                rounded
             >
                 <v-icon
                     :icon="COLUMN_CONFIG.emptyStateIcon"
                     :size="COLUMN_CONFIG.emptyStateIconSize"
+                    class="task-column__empty-icon"
                 />
-
-                <span class="text-caption text-medium-emphasis">
+                <span class="task-column__empty-label">
                     {{ column.emptyLabel }}
                 </span>
             </v-sheet>
@@ -206,31 +204,116 @@ function handleCancel() {
     min-height: 0;
     display: flex;
     flex-direction: column;
+    border-radius: 0.75rem !important;
+    --column-color: v-bind("column.color.value");
+    border-color: rgb(var(--v-theme-outline-variant, 234, 236, 240)) !important;
 }
 
 .task-column__header {
+    position: relative;
+    isolation: isolate;
     flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
+    padding: 0.75rem 0.875rem 0.625rem;
+}
+
+.task-column__header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--column-color);
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+    opacity: 0.12;
+    z-index: -1;
+}
+
+.task-column__header-icon,
+.task-column__label {
+    color: var(--column-color);
+}
+
+.task-column__label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25rem;
+}
+
+.task-column__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    margin-left: 0.5rem;
+    padding: 0 0.375rem;
+    border-radius: 999px;
+    background: rgb(var(--v-theme-grey-lighten-4, 245, 246, 248));
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1rem;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.task-column__menu-btn {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+}
+
+.task-column__menu-btn:hover {
+    color: #1976d2;
 }
 
 .task-column__body {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    padding: 0.625rem 0.875rem 0.875rem;
+    border-radius: 0 0 0.75rem 0.75rem;
+    transition: background-color 0.15s ease;
+}
+
+.task-column__body > :deep(.v-card),
+.task-column__body > :deep(.task-card) {
+    flex-shrink: 0;
+}
+
+.task-column__body--drag-over {
+    background: rgba(25, 118, 210, 0.04);
+    box-shadow: inset 0 0 0 0.0625rem rgba(25, 118, 210, 0.3);
 }
 
 .task-column__empty {
     flex: 0 0 auto;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 0.375rem;
     min-height: 6rem;
+    border: 0.0625rem dashed rgb(var(--v-theme-outline-variant, 234, 236, 240));
+    border-radius: 0.625rem;
+    background: transparent;
+}
+
+.task-column__empty-icon {
+    color: rgb(var(--v-theme-text-disabled, 148, 157, 173));
+}
+
+.task-column__empty-label {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1rem;
 }
 
 .task-column__resize-handle {
@@ -242,5 +325,22 @@ function handleCancel() {
     cursor: col-resize;
     user-select: none;
     touch-action: none;
+}
+
+.task-column__resize-handle::after {
+    content: "";
+    position: absolute;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    right: 0.1875rem;
+    width: 0.125rem;
+    border-radius: 999px;
+    background: rgb(var(--v-theme-outline-variant, 234, 236, 240));
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.task-column__resize-handle:hover::after {
+    opacity: 1;
 }
 </style>
