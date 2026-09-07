@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
 
-/** @typedef {import('@/constants/globals').ColorOption} ColorOption */
+/** @typedef {import("@/constants/globals").ColorOption} ColorOption */
 
 const props = defineProps({
     modelValue: {
@@ -10,7 +10,7 @@ const props = defineProps({
         default: "",
     },
     colors: {
-        /** @type {import('vue').PropType<ColorOption[]>} */
+        /** @type {import("vue").PropType<ColorOption[]>} */
         type: Array,
         default: () => DEFAULT_COLORS,
     },

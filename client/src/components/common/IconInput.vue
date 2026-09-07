@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { DEFAULT_ICONS } from "@/constants/globals";
 
-/** @typedef {import('@/constants/globals').IconOption} IconOption */
+/** @typedef {import("@/constants/globals").IconOption} IconOption */
 
 const props = defineProps({
     modelValue: {

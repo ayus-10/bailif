@@ -4,8 +4,8 @@ import { isHtmlEmpty } from "@/utils/htmlFormatters";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import "@/components/quill-editor.css";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskDraft} TaskDraft */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskDraft} TaskDraft */
 
 defineProps({
     task: {

@@ -5,7 +5,7 @@ import { computed, ref, watch } from "vue";
 
 const props = defineProps({
     items: {
-        /** @type {import('vue').PropType<SelectOption[]>} */
+        /** @type {import("vue").PropType<SelectOption[]>} */
         type: Array,
         required: true,
         validator: (
@@ -29,7 +29,7 @@ const props = defineProps({
         default: "small",
     },
     variant: {
-        type: /** @type {import('vue').PropType<"tonal" | "flat" | "text" | "elevated" | "outlined" | "plain">} */ (
+        type: /** @type {import("vue").PropType<"tonal" | "flat" | "text" | "elevated" | "outlined" | "plain">} */ (
             String
         ),
         default: "tonal",

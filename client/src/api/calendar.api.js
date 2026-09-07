@@ -1,6 +1,6 @@
 import { API_URL } from "@/config";
 
-/** @typedef {import('@/types/calendar').Calendar} Calendar */
+/** @typedef {import("@/types/calendar").Calendar} Calendar */
 
 /**
  * @param {string} monthKey

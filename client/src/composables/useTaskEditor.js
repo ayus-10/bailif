@@ -3,10 +3,10 @@ import { useTasksStore } from "@/stores/tasks.store";
 import { isTaskOverdue } from "@/utils/taskFormatters";
 
 /**
- * @typedef {import('@/types/task').TaskRead} TaskRead
- * @typedef {import('@/types/task').TaskDraft} TaskDraft
- * @typedef {import('@/types/task').TaskCreate} TaskCreate
- * @typedef {import('@/types/shared').EditMode} EditMode
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskDraft} TaskDraft
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ * @typedef {import("@/types/shared").EditMode} EditMode
  * @typedef {TaskRead["status"]} TaskStatus
  * @typedef {TaskRead["priority"]} TaskPriority
  */

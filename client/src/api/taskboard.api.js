@@ -1,14 +1,14 @@
 import { API_URL } from "@/config";
 import { parseJson } from "./shared.api";
 
-/** @typedef {import('@/types/taskboard').TaskboardCreate} TaskboardCreate */
-/** @typedef {import('@/types/taskboard').TaskboardUpdate} TaskboardUpdate */
-/** @typedef {import('@/types/taskboard').TaskboardRead} TaskboardRead */
-/** @typedef {import('@/types/taskboard').TaskboardListRead} TaskboardListRead */
-/** @typedef {import('@/types/taskboard').TaskboardTaskRead} TaskboardTaskRead */
-/** @typedef {import('@/types/taskboard').TaskAssignment} TaskAssignment */
-/** @typedef {import('@/types/taskboard').TaskReposition} TaskReposition */
-/** @typedef {import('@/types/taskboard').TaskboardListResponse} TaskboardListResponse */
+/** @typedef {import("@/types/taskboard").TaskboardCreate} TaskboardCreate */
+/** @typedef {import("@/types/taskboard").TaskboardUpdate} TaskboardUpdate */
+/** @typedef {import("@/types/taskboard").TaskboardRead} TaskboardRead */
+/** @typedef {import("@/types/taskboard").TaskboardListRead} TaskboardListRead */
+/** @typedef {import("@/types/taskboard").TaskboardTaskRead} TaskboardTaskRead */
+/** @typedef {import("@/types/taskboard").TaskAssignment} TaskAssignment */
+/** @typedef {import("@/types/taskboard").TaskReposition} TaskReposition */
+/** @typedef {import("@/types/taskboard").TaskboardListResponse} TaskboardListResponse */
 
 /**
  * @param {string} projectId

@@ -1,6 +1,6 @@
 import { API_URL } from "@/config";
 
-/** @typedef {import('@/types/dashboard').Dashboard} Dashboard */
+/** @typedef {import("@/types/dashboard").Dashboard} Dashboard */
 
 /**
  * @param {string} scopeId

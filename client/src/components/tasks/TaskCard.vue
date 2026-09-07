@@ -5,11 +5,11 @@ import { PRIORITY_COLORS } from "@/constants/tasks";
 import { htmlPreview } from "@/utils/htmlFormatters";
 import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
 
 const props = defineProps({
     task: {
-        /** @type {import('vue').PropType<TaskRead>} */
+        /** @type {import("vue").PropType<TaskRead>} */
         type: Object,
         required: true,
     },

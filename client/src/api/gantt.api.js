@@ -1,6 +1,6 @@
 import { API_URL } from "@/config";
 
-/** @typedef {import('@/types/gantt').Gantt} Gantt */
+/** @typedef {import("@/types/gantt").Gantt} Gantt */
 
 /**
  * @param {string} projectId

@@ -3,8 +3,8 @@ import { QuillEditor } from "@vueup/vue-quill";
 import { computed, ref } from "vue";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 
-/** @typedef {import('@/types/task').TaskPriority} TaskPriority */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
+/** @typedef {import("@/types/task").TaskPriority} TaskPriority */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
 
 const props = defineProps({
     projectId: {

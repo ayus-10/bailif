@@ -3,9 +3,9 @@ import EditableVChip from "@/components/common/EditableVChip.vue";
 import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
 import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskDraft} TaskDraft */
-/** @typedef {import('@/types/shared').EditMode} EditMode */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskDraft} TaskDraft */
+/** @typedef {import("@/types/shared").EditMode} EditMode */
 /** @typedef {TaskRead["status"]} TaskStatus */
 /** @typedef {TaskRead["priority"]} TaskPriority */
 

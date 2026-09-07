@@ -8,9 +8,9 @@ import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTaskboardsStore } from "@/stores/taskboard.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
-/** @typedef {import('@/types/task').TaskQueryMode} TaskQueryMode */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/** @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode */
 
 const route = useRoute();
 const router = useRouter();
@@ -30,7 +30,7 @@ const currentBoard = computed(() => {
     };
 });
 
-/** @type {import('vue').Ref<TaskQueryMode>} */
+/** @type {import("vue").Ref<TaskQueryMode>} */
 const preferredQueryMode = ref("root-tasks");
 
 const query = computed(() => ({
@@ -92,7 +92,7 @@ const tasksByStatus = computed(() => {
 
 const draggedTask = ref(/** @type {TaskRead | null} */ (null));
 
-/** @type {import('vue').Ref<TaskCreate | null>} */
+/** @type {import("vue").Ref<TaskCreate | null>} */
 const pendingTask = ref(null);
 /** @param {String} action */
 function handleBoardAction(action) {

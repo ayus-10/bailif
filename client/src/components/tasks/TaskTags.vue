@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
     tags: {
-        /** @type {import('vue').PropType<String[]>} */
+        /** @type {import("vue").PropType<String[]>} */
         type: Array,
         default: () => [],
     },

@@ -1,6 +1,6 @@
 import { API_URL } from "@/config";
 
-/** @typedef {import('@/types/document').Document} Document */
+/** @typedef {import("@/types/document").Document} Document */
 
 /**
  * @param {string} scopeId

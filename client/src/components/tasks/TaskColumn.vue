@@ -5,9 +5,9 @@ import { useTaskboardsStore } from "@/stores/taskboard.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import TaskCard from "./TaskCard.vue";
 
-/** @typedef {import('@/types/task').TaskRead} TaskRead */
-/** @typedef {import('@/types/task').TaskCreate} TaskCreate */
-/** @typedef {import('@/types/project').ProjectRead} ProjectRead */
+/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/** @typedef {import("@/types/project").ProjectRead} ProjectRead */
 /** @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig */
 
 const COLUMN_CONFIG = {
@@ -34,12 +34,12 @@ const props = defineProps({
         default: null,
     },
     tasks: {
-        /** @type {import('vue').PropType<TaskRead[]>} */
+        /** @type {import("vue").PropType<TaskRead[]>} */
         type: Array,
         required: true,
     },
     pendingTask: {
-        /** @type {import('vue').PropType<TaskCreate | null>} */
+        /** @type {import("vue").PropType<TaskCreate | null>} */
         type: Object,
         default: null,
     },

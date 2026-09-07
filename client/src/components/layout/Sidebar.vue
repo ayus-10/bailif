@@ -5,7 +5,7 @@ import { onUnmounted, ref } from "vue";
 
 const props = defineProps({
     taskBoards: {
-        /** @type {import('vue').PropType<TaskboardListRead[]>} */
+        /** @type {import("vue").PropType<TaskboardListRead[]>} */
         type: Array,
         default: () => [],
     },
