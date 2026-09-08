@@ -116,16 +116,40 @@ const emit = defineEmits([
                     'editable-field--editing': isEditingTitle,
                 }"
             >
-                <v-text-field
-                    v-if="isEditingTitle"
-                    v-model="draft.title"
-                    label="Title"
-                    variant="outlined"
-                    density="comfortable"
-                    hide-details
-                    autofocus
-                    @keydown.escape="emit('cancel')"
-                />
+                <template v-if="isEditingTitle">
+                    <v-text-field
+                        v-model="draft.title"
+                        aria-label="Title"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details
+                        autofocus
+                        @keydown.escape="emit('cancel')"
+                    />
+
+                    <div class="editable-field__actions">
+                        <v-btn
+                            icon="mdi-close"
+                            size="small"
+                            variant="text"
+                            density="comfortable"
+                            rounded="pill"
+                            aria-label="Cancel title edit"
+                            @click="emit('cancel')"
+                        />
+
+                        <v-btn
+                            icon="mdi-check"
+                            size="small"
+                            color="primary"
+                            variant="tonal"
+                            density="comfortable"
+                            rounded="pill"
+                            aria-label="Save title"
+                            @click="emit('save')"
+                        />
+                    </div>
+                </template>
 
                 <div v-else class="editable-field__display">
                     <h1 class="task-page__title">
@@ -218,6 +242,28 @@ const emit = defineEmits([
     gap: 0.25rem;
 }
 
+.editable-field--editing {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.editable-field--editing .v-text-field {
+    flex: 1;
+    min-width: 0;
+}
+
+.editable-field__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.editable-field__actions .v-btn {
+    border-radius: 999px;
+}
+
 .task-page__header {
     display: flex;
     align-items: flex-start;
@@ -258,65 +304,20 @@ const emit = defineEmits([
     white-space: nowrap;
 }
 
-.editable-field__edit-btn {
-    opacity: 0;
-    transition: opacity 0.12s ease;
-}
-
-.editable-field--title:hover .editable-field__edit-btn,
-.editable-field__edit-btn:focus-visible {
-    opacity: 1;
-}
-
-.editable-field__edit-btn:deep(.v-icon) {
-    color: var(--tp-ink-muted);
-}
-
-.editable-field__edit-btn:hover:deep(.v-icon) {
-    color: var(--tp-ink);
-}
-
 .editable-field--title {
     min-width: 0;
-    max-width: 40rem;
     flex: 1;
 }
 
 :deep(.editable-field--title .v-field) {
     --v-field-border-opacity: 1;
-
     min-height: 2.75rem;
     border-radius: 0.625rem;
     background: rgb(var(--v-theme-surface));
-
-    outline: none !important;
-
     transition:
         background-color 0.15s ease,
         border-color 0.15s ease,
         box-shadow 0.15s ease;
-}
-
-:deep(.editable-field--title input),
-:deep(.editable-field--title input:focus),
-:deep(.editable-field--title input:focus-visible) {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-:deep(.editable-field--title .v-field__outline) {
-    color: rgb(var(--v-theme-outline, 225, 228, 232));
-}
-
-:deep(.editable-field--title .v-field__outline__start),
-:deep(.editable-field--title .v-field__outline__end) {
-    border-color: currentColor;
-    opacity: 1;
-}
-
-:deep(.editable-field--title .v-field__outline__notch)::before,
-:deep(.editable-field--title .v-field__outline__notch)::after {
-    border-color: currentColor;
 }
 
 :deep(.editable-field--title .v-field:hover .v-field__outline) {
@@ -324,22 +325,17 @@ const emit = defineEmits([
     opacity: 0.55;
 }
 
+:deep(.editable-field--title .v-field:hover) {
+    box-shadow: 0 0 0 0.125rem rgba(var(--v-theme-primary), 0.06);
+}
+
 :deep(.editable-field--title .v-field--focused) {
-    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
+    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.12);
 }
 
 :deep(.editable-field--title .v-field--focused .v-field__outline) {
     color: rgb(var(--v-theme-primary));
     opacity: 1;
-}
-
-:deep(.editable-field--title .v-field__input) {
-    min-height: 2.75rem;
-    padding-inline: 0.875rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    line-height: 1.5rem;
-    color: rgb(var(--v-theme-on-surface));
 }
 
 .task-page__badges {

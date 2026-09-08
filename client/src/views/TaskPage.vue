@@ -92,6 +92,8 @@ const {
                     :draft="draft"
                     :is-editing="isEditingDescription"
                     @edit="beginEdit('description')"
+                    @save="saveChanges()"
+                    @cancel="cancelChanges()"
                 />
             </main>
 
