@@ -1,9 +1,9 @@
 /**
- * @typedef {'active' | 'on_hold' | 'completed' | 'archived'} ProjectStatus
+ * @typedef {"active" | "on_hold" | "completed" | "archived"} ProjectStatus
  */
 
 /**
- * @typedef {'propose_only' | 'act_freely' | 'act_with_notify'} AgentPermissionLevel
+ * @typedef {"propose_only" | "act_freely" | "act_with_notify"} AgentPermissionLevel
  */
 
 /**

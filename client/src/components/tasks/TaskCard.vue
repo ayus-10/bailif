@@ -58,7 +58,7 @@ function openContextMenu(e) {
 }
 
 function goToTask() {
-    router.push(`/tasks/${props.task.id}`);
+    router.push(`/dashboard/tasks/${props.task.id}`);
 }
 
 /** @param {MouseEvent} e */

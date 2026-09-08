@@ -7,8 +7,6 @@ import { isTaskOverdue } from "@/utils/taskFormatters";
  * @typedef {import("@/types/task").TaskDraft} TaskDraft
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
  * @typedef {import("@/types/shared").EditMode} EditMode
- * @typedef {TaskRead["status"]} TaskStatus
- * @typedef {TaskRead["priority"]} TaskPriority
  */
 
 /**
@@ -29,10 +27,10 @@ export function useTaskEditor(task, taskId) {
     const draft = reactive(getTaskDraft(null));
     const originalDraft = reactive(getTaskDraft(null));
 
-    /** @type {import("vue").Ref<TaskStatus | null>} */
+    /** @type {import("vue").Ref<TaskRead["status"] | null>} */
     const selectedStatus = ref(task.value?.status ?? null);
 
-    /** @type {import("vue").Ref<TaskPriority | null>} */
+    /** @type {import("vue").Ref<TaskRead["priority"] | null>} */
     const selectedPriority = ref(task.value?.priority ?? null);
 
     const isEditingTitle = computed(() => editMode.value === "title");
@@ -139,7 +137,7 @@ export function useTaskEditor(task, taskId) {
     /**
      * @param {"status" | "priority"} field
      * @param {{ value: string }} item
-     * @param {import("vue").Ref<string>} localRef
+     * @param {import("vue").Ref<string | null>} localRef
      * @param {import("vue").Ref<boolean>} savingRef
      */
     async function updateTaskField(field, item, localRef, savingRef) {
@@ -237,19 +235,16 @@ function copyDraftValues(target, source) {
 
 /**
  * @param {TaskDraft} draft
- * @param {TaskDraft} originalDraft
+ * @param {TaskDraft} initialDraft
  * @returns {Partial<TaskCreate>}
  */
-function buildUpdatePayload(draft, originalDraft) {
+function buildUpdatePayload(draft, initialDraft) {
     /** @type {Partial<TaskCreate>} */
     const payload = {};
 
     for (const field of Object.keys(draft)) {
         // @ts-ignore
-        if (draft[field] !== originalDraft[field]) {
-            // @ts-ignore
-            payload[field] = draft[field];
-        }
+        if (draft[field] !== initialDraft[field]) payload[field] = draft[field];
     }
 
     if (payload.status === null) {

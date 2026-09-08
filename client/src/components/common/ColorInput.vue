@@ -6,7 +6,7 @@ import { DEFAULT_COLORS } from "@/constants/globals";
 
 const props = defineProps({
     modelValue: {
-        type: [String, null],
+        type: String,
         default: "",
     },
     colors: {

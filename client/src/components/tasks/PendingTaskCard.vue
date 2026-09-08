@@ -15,7 +15,7 @@ const props = defineProps({
         default: null,
     },
     taskboardId: {
-        type: [String, null],
+        type: /** @type {import("vue").PropType<string | null>} */ (String),
         default: null,
     },
 });

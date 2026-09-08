@@ -89,7 +89,14 @@ export const PRIORITY_COLORS = {
 
 /** @type {Record<TaskPriority, string>} */
 export const PRIORITY_ICONS = {
-    low: "mdi-arrow-down",
-    medium: "mdi-minus",
-    high: "mdi-arrow-up",
+    low: "mdi-circle-outline",
+    medium: "mdi-circle-half-full",
+    high: "mdi-circle",
+};
+
+/** @type {Record<TaskPriority, string>} */
+export const PRIORITY_LABELS = {
+    low: "Low",
+    medium: "Medium",
+    high: "High",
 };

@@ -3,11 +3,12 @@ import { QuillEditor } from "@vueup/vue-quill";
 import { isHtmlEmpty } from "@/utils/htmlFormatters";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import "@/components/quill-editor.css";
+import { ref } from "vue";
 
 /** @typedef {import("@/types/task").TaskRead} TaskRead */
 /** @typedef {import("@/types/task").TaskDraft} TaskDraft */
 
-defineProps({
+const props = defineProps({
     task: {
         /** @type {import("vue").PropType<TaskRead>} */
         type: Object,
@@ -21,20 +22,56 @@ defineProps({
     isEditing: Boolean,
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "cancel", "save"]);
 
 const toolbarOptions = [
     ["bold", "italic", "underline"],
     [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
 ];
+
+const quill = ref(null);
+
+// @ts-ignore
+function onEditorReady(quillInstance) {
+    quill.value = quillInstance;
+    if (props.isEditing) {
+        quillInstance.focus();
+    }
+}
 </script>
 
 <template>
-    <section class="panel" :class="{ 'panel--editing': isEditing }">
+    <section class="panel">
         <div class="panel__heading">
-            <h2 class="panel__label">Description</h2>
+            <h2 class="panel__label">
+                {{ isEditing ? "Edit description" : "Description" }}
+            </h2>
+
+            <div v-if="isEditing" class="panel__actions">
+                <v-btn
+                    icon="mdi-close"
+                    size="small"
+                    variant="text"
+                    density="comfortable"
+                    rounded="pill"
+                    aria-label="Cancel title edit"
+                    @click="emit('cancel')"
+                />
+
+                <v-btn
+                    icon="mdi-check"
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="pill"
+                    aria-label="Save title"
+                    @click="emit('save')"
+                />
+            </div>
+
             <v-btn
-                v-if="!isEditing"
+                v-else
                 class="panel__edit-btn"
                 icon="mdi-pencil-outline"
                 size="x-small"
@@ -45,13 +82,19 @@ const toolbarOptions = [
             />
         </div>
 
-        <div v-if="isEditing" class="description-editor">
+        <div
+            v-if="isEditing"
+            class="description-editor"
+            tabindex="0"
+            @keydown.esc.prevent="emit('cancel')"
+        >
             <QuillEditor
                 v-model:content="draft.description"
                 content-type="html"
                 theme="snow"
                 placeholder="Add a description..."
                 :toolbar="toolbarOptions"
+                @ready="onEditorReady"
             />
         </div>
 
@@ -85,16 +128,27 @@ const toolbarOptions = [
     border-color: rgb(var(--v-theme-outline, 225, 228, 232));
 }
 
-.panel--editing {
-    border-color: rgba(25, 118, 210, 0.35);
-}
-
 .panel__heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
     min-height: 1.5rem;
+}
+
+.panel__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.panel__actions .v-btn {
+    border-radius: 999px;
+}
+
+.description-editor:focus {
+    outline: none;
 }
 
 .panel__label {
