@@ -28,6 +28,12 @@ const props = defineProps({
         type: String,
         default: "small",
     },
+    rounded: {
+        type: /** @type {import("vue").PropType<"0" | "sm" | "lg" | "pill" | "xl">} */ (
+            String
+        ),
+        default: "pill",
+    },
     variant: {
         type: /** @type {import("vue").PropType<"tonal" | "flat" | "text" | "elevated" | "outlined" | "plain">} */ (
             String
@@ -97,6 +103,7 @@ function selectItem(item) {
                 v-bind="activatorProps"
                 :size="size"
                 :variant="variant"
+                :rounded="rounded"
                 :color="selected?.color"
                 :prepend-icon="selected?.icon"
                 :disabled="disabled"

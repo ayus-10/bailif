@@ -6,9 +6,8 @@ import IconInput from "@/components/common/IconInput.vue";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useProjectsStore } from "@/stores/projects.store";
 
-/** @typedef {Omit<import("@/stores/projects.store").ProjectCreate, "color"> & {
- *   color?: string
- * }} ProjectCreateForm */
+/** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
+/** @typedef {ProjectCreate & { color?: string }} ProjectCreateForm */
 
 /** @type {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} */
 const formRef = ref(null);
