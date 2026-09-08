@@ -11,7 +11,9 @@ def process_file(path: Path) -> None:
     new_lines = []
 
     for line in lines:
-        if "import('" in line:
+        stripped = line.lstrip()
+
+        if stripped.startswith(("/*", "*")):
             new_line = line.replace("'", '"')
             changed |= new_line != line
             new_lines.append(new_line)

@@ -6,8 +6,6 @@ import { PRIORITY_COLORS, PRIORITY_ICONS } from "@/constants/tasks";
 /** @typedef {import("@/types/task").TaskRead} TaskRead */
 /** @typedef {import("@/types/task").TaskDraft} TaskDraft */
 /** @typedef {import("@/types/shared").EditMode} EditMode */
-/** @typedef {TaskRead["status"]} TaskStatus */
-/** @typedef {TaskRead["priority"]} TaskPriority */
 
 defineProps({
     task: {
@@ -25,25 +23,16 @@ defineProps({
         required: true,
     },
     selectedStatus: {
-        type: /** @type {import("vue").PropType<TaskStatus | null>} */ (String),
-        required: true,
-    },
-
-    selectedPriority: {
-        type: /** @type {import("vue").PropType<TaskPriority | null>} */ (
+        type: /** @type {import("vue").PropType<TaskRead["status"] | null>} */ (
             String
         ),
-        required: true,
+        default: null,
     },
-    statusOptions: {
-        /** @type {import("vue").PropType<TaskStatus[]>} */
-        type: Array,
-        required: true,
-    },
-    priorityOptions: {
-        /** @type {import("vue").PropType<TaskPriority[]>} */
-        type: Array,
-        required: true,
+    selectedPriority: {
+        type: /** @type {import("vue").PropType<TaskRead["priority"] | null>} */ (
+            String
+        ),
+        default: null,
     },
     isSaving: Boolean,
     isSavingStatus: Boolean,
@@ -135,7 +124,7 @@ const emit = defineEmits([
 
         <div class="task-page__badges">
             <EditableVChip
-                :model-value="selectedStatus"
+                :model-value="selectedStatus ?? undefined"
                 :items="
                     Object.entries(STATUS_META).map(([value, meta]) => ({
                         value,
@@ -148,7 +137,7 @@ const emit = defineEmits([
                 size="small"
                 variant="tonal"
                 @update:model-value="
-                    (/** @type {TaskStatus} */ value) =>
+                    (/** @type {TaskRead['status']} */ value) =>
                         (selectedStatus = value)
                 "
                 @change="emit('status-change', $event)"

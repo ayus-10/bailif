@@ -30,7 +30,7 @@ const props = defineProps({
         type: String,
     },
     taskboardId: {
-        type: [String, null],
+        type: /** @type {import("vue").PropType<string | null>} */ (String),
         default: null,
     },
     tasks: {

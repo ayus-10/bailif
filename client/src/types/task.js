@@ -1,19 +1,19 @@
 /** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
 
 /**
- * @typedef {'open' | 'in_progress' | 'in_review' | 'done' | 'blocked' | 'cancelled'} TaskStatus
+ * @typedef {"open" | "in_progress" | "in_review" | "done" | "blocked" | "cancelled"} TaskStatus
  */
 
 /**
- * @typedef {'low' | 'medium' | 'high'} TaskPriority
+ * @typedef {"low" | "medium" | "high"} TaskPriority
  */
 
 /**
- * @typedef {'task' | 'subtask' | 'epic' | 'bug'} TaskType
+ * @typedef {"task" | "subtask" | "epic" | "bug"} TaskType
  */
 
 /**
- * @typedef {'blocks' | 'blocked_by' | 'relates_to'} DependencyType
+ * @typedef {"blocks" | "blocked_by" | "relates_to"} DependencyType
  */
 
 /**

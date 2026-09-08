@@ -1,21 +1,21 @@
 /**
- * @typedef {'LOW' | 'MEDIUM' | 'HIGH'} AiPriority
+ * @typedef {"LOW" | "MEDIUM" | "HIGH"} AiPriority
  */
 
 /**
- * @typedef {'CREATE_PROJECT'
- *   | 'UPDATE_PROJECT'
- *   | 'ARCHIVE_PROJECT'
- *   | 'DELETE_PROJECT'
- *   | 'CREATE_TASK'
- *   | 'UPDATE_TASK'
- *   | 'DELETE_TASK'
- *   | 'COMPLETE_TASK'
- *   | 'REOPEN_TASK'
- *   | 'SEARCH_TASKS'
- *   | 'SEARCH_PROJECTS'
- *   | 'SUGGEST_TASKS'
- *   | 'RECOMMEND_NEXT_TASK'
+ * @typedef {"CREATE_PROJECT"
+ *   | "UPDATE_PROJECT"
+ *   | "ARCHIVE_PROJECT"
+ *   | "DELETE_PROJECT"
+ *   | "CREATE_TASK"
+ *   | "UPDATE_TASK"
+ *   | "DELETE_TASK"
+ *   | "COMPLETE_TASK"
+ *   | "REOPEN_TASK"
+ *   | "SEARCH_TASKS"
+ *   | "SEARCH_PROJECTS"
+ *   | "SUGGEST_TASKS"
+ *   | "RECOMMEND_NEXT_TASK"
  * } ActionType
  */
 
@@ -32,7 +32,7 @@
  */
 
 /**
- * @typedef {'suggest_tasks' | 'search_tasks'} ChatMode
+ * @typedef {"suggest_tasks" | "search_tasks"} ChatMode
  */
 
 /**
@@ -115,79 +115,79 @@
 
 /**
  * @typedef {Object} CreateProjectAction
- * @property {'create_project'} type
+ * @property {"create_project"} type
  * @property {CreateProjectData} data
  */
 
 /**
  * @typedef {Object} UpdateProjectAction
- * @property {'update_project'} type
+ * @property {"update_project"} type
  * @property {UpdateProjectData} data
  */
 
 /**
  * @typedef {Object} ArchiveProjectAction
- * @property {'archive_project'} type
+ * @property {"archive_project"} type
  * @property {ArchiveProjectData} data
  */
 
 /**
  * @typedef {Object} DeleteProjectAction
- * @property {'delete_project'} type
+ * @property {"delete_project"} type
  * @property {DeleteProjectData} data
  */
 
 /**
  * @typedef {Object} CreateTaskAction
- * @property {'create_task'} type
+ * @property {"create_task"} type
  * @property {CreateTaskData} data
  */
 
 /**
  * @typedef {Object} UpdateTaskAction
- * @property {'update_task'} type
+ * @property {"update_task"} type
  * @property {UpdateTaskData} data
  */
 
 /**
  * @typedef {Object} DeleteTaskAction
- * @property {'delete_task'} type
+ * @property {"delete_task"} type
  * @property {DeleteTaskData} data
  */
 
 /**
  * @typedef {Object} CompleteTaskAction
- * @property {'complete_task'} type
+ * @property {"complete_task"} type
  * @property {CompleteTaskData} data
  */
 
 /**
  * @typedef {Object} ReopenTaskAction
- * @property {'reopen_task'} type
+ * @property {"reopen_task"} type
  * @property {ReopenTaskData} data
  */
 
 /**
  * @typedef {Object} SearchTasksAction
- * @property {'search_tasks'} type
+ * @property {"search_tasks"} type
  * @property {SearchTasksData} data
  */
 
 /**
  * @typedef {Object} SearchProjectsAction
- * @property {'search_projects'} type
+ * @property {"search_projects"} type
  * @property {SearchProjectsData} data
  */
 
 /**
  * @typedef {Object} SuggestTasksAction
- * @property {'suggest_tasks'} type
+ * @property {"suggest_tasks"} type
  * @property {SuggestTasksData} data
  */
 
 /**
  * @typedef {Object} RecommendNextTaskAction
- * @property {'recommend_next_task'} type
+ * @property {"recommend_next_task"} type
  * @property {RecommendNextTaskData} data
  */
 

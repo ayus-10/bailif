@@ -166,7 +166,7 @@ function selectItem(item) {
 }
 
 .editable-v-chip-list__item {
-    border-radius: 0.5rem;
+    border-radius: 0.5rem !important;
     margin: 0.125rem 0.375rem;
 }
 </style>

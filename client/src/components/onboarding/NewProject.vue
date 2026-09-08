@@ -6,7 +6,9 @@ import IconInput from "@/components/common/IconInput.vue";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useProjectsStore } from "@/stores/projects.store";
 
-/** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
+/** @typedef {Omit<import("@/stores/projects.store").ProjectCreate, "color"> & {
+ *   color?: string
+ * }} ProjectCreateForm */
 
 /** @type {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} */
 const formRef = ref(null);
@@ -15,7 +17,7 @@ const projectsStore = useProjectsStore();
 
 const router = useRouter();
 
-/** @type {import("vue").Reactive<ProjectCreate>} */
+/** @type {import("vue").Reactive<ProjectCreateForm>} */
 const form = reactive({
     name: "",
     description: "",
