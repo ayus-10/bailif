@@ -21,15 +21,41 @@ defineProps({
     dueDate: String,
 });
 
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "save", "cancel"]);
 </script>
 
 <template>
-    <section class="panel" :class="{ 'panel--editing': isEditing }">
+    <section class="panel">
         <div class="panel__heading">
-            <h2 class="panel__label">Details</h2>
+            <h2 class="panel__label">
+                {{ isEditing ? "Edit details" : "Details" }}
+            </h2>
+
+            <div v-if="isEditing" class="panel__actions">
+                <v-btn
+                    icon="mdi-close"
+                    size="small"
+                    variant="text"
+                    density="comfortable"
+                    rounded="pill"
+                    aria-label="Cancel details edit"
+                    @click="emit('cancel')"
+                />
+
+                <v-btn
+                    icon="mdi-check"
+                    size="small"
+                    color="primary"
+                    variant="tonal"
+                    density="comfortable"
+                    rounded="pill"
+                    aria-label="Save details"
+                    @click="emit('save')"
+                />
+            </div>
+
             <v-btn
-                v-if="!isEditing"
+                v-else
                 class="panel__edit-btn"
                 icon="mdi-pencil-outline"
                 size="x-small"
@@ -42,17 +68,12 @@ const emit = defineEmits(["edit"]);
 
         <dl v-if="!isEditing" class="detail-list">
             <div class="detail-list__row">
-                <dt>Project</dt>
-                <dd>
-                    {{ task.project?.name ?? "—" }}
-                </dd>
-            </div>
-            <div class="detail-list__row">
                 <dt>Start</dt>
                 <dd>
                     {{ formatDate(task.start_date) ?? "—" }}
                 </dd>
             </div>
+
             <div class="detail-list__row">
                 <dt>Due</dt>
                 <dd class="detail-list__value" :class="{ overdue: isOverdue }">
@@ -67,15 +88,16 @@ const emit = defineEmits(["edit"]);
                 label="Start"
                 type="date"
                 variant="outlined"
-                density="compact"
+                density="comfortable"
                 hide-details
             />
+
             <v-text-field
                 :model-value="dueDate"
                 label="Due"
                 type="date"
                 variant="outlined"
-                density="compact"
+                density="comfortable"
                 hide-details
             />
         </div>
@@ -98,10 +120,6 @@ const emit = defineEmits(["edit"]);
     border-color: rgb(var(--v-theme-outline, 225, 228, 232));
 }
 
-.panel--editing {
-    border-color: rgba(25, 118, 210, 0.35);
-}
-
 .panel__heading {
     display: flex;
     align-items: center;
@@ -117,6 +135,16 @@ const emit = defineEmits(["edit"]);
     font-weight: 700;
     letter-spacing: -0.01em;
     line-height: 1.25rem;
+}
+
+.panel__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.panel__actions .v-btn {
+    border-radius: 9999px;
 }
 
 .panel__edit-btn {
@@ -178,12 +206,65 @@ const emit = defineEmits(["edit"]);
     gap: 0.75rem;
 }
 
-.detail-editor :deep(.v-field--variant-outlined .v-field__outline) {
-    color: rgb(var(--v-theme-outline-variant, 234, 236, 240));
+.detail-editor :deep(.v-field) {
+    --v-field-border-opacity: 1;
+    min-height: 2.75rem;
+    border-radius: 0.625rem;
+    background: rgb(var(--v-theme-surface));
+    outline: none !important;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.12s ease;
 }
 
-.detail-editor
-    :deep(.v-field--variant-outlined.v-field--focused .v-field__outline) {
+.detail-editor :deep(.v-field__outline) {
+    color: rgb(var(--v-theme-outline-variant, 234, 236, 240));
+    transition:
+        color 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.detail-editor :deep(.v-field:hover .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 0.55;
+}
+
+.detail-editor :deep(.v-field:hover) {
+    box-shadow: 0 0 0 0.125rem rgba(var(--v-theme-primary), 0.06);
+}
+
+.detail-editor :deep(.v-field--focused) {
+    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.12);
+}
+
+.detail-editor :deep(.v-field--focused .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
+}
+
+.detail-editor :deep(.v-field__label) {
+    padding-inline: 0.25rem;
+    background: #fff;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
     color: rgb(var(--v-theme-on-surface));
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+}
+
+.detail-editor :deep(.v-field__outline__start),
+.detail-editor :deep(.v-field__outline__end) {
+    border-color: currentColor;
+    opacity: 1;
+    transition: border-color 0.15s ease;
+}
+
+.detail-editor :deep(.v-field__outline__notch)::before,
+.detail-editor :deep(.v-field__outline__notch)::after {
+    border-color: currentColor;
+    transition: border-color 0.15s ease;
 }
 </style>

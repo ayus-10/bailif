@@ -107,6 +107,8 @@ const {
                         :start-date="startDate"
                         :due-date="dueDate"
                         @edit="beginEdit('details')"
+                        @cancel="cancelChanges()"
+                        @save="saveChanges()"
                     />
 
                     <TaskTags :tags="tags" />
