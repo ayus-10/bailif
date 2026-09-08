@@ -98,17 +98,19 @@ const {
             </main>
 
             <aside class="task-page__sidebar">
-                <TaskDetails
-                    :task="currentTask"
-                    :draft="draft"
-                    :is-editing="isEditingDetails"
-                    :is-overdue="isOverdue"
-                    :start-date="startDate"
-                    :due-date="dueDate"
-                    @edit="beginEdit('details')"
-                />
+                <div class="task-page__sidebar-top">
+                    <TaskDetails
+                        :task="currentTask"
+                        :draft="draft"
+                        :is-editing="isEditingDetails"
+                        :is-overdue="isOverdue"
+                        :start-date="startDate"
+                        :due-date="dueDate"
+                        @edit="beginEdit('details')"
+                    />
 
-                <TaskTags :tags="tags" />
+                    <TaskTags :tags="tags" />
+                </div>
 
                 <SubtaskPanel
                     :task-id="currentTaskId"
@@ -135,7 +137,7 @@ const {
 
 .task-page__body {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 17.5rem;
+    grid-template-columns: 3fr 2fr;
     align-items: start;
     gap: 1.5rem;
 }
@@ -153,6 +155,13 @@ const {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+    min-width: 0;
+}
+
+.task-page__sidebar-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
 }
 
 @media (max-width: 47.5rem) {
@@ -166,6 +175,10 @@ const {
 
     .task-page__sidebar {
         position: static;
+    }
+
+    .task-page__sidebar-top {
+        grid-template-columns: 1fr;
     }
 }
 </style>
