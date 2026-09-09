@@ -23,7 +23,6 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  */
 function collectionKey(projectId, options = {}) {
     const {
-        queryMode = "root-tasks",
         parentId = null,
         taskboardId = null,
         status = null,
@@ -33,6 +32,8 @@ function collectionKey(projectId, options = {}) {
         dueBefore = null,
         dueAfter = null,
     } = options;
+
+    const queryMode = parentId ? "child-tasks" : "root-tasks";
 
     return [
         projectId,

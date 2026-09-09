@@ -1,9 +1,8 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
-import { useProjectsStore } from "@/stores/projects.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import EmptyPanel from "./EmptyPanel.vue";
 
@@ -24,60 +23,53 @@ const props = defineProps({
 
 const route = useRoute();
 const router = useRouter();
+
 const tasksStore = useTasksStore();
-const projectsStore = useProjectsStore();
 
-const boardId = computed(() => `board-${props.taskId}`);
-
-function fetchSubtasks() {
-    tasksStore.fetch(boardId.value, {
-        queryMode: "child-tasks",
-        parentId: props.taskId,
-    });
-}
-
-function fetchProjects() {
-    projectsStore.fetch();
-}
-
-onMounted(() => {
-    fetchSubtasks();
-    fetchProjects();
+const subtasks = tasksStore.tasksByQuery(props.projectId, {
+    parentId: props.taskId,
+});
+const fetchStatus = tasksStore.statusByQuery(props.projectId, {
+    parentId: props.taskId,
+});
+const fetchError = tasksStore.errorByQuery(props.projectId, {
+    parentId: props.taskId,
 });
 
-watch(
-    () => props.taskId,
-    (newId, oldId) => {
-        if (newId && newId !== oldId) {
-            fetchSubtasks();
-        }
-    }
-);
+const hasSubtasks = computed(() => subtasks.length > 0);
 
-/** @type {import("vue").ComputedRef<TaskRead[]>} */
-const subtasks = computed(() => tasksStore.items[boardId.value] ?? []);
-
-const hasSubtasks = computed(() => subtasks.value.length > 0);
-
-const projects = computed(() => projectsStore.items ?? []);
-
-/** @type {import("vue").ComputedRef<FetchStatus>} */
-const fetchStatus = computed(() => tasksStore.status[boardId.value] ?? "idle");
 const isLoading = computed(
-    () =>
-        fetchStatus.value === "loading" || fetchStatus.value === "loading-more"
+    () => fetchStatus === "loading" || fetchStatus === "loading-more"
 );
-const fetchError = computed(() => tasksStore.errors[boardId.value] ?? null);
 
 /** @type {import("vue").Ref<TaskCreate | null>} */
 const pendingSubTask = ref(null);
 
 const showSubtasks = computed(
-    () => !isLoading.value && !fetchError.value && hasSubtasks.value
+    () => !isLoading.value && !fetchError && hasSubtasks.value
 );
 const showEmptyMessage = computed(
     () => !showSubtasks.value && !pendingSubTask.value
 );
+
+onMounted(() => {
+    fetchSubtasks();
+});
+
+function fetchSubtasks() {
+    tasksStore.fetch(props.projectId, {
+        queryMode: "child-tasks",
+        parentId: props.taskId,
+    });
+}
+
+function retry() {
+    tasksStore.fetch(props.projectId, {
+        queryMode: "child-tasks",
+        parentId: props.taskId,
+        forceRefresh: true,
+    });
+}
 
 /** @param {TaskRead} subtask */
 function openSubtask(subtask) {
@@ -142,7 +134,7 @@ function handleClear() {
                 variant="text"
                 density="comfortable"
                 size="small"
-                @click="fetchSubtasks"
+                @click="retry"
             >
                 Retry
             </v-btn>
@@ -156,8 +148,8 @@ function handleClear() {
 
         <PendingTaskCard
             v-if="pendingSubTask"
-            :projects="projects"
             :parent-id="props.taskId"
+            :project-id="props.projectId"
             @submit="handleCreateSubtask"
             @cancel="handleClear"
         />
