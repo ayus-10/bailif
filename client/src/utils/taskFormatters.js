@@ -44,3 +44,14 @@ export function parseTags(tags) {
         .map((t) => t.trim())
         .filter(Boolean);
 }
+
+/**
+ * @param {string[] | null | undefined} tags
+ * @returns {string}
+ */
+export function serializeTags(tags) {
+    return (tags ?? [])
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .join(", ");
+}

@@ -9,6 +9,7 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 const props = defineProps({
     projectId: {
         type: String,
+        required: true,
     },
     parentId: {
         type: String,
@@ -81,7 +82,7 @@ function submit() {
     const task = {
         title: form.value.title.trim(),
         description: form.value.description.trim(),
-        project_id: String(props.projectId), // TODO: fix this, someday
+        project_id: props.projectId,
         parent_id: props.parentId,
         priority: form.value.priority,
         tags: form.value.tags
