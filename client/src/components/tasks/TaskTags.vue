@@ -1,34 +1,34 @@
 <script setup>
 import { ref, watch } from "vue";
+import { parseTags, serializeTags } from "@/utils/taskFormatters";
 
 const props = defineProps({
     tags: {
-        /** @type {import("vue").PropType<String[]>} */
+        /** @type {import("vue").PropType<string[]>} */
         type: Array,
         default: () => [],
     },
     isEditing: Boolean,
 });
 
-const emit = defineEmits(["edit", "cancel", "save"]);
+const emit = defineEmits(["edit", "cancel", "save", "update:tags"]);
 
-const tagsInput = ref(props.tags.join(", "));
+const tagsInput = ref(serializeTags(props.tags));
 
 watch(
     () => props.isEditing,
     (isEditing) => {
         if (isEditing) {
-            tagsInput.value = props.tags.join(", ");
+            tagsInput.value = serializeTags(props.tags);
         }
     }
 );
 
 function handleSave() {
-    const parsed = tagsInput.value
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean);
-    emit("save", parsed);
+    const tags = parseTags(tagsInput.value);
+
+    emit("update:tags", tags);
+    emit("save");
 }
 </script>
 
@@ -146,7 +146,7 @@ function handleSave() {
 }
 
 .panel__actions .v-btn {
-    border-radius: 9999px;
+    border-radius: 999px;
 }
 
 .panel__edit-btn {

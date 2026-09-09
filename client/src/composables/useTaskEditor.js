@@ -1,6 +1,10 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useTasksStore } from "@/stores/tasks.store";
-import { isTaskOverdue } from "@/utils/taskFormatters";
+import {
+    isTaskOverdue,
+    parseTags,
+    serializeTags,
+} from "@/utils/taskFormatters";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
@@ -18,14 +22,17 @@ export function useTaskEditor(task, taskId) {
 
     const editMode = ref(/** @type {EditMode} */ ("none"));
 
-    const hasPendingChanges = ref(false);
     const isSaving = ref(false);
 
     const isSavingStatus = ref(false);
     const isSavingPriority = ref(false);
 
     const draft = reactive(getTaskDraft(null));
-    const originalDraft = reactive(getTaskDraft(null));
+    const initialDraft = reactive(getTaskDraft(null));
+
+    const hasPendingChanges = computed(
+        () => JSON.stringify(draft) !== JSON.stringify(initialDraft)
+    );
 
     /** @type {import("vue").Ref<TaskRead["status"] | null>} */
     const selectedStatus = ref(task.value?.status ?? null);
@@ -34,10 +41,9 @@ export function useTaskEditor(task, taskId) {
     const selectedPriority = ref(task.value?.priority ?? null);
 
     const isEditingTitle = computed(() => editMode.value === "title");
-    const isEditingDescription = computed(
-        () => editMode.value === "description"
-    );
+    const isEditingBody = computed(() => editMode.value === "body");
     const isEditingDetails = computed(() => editMode.value === "details");
+    const isEditingTags = computed(() => editMode.value === "tags");
 
     const isOverdue = computed(() =>
         task.value ? isTaskOverdue(task.value) : false
@@ -61,19 +67,16 @@ export function useTaskEditor(task, taskId) {
         },
     });
 
-    watch(draft, updatePendingChanges, { deep: true });
+    const tags = computed({
+        get() {
+            return parseTags(draft.tags);
+        },
+        set(value) {
+            draft.tags = serializeTags(value);
+        },
+    });
 
     watch(task, setSelectedTaskData, { immediate: true });
-
-    function updatePendingChanges() {
-        if (editMode.value === "none") {
-            hasPendingChanges.value = false;
-            return;
-        }
-
-        hasPendingChanges.value =
-            JSON.stringify(draft) !== JSON.stringify(originalDraft);
-    }
 
     /** @param {TaskRead | null} newTask */
     function setSelectedTaskData(newTask) {
@@ -91,9 +94,7 @@ export function useTaskEditor(task, taskId) {
         const values = getTaskDraft(task.value);
 
         copyDraftValues(draft, values);
-        copyDraftValues(originalDraft, values);
-
-        hasPendingChanges.value = false;
+        copyDraftValues(initialDraft, values);
     }
 
     /** @param {EditMode} mode */
@@ -106,9 +107,8 @@ export function useTaskEditor(task, taskId) {
     }
 
     function cancelChanges() {
-        copyDraftValues(draft, originalDraft);
+        copyDraftValues(draft, initialDraft);
 
-        hasPendingChanges.value = false;
         editMode.value = "none";
     }
 
@@ -121,13 +121,12 @@ export function useTaskEditor(task, taskId) {
         isSaving.value = true;
 
         try {
-            const payload = buildUpdatePayload(draft, originalDraft);
+            const payload = buildUpdatePayload(draft, initialDraft);
 
             await tasksStore.update(taskId, payload);
 
-            copyDraftValues(originalDraft, draft);
+            copyDraftValues(initialDraft, draft);
 
-            hasPendingChanges.value = false;
             editMode.value = "none";
         } finally {
             isSaving.value = false;
@@ -182,8 +181,9 @@ export function useTaskEditor(task, taskId) {
         hasPendingChanges,
 
         isEditingTitle,
-        isEditingDescription,
+        isEditingBody,
         isEditingDetails,
+        isEditingTags,
 
         selectedStatus,
         selectedPriority,
@@ -195,6 +195,7 @@ export function useTaskEditor(task, taskId) {
 
         startDate,
         dueDate,
+        tags,
 
         beginEdit,
         cancelChanges,
@@ -218,6 +219,7 @@ function getTaskDraft(source) {
     return {
         title: source?.title ?? "",
         description: source?.description ?? "",
+        tags: source?.tags ?? "",
         status: source?.status ?? null,
         priority: source?.priority ?? null,
         start_date: source?.start_date ?? null,

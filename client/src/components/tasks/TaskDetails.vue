@@ -21,7 +21,13 @@ defineProps({
     dueDate: String,
 });
 
-const emit = defineEmits(["edit", "save", "cancel"]);
+const emit = defineEmits([
+    "edit",
+    "save",
+    "cancel",
+    "update:startDate",
+    "update:dueDate",
+]);
 </script>
 
 <template>
@@ -85,6 +91,7 @@ const emit = defineEmits(["edit", "save", "cancel"]);
         <div v-else class="detail-editor">
             <v-text-field
                 :model-value="startDate"
+                @update:model-value="$emit('update:startDate', $event)"
                 label="Start"
                 type="date"
                 variant="outlined"
@@ -94,6 +101,7 @@ const emit = defineEmits(["edit", "save", "cancel"]);
 
             <v-text-field
                 :model-value="dueDate"
+                @update:model-value="$emit('update:dueDate', $event)"
                 label="Due"
                 type="date"
                 variant="outlined"
@@ -144,7 +152,7 @@ const emit = defineEmits(["edit", "save", "cancel"]);
 }
 
 .panel__actions .v-btn {
-    border-radius: 9999px;
+    border-radius: 999px;
 }
 
 .panel__edit-btn {

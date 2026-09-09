@@ -108,6 +108,7 @@
  * @typedef {Object} TaskDraft
  * @property {string} title
  * @property {string} description
+ * @property {string} tags
  * @property {TaskStatus | null} status
  * @property {TaskPriority | null} priority
  * @property {string | null} start_date

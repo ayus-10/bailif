@@ -2,13 +2,12 @@
 import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
 import SubtaskPanel from "@/components/tasks/SubtaskPanel.vue";
-import TaskDescription from "@/components/tasks/TaskDescription.vue";
+import TaskBody from "@/components/tasks/TaskBody.vue";
 import TaskDetails from "@/components/tasks/TaskDetails.vue";
 import TaskPageHeader from "@/components/tasks/TaskPageHeader.vue";
 import TaskTags from "@/components/tasks/TaskTags.vue";
 import { useTaskEditor } from "@/composables/useTaskEditor";
 import { useTasksStore } from "@/stores/tasks.store";
-import { parseTags } from "@/utils/taskFormatters";
 
 const route = useRoute();
 const router = useRouter();
@@ -28,10 +27,6 @@ onMounted(() => {
 
 const currentTask = computed(() => tasksStore.currentTask);
 
-const tags = computed(() =>
-    currentTask.value ? parseTags(currentTask.value.tags) : []
-);
-
 const {
     editMode,
     draft,
@@ -40,8 +35,9 @@ const {
     hasPendingChanges,
 
     isEditingTitle,
-    isEditingDescription,
+    isEditingBody,
     isEditingDetails,
+    isEditingTags,
 
     selectedStatus,
     selectedPriority,
@@ -53,6 +49,7 @@ const {
 
     startDate,
     dueDate,
+    tags,
 
     beginEdit,
     cancelChanges,
@@ -87,11 +84,11 @@ const {
 
         <div class="task-page__body">
             <main class="task-page__main">
-                <TaskDescription
+                <TaskBody
                     :task="currentTask"
                     :draft="draft"
-                    :is-editing="isEditingDescription"
-                    @edit="beginEdit('description')"
+                    :is-editing="isEditingBody"
+                    @edit="beginEdit('body')"
                     @save="saveChanges()"
                     @cancel="cancelChanges()"
                 />
@@ -104,14 +101,20 @@ const {
                         :draft="draft"
                         :is-editing="isEditingDetails"
                         :is-overdue="isOverdue"
-                        :start-date="startDate"
-                        :due-date="dueDate"
+                        v-model:start-date="startDate"
+                        v-model:due-date="dueDate"
                         @edit="beginEdit('details')"
                         @cancel="cancelChanges()"
                         @save="saveChanges()"
                     />
 
-                    <TaskTags :tags="tags" />
+                    <TaskTags
+                        v-model:tags="tags"
+                        :is-editing="isEditingTags"
+                        @edit="beginEdit('tags')"
+                        @save="saveChanges()"
+                        @cancel="cancelChanges()"
+                    />
                 </div>
 
                 <SubtaskPanel
