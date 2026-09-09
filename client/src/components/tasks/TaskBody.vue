@@ -4,6 +4,7 @@ import { isHtmlEmpty } from "@/utils/htmlFormatters";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 import "@/components/quill-editor.css";
 import { ref } from "vue";
+import EmptyPanel from "./EmptyPanel.vue";
 
 /** @typedef {import("@/types/task").TaskRead} TaskRead */
 /** @typedef {import("@/types/task").TaskDraft} TaskDraft */
@@ -105,10 +106,12 @@ function onEditorReady(quillInstance) {
             @click="emit('edit')"
         />
 
-        <button v-else type="button" class="panel__empty" @click="emit('edit')">
-            <v-icon icon="mdi-text-box-plus-outline" size="16" />
-            <span>No description yet — click to add one</span>
-        </button>
+        <EmptyPanel
+            v-if="isHtmlEmpty(task.description) && !isEditing"
+            message="No description yet - click to add one"
+            icon="mdi-text-box-plus-outline"
+            @click="emit('edit')"
+        />
     </section>
 </template>
 
@@ -175,32 +178,6 @@ function onEditorReady(quillInstance) {
 }
 
 .panel__edit-btn:hover:deep(.v-icon) {
-    color: #1976d2;
-}
-
-.panel__empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-    width: 100%;
-    padding: 0.75rem;
-    border: 0.0625rem dashed rgb(var(--v-theme-outline-variant, 234, 236, 240));
-    border-radius: 0.625rem;
-    background: transparent;
-    color: rgb(var(--v-theme-text-disabled, 148, 157, 173));
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    user-select: none;
-    -webkit-user-select: none;
-    transition:
-        border-color 0.12s ease,
-        color 0.12s ease;
-}
-
-.panel__empty:hover {
-    border-color: rgba(25, 118, 210, 0.35);
     color: #1976d2;
 }
 
