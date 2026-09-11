@@ -6,11 +6,12 @@ import jwt
 
 from app.core.config import settings
 from app.core.security.config import get_jwt_secret
+from app.core.security.constants import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ALGORITHM,
+    CLOCK_SKEW_LEEWAY_SECONDS,
+)
 from app.core.security.exceptions import TokenExpiredError, TokenInvalidError
-
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 10
-CLOCK_SKEW_LEEWAY_SECONDS = 30
 
 
 def encode(payload: dict[str, Any]) -> str:

@@ -1,19 +1,10 @@
 import hashlib
 import hmac
 import secrets
-from dataclasses import dataclass
 
 from app.core.security.config import get_refresh_pepper
-
-SELECTOR_BYTES = 12
-VERIFIER_BYTES = 32
-
-
-@dataclass(frozen=True)
-class IssuedRefreshToken:
-    selector: str
-    verifier_hash: str
-    full_token: str
+from app.core.security.constants import SELECTOR_BYTES, VERIFIER_BYTES
+from app.core.security.schemas import IssuedRefreshToken
 
 
 def generate_refresh_token() -> IssuedRefreshToken:
