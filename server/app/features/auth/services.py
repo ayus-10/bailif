@@ -2,7 +2,7 @@ from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-import app.core.tokens as tokens
+import app.core.security.jwt as tokens
 from app.features.auth.exceptions import InvalidCredentialsError
 from app.models.db.user import User
 

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.tokens import decode
+from app.core.security.jwt import decode
 from app.features.auth.exceptions import InvalidCredentialsError
 from app.models.db.user import User
 

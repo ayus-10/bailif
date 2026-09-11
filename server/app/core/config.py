@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg2://aayush:1234@localhost:5432/local"
 
     jwt_secret_key: str = ""
+    jwt_issuer: str = ""
+    jwt_audience: str = ""
+
     refresh_token_pepper: str = ""
 
     llm_provider: str = "local"
