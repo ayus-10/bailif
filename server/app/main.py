@@ -3,8 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 import app.models
-from app.api.v1 import ai, auth, projects, taskboard, tasks, users
+from app.agent.router import router as ai_router
 from app.core.exceptions import CoreError
+from app.features.auth.router import router as auth_router
+from app.features.projects.router import router as projects_router
+from app.features.taskboard.router import router as taskboard_router
+from app.features.tasks.router import router as tasks_router
+from app.features.users.router import router as users_router
 
 app = FastAPI(title="Bailif Server", version="0.1.0")
 
@@ -18,27 +23,27 @@ app.add_middleware(
 
 
 app.include_router(
-    auth.router,
+    auth_router,
     prefix="/api/v1",
 )
 app.include_router(
-    users.router,
+    users_router,
     prefix="/api/v1",
 )
 app.include_router(
-    tasks.router,
+    tasks_router,
     prefix="/api/v1",
 )
 app.include_router(
-    projects.router,
+    projects_router,
     prefix="/api/v1",
 )
 app.include_router(
-    ai.router,
+    ai_router,
     prefix="/api/v1",
 )
 app.include_router(
-    taskboard.router,
+    taskboard_router,
     prefix="/api/v1",
 )
 

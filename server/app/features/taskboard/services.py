@@ -40,7 +40,7 @@ def create_taskboard(
     board = Taskboard(**payload.model_dump())
 
     db.add(board)
-    db.commit()
+    db.flush()
     db.refresh(board)
 
     return board
@@ -56,7 +56,7 @@ def update_taskboard(
     for field, value in updates.items():
         setattr(board, field, value)
 
-    db.commit()
+    db.flush()
     db.refresh(board)
 
     return board
@@ -111,7 +111,6 @@ def delete_taskboard(
     board: Taskboard,
 ) -> None:
     db.delete(board)
-    db.commit()
 
 
 def add_task_to_board(
@@ -171,7 +170,7 @@ def add_task_to_board(
     )
 
     db.add(association)
-    db.commit()
+    db.flush()
     db.refresh(association)
 
     return association
@@ -204,8 +203,6 @@ def remove_task_from_board(
         .values(position=TaskboardTask.position - 1)
     )
     db.execute(stmt)
-
-    db.commit()
 
 
 def reposition_task_in_board(
@@ -264,5 +261,3 @@ def reposition_task_in_board(
         db.execute(stmt)
 
     association.position = position
-
-    db.commit()

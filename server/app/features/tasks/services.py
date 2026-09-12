@@ -84,7 +84,7 @@ def create_task(
         raise ValidationError()
 
     db.add(task)
-    db.commit()
+    db.flush()
     db.refresh(task)
 
     return task
@@ -105,7 +105,7 @@ def update_task(
     for field, value in updates.items():
         setattr(task, field, value)
 
-    db.commit()
+    db.flush()
     db.refresh(task)
 
     updated_field_count = len(updates.items())
@@ -175,4 +175,3 @@ def list_tasks(db: Session, user: User, filters: TaskFilterParams) -> TaskListRe
 
 def delete_task(db: Session, task: Task) -> None:
     db.delete(task)
-    db.commit()
