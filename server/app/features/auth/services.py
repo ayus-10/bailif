@@ -70,12 +70,11 @@ def generate_refresh_token(
             expires_at=issued_token.expires_at,
         )
 
-        db.add(refresh_token)
-
         try:
-            db.flush()
+            with db.begin_nested():
+                db.add(refresh_token)
+                db.flush()
         except IntegrityError:
-            db.rollback()
             continue
         else:
             return issued_token.full_token
@@ -96,15 +95,16 @@ def redeem_refresh_token(
 
     now = datetime.now(UTC)
 
-    if stored_token.revoked_at is not None:
-        _revoke_all_tokens_for_user(db, stored_token.user_id)
-        raise InvalidCredentialsError()
-
     if not validate_refresh_token(
         stored_token.verifier_hash,
         stored_token.expires_at,
         refresh_token,
     ):
+        raise InvalidCredentialsError()
+
+    if stored_token.revoked_at is not None:
+        _revoke_all_tokens_for_user(db, stored_token.user_id)
+        db.commit()
         raise InvalidCredentialsError()
 
     stored_token.revoked_at = now

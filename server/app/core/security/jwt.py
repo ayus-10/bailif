@@ -5,6 +5,7 @@ from uuid import uuid4
 import jwt
 
 from app.core.config import settings
+from app.core.constants import TokenType
 from app.core.security.config import get_jwt_secret
 from app.core.security.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -53,7 +54,7 @@ def create_access_token(
         "iss": settings.jwt_issuer,
         "aud": settings.jwt_audience,
         "jti": str(uuid4()),
-        "type": "access",
+        "type": TokenType.ACCESS,
     }
 
     if extra_claims:
