@@ -35,7 +35,7 @@ def create_user(
     )
 
     db.add(user)
-    db.commit()
+    db.flush()
     db.refresh(user)
 
     return UserRead.model_validate(user)

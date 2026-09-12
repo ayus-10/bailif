@@ -87,7 +87,7 @@ async def chat(
         expires_at=datetime.now(UTC) + timedelta(minutes=15),
     )
     db.add(action)
-    db.commit()
+    db.flush()
     db.refresh(action)
 
     return ChatResponse(
@@ -145,7 +145,7 @@ async def accept_action(
         if failed_count > 0
         else ActionStatus.COMPLETED
     )
-    db.commit()
+    db.flush()
     db.refresh(action)
 
     return AcceptActionResponse(

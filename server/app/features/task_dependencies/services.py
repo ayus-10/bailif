@@ -77,7 +77,7 @@ def create_dependency(
         dependency_type=payload.dependency_type,
     )
     db.add(dependency)
-    db.commit()
+    db.flush()
     db.refresh(dependency)
     return dependency
 
@@ -98,4 +98,3 @@ def list_dependencies_for_task(
 
 def delete_dependency(db: Session, dependency: TaskDependency) -> None:
     db.delete(dependency)
-    db.commit()

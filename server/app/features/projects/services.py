@@ -26,7 +26,7 @@ def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
         raise ValidationError()
 
     db.add(project)
-    db.commit()
+    db.flush()
     db.refresh(project)
 
     return project
@@ -47,7 +47,7 @@ def update_project(
     for field, value in updates.items():
         setattr(project, field, value)
 
-    db.commit()
+    db.flush()
     db.refresh(project)
 
     return project
@@ -88,4 +88,3 @@ def list_projects(
 
 def delete_project(db: Session, project: Project) -> None:
     db.delete(project)
-    db.commit()
