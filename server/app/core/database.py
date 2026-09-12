@@ -15,6 +15,7 @@ def get_db():
     db = SessionLocal()
     try:
         yield db
+        # TODO: db.commit() here
     except Exception:
         db.rollback()
         raise

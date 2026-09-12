@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -44,7 +44,7 @@ def create_access_token(
     expires_delta: timedelta | None = None,
     extra_claims: dict[str, Any] | None = None,
 ) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     payload = {
         "sub": subject,

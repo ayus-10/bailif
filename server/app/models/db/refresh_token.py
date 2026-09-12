@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import uuid
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -30,13 +31,13 @@ class RefreshToken(Base):
         Index("ix_refresh_tokens_user_id_revoked_at", "user_id", "revoked_at"),
     )
 
-    id: Mapped[UUID] = mapped_column(
+    id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid4,
     )
 
-    user_id: Mapped[UUID] = mapped_column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
@@ -88,14 +89,14 @@ class RefreshToken(Base):
         nullable=True,
     )
 
-    replaced_by: Mapped[UUID | None] = mapped_column(
+    replaced_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("refresh_tokens.id", ondelete="SET NULL"),
         nullable=True,
     )
 
     def is_expired(self) -> bool:
-        return self.expires_at <= datetime.now(timezone.utc)
+        return self.expires_at <= datetime.now(UTC)
 
     def is_revoked(self) -> bool:
         return self.revoked_at is not None

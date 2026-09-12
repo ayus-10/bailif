@@ -1,14 +1,24 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from uuid import UUID
 
 from pwdlib import PasswordHash
 from pwdlib.exceptions import UnknownHashError
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-import app.core.security.jwt as tokens
 from app.core.exceptions import InternalServerError
-from app.features.auth.constants import DUMMY_PASSWORD_HASH
-from app.features.auth.exceptions import InvalidCredentialsError
+from app.core.security.jwt import create_access_token
+from app.core.security.operations import (
+    issue_refresh_token,
+    parse_refresh_token,
+    validate_refresh_token,
+)
+from app.features.auth.constants import DUMMY_PASSWORD_HASH, MAX_SELECTOR_RETRIES
+from app.features.auth.exceptions import (
+    InvalidCredentialsError,
+    RefreshTokenIssuanceError,
+)
 from app.models.db.refresh_token import RefreshToken
 from app.models.db.user import User
 
@@ -36,91 +46,91 @@ def authenticate_user(
 
 
 def generate_access_token(user: User) -> str:
-    return tokens.create_access_token(
+    return create_access_token(
         subject=str(user.id),
     )
 
 
-def refresh_access_token(
+def generate_refresh_token(
+    db: Session,
+    user: User,
+    *,
+    user_agent: str | None,
+    ip_address: str | None,
+) -> str:
+    for _ in range(MAX_SELECTOR_RETRIES):
+        issued_token = issue_refresh_token()
+
+        refresh_token = RefreshToken(
+            user_id=user.id,
+            selector=issued_token.selector,
+            verifier_hash=issued_token.verifier_hash,
+            user_agent=user_agent,
+            ip_address=ip_address,
+            expires_at=issued_token.expires_at,
+        )
+
+        db.add(refresh_token)
+
+        try:
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+            continue
+        else:
+            return issued_token.full_token
+
+    raise RefreshTokenIssuanceError(
+        "Failed to generate a unique refresh token selector"
+    )
+
+
+def redeem_refresh_token(
     db: Session,
     refresh_token: str,
-) -> str:
-    """
-    Validate and rotate a refresh token, then issue a new access token.
-    """
-
-    # 1. Parse + cryptographically validate the opaque token.
-    token_data = tokens.validate_token(refresh_token)
-
-    # token_data should contain at least:
-    # - selector
-    # - verifier_hash / equivalent validated data
-
-    # 2. Find the DB record using the selector.
-    stored_token = db.scalar(
-        select(RefreshToken).where(RefreshToken.selector == token_data.selector)
-    )
+) -> tuple[str, str]:
+    stored_token = _find_stored_token_by_raw(db, refresh_token)
 
     if stored_token is None:
         raise InvalidCredentialsError()
 
-    # 3. Check DB-side revocation / expiry.
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     if stored_token.revoked_at is not None:
+        _revoke_all_tokens_for_user(db, stored_token.user_id)
         raise InvalidCredentialsError()
 
-    if stored_token.expires_at <= now:
-        raise InvalidCredentialsError()
-
-    # 4. Verify the supplied verifier against the stored HMAC hash.
-    if not tokens.verify_token(
-        refresh_token,
+    if not validate_refresh_token(
         stored_token.verifier_hash,
+        stored_token.expires_at,
+        refresh_token,
     ):
         raise InvalidCredentialsError()
 
-    # 5. Revoke the old refresh token.
     stored_token.revoked_at = now
 
-    # 6. Generate a completely new refresh token.
-    issued = tokens.generate_refresh_token()
+    issued = issue_refresh_token()
 
     new_token = RefreshToken(
+        user_id=stored_token.user_id,
         selector=issued.selector,
         verifier_hash=issued.verifier_hash,
-        user_id=stored_token.user_id,
+        user_agent=stored_token.user_agent,  # TODO: should this be updated?
+        ip_address=stored_token.ip_address,  # TODO: should this be updated?
         expires_at=issued.expires_at,
     )
 
     db.add(new_token)
 
-    # 7. Issue a new short-lived access token.
-    access_token = tokens.create_access_token(
+    access_token = create_access_token(
         subject=str(stored_token.user_id),
     )
 
-    db.commit()
-
-    return access_token
+    return access_token, issued.full_token
 
 
-def logout(
-    db: Session,
-    refresh_token: str,
-) -> None:
-    """
-    Revoke the supplied refresh token.
-
-    Logout is intentionally idempotent: if the token does not exist
-    or has already been revoked, there is nothing else to do.
-    """
-
-    token_data = tokens.validate_token(refresh_token)
-
-    stored_token = db.scalar(
-        select(RefreshToken).where(RefreshToken.selector == token_data.selector)
-    )
+def logout(db: Session, refresh_token: str) -> None:
+    stored_token = _find_stored_token_by_raw(db, refresh_token)
 
     if stored_token is None:
         return
@@ -128,30 +138,21 @@ def logout(
     if stored_token.revoked_at is not None:
         return
 
-    # Verify the actual verifier before revoking anything.
-    if not tokens.verify_token(
-        refresh_token,
+    if not validate_refresh_token(
         stored_token.verifier_hash,
+        stored_token.expires_at,
+        refresh_token,
     ):
         return
 
-    stored_token.revoked_at = datetime.now(timezone.utc)
-
-    db.commit()
+    stored_token.revoked_at = datetime.now(UTC)
 
 
 def logout_all(
     db: Session,
     user: User,
 ) -> None:
-    """
-    Revoke every active refresh token belonging to the user.
-
-    Existing access JWTs are not revoked here; they remain valid until
-    their normal expiration.
-    """
-
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     db.query(RefreshToken).filter(
         RefreshToken.user_id == user.id,
@@ -163,4 +164,33 @@ def logout_all(
         synchronize_session=False,
     )
 
-    db.commit()
+
+def _revoke_all_tokens_for_user(
+    db: Session,
+    user_id: UUID,
+) -> None:
+    now = datetime.now(UTC)
+
+    db.query(RefreshToken).filter(
+        RefreshToken.user_id == user_id,
+        RefreshToken.revoked_at.is_(None),
+    ).update(
+        {
+            RefreshToken.revoked_at: now,
+        },
+        synchronize_session=False,
+    )
+
+
+def _find_stored_token_by_raw(
+    db: Session,
+    raw_token: str,
+) -> RefreshToken | None:
+    parsed = parse_refresh_token(raw_token)
+
+    if parsed is None:
+        return None
+
+    selector, _ = parsed
+
+    return db.scalar(select(RefreshToken).where(RefreshToken.selector == selector))

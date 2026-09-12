@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.models.db import Project, Task
 
@@ -8,8 +8,8 @@ def after(start: datetime | None, end: datetime | None) -> None:
         return
 
     if start.tzinfo is None and end.tzinfo is None:
-        start = start.replace(tzinfo=timezone.utc)
-        end = end.replace(tzinfo=timezone.utc)
+        start = start.replace(tzinfo=UTC)
+        end = end.replace(tzinfo=UTC)
     elif (start.tzinfo is None) != (end.tzinfo is None):
         raise ValueError("end and start must have matching timezone info")
 
