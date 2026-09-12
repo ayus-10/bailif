@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const routes = [
     {
@@ -12,6 +13,7 @@ const routes = [
         path: "/onboarding",
         redirect: { name: "project" },
         component: () => import("@/views/Onboarding.vue"),
+        meta: { requiresAuth: true },
         children: [
             {
                 path: "project",
@@ -32,6 +34,7 @@ const routes = [
         path: "/dashboard",
         name: "dashboard",
         component: () => import("@/views/Dashboard.vue"),
+        meta: { requiresAuth: true },
         children: [
             {
                 path: "overview",
@@ -99,6 +102,14 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+router.beforeEach((to) => {
+    const authStore = useAuthStore();
+
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+        return { name: "login", query: { redirect: to.fullPath } };
+    }
 });
 
 export default router;
