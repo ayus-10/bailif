@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.features.auth import services
 from app.features.auth.constants import REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH
@@ -94,7 +95,7 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
         key=REFRESH_COOKIE_NAME,
         value=refresh_token,
         httponly=True,
-        secure=True,
+        secure=settings.environment == "production",
         samesite="lax",
         path=REFRESH_COOKIE_PATH,
     )

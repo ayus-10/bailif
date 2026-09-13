@@ -17,6 +17,7 @@ const routes = [
 
     {
         path: "/onboarding",
+        name: "onboarding",
         redirect: { name: "project" },
         component: () => import("@/views/Onboarding.vue"),
         meta: { requiresAuth: true },
