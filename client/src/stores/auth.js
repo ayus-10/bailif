@@ -39,10 +39,9 @@ export const useAuthStore = defineStore("auth", {
         },
 
         /**
-         * @param {string} username
-         * @param {string} password
+         * @param {{ username: string, password: string }} params
          */
-        async login(username, password) {
+        async login({ username, password }) {
             const form = new URLSearchParams();
             form.set("username", username);
             form.set("password", password);
