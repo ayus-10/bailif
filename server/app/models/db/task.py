@@ -55,7 +55,9 @@ class Task(Base):
         index=True,
     )
 
+    # ------------------------------------------------------------------
     # Core attributes
+    # ------------------------------------------------------------------
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False, default="")
     status: Mapped[TaskStatus] = mapped_column(
@@ -75,7 +77,9 @@ class Task(Base):
     )
     tags: Mapped[str] = mapped_column(String(255), nullable=False, default="")
 
-    # Scheduling (these are intentionally nullable)
+    # ------------------------------------------------------------------
+    # Scheduling
+    # ------------------------------------------------------------------
     start_date: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
@@ -95,15 +99,15 @@ class Task(Base):
         UUID(as_uuid=True), nullable=True
     )
 
+    # ------------------------------------------------------------------
     # Hierarchy / dependencies
+    # ------------------------------------------------------------------
     parent_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("tasks.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
-
-    # Collections default to lazy="raise" to prevent N+1
     subtasks: Mapped[list["Task"]] = relationship(
         back_populates="parent",
         lazy="raise",
@@ -125,7 +129,6 @@ class Task(Base):
         lazy="raise",
     )
 
-    # Project link
     project_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("projects.id"),
@@ -139,7 +142,9 @@ class Task(Base):
         lazy="joined",
     )
 
+    # ------------------------------------------------------------------
     # Agentic layer
+    # ------------------------------------------------------------------
     created_by: Mapped[CreatedBy] = mapped_column(
         Enum(CreatedBy, name="created_by_enum"),
         nullable=False,
@@ -159,7 +164,6 @@ class Task(Base):
     )
     reasoning_trace: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # Embedding
     embedding: Mapped[list[float] | None] = mapped_column(
         Vector(EMBEDDING_DIM), nullable=True
     )
@@ -213,12 +217,13 @@ class Task(Base):
         ),
     )
 
+    # ------------------------------------------------------------------
     # Business logic
+    # ------------------------------------------------------------------
     def is_deleted(self) -> bool:
         return self.deleted_at is not None
 
     def soft_delete(self, *, deleted_by: uuid.UUID | None = None) -> None:
-        # TODO: come back here
         self.deleted_at = datetime.now(UTC)
         self.deleted_by = deleted_by
 
