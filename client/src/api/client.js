@@ -9,7 +9,7 @@ let refreshPromise = null;
 async function performRefresh() {
     const authStore = useAuthStore();
 
-    const res = await apiFetch(`/auth/refresh`, {
+    const res = await fetch(`${BASE_URL}/auth/refresh`, {
         method: "POST",
         credentials: "include",
     });
@@ -56,7 +56,7 @@ export async function apiFetch(path, options = {}) {
         finalHeaders.set("Authorization", `Bearer ${authStore.accessToken}`);
     }
 
-    const res = await apiFetch(`}${path}`, {
+    const res = await fetch(`${BASE_URL}${path}`, {
         ...rest,
         headers: finalHeaders,
         credentials: "include",
