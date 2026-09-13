@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores/auth";
 
-const BASE_URL = "/api";
+const BASE_URL = "/api/v1";
 
 /** @type {Promise<string | null> | null} */
 let refreshPromise = null;
