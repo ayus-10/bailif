@@ -34,7 +34,6 @@ def upgrade() -> None:
     op.create_index('ix_users_deleted_at', 'users', ['deleted_at'], unique=False)
     op.create_index('ix_users_is_active_deleted_at', 'users', ['is_active', 'deleted_at'], unique=False)
     op.create_index(op.f('ix_users_slug'), 'users', ['slug'], unique=True)
-    op.create_foreign_key(None, 'users', 'users', ['deleted_by'], ['id'], ondelete='SET NULL')
     # ### end Alembic commands ###
 
 

@@ -56,9 +56,7 @@ class User(Base):
     )
     # only admin-initiated deletions set this
     deleted_by: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="SET NULL"),
-        nullable=True,
+        UUID(as_uuid=True), nullable=True
     )
 
     created_at: Mapped[datetime] = mapped_column(
