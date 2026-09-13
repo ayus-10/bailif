@@ -58,6 +58,8 @@ def refresh(
     access_token, new_refresh_token = services.redeem_refresh_token(
         db,
         refresh_token,
+        user_agent=request.headers.get("user-agent"),
+        ip_address=request.client.host if request.client else None,
     )
 
     _set_refresh_cookie(response, new_refresh_token)
