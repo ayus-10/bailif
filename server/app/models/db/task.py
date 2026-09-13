@@ -190,11 +190,11 @@ class Task(Base):
         ),
         # Cross-field relationships
         CheckConstraint(
-            "created_by <> 'agent' OR agent_permission_level IS NOT NULL",
+            "created_by <> 'AGENT' OR agent_permission_level IS NOT NULL",
             name="ck_tasks_agent_requires_permission_level",
         ),
         CheckConstraint(
-            "created_by <> 'agent' OR status <> 'done' OR approval_status = 'approved'",
+            "created_by <> 'AGENT' OR status <> 'DONE' OR approval_status = 'APPROVED'",
             name="ck_tasks_agent_completion_requires_approval",
         ),
         # Strategic composite indexes
