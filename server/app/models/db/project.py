@@ -33,7 +33,6 @@ class Project(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-
     slug: Mapped[int] = mapped_column(
         BigInteger,
         Identity(start=1000, increment=1),
