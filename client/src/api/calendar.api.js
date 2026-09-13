@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 
 /** @typedef {import("@/types/calendar").Calendar} Calendar */
 
@@ -8,7 +8,7 @@ import { API_URL } from "@/config";
  * @returns {Promise<Calendar>}
  */
 export async function fetchCalendar(monthKey, signal) {
-    const response = await fetch(`${API_URL}/calendar/${monthKey}`, { signal });
+    const response = await apiFetch(`/calendar/${monthKey}`, { signal });
     if (!response.ok) {
         throw new Error(`Failed to fetch calendar (${response.status})`);
     }

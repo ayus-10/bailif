@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 
 /** @typedef {import("@/types/dashboard").Dashboard} Dashboard */
 
@@ -8,7 +8,7 @@ import { API_URL } from "@/config";
  * @returns {Promise<Dashboard>}
  */
 export async function fetchDashboard(scopeId, signal) {
-    const response = await fetch(`${API_URL}/dashboard/${scopeId}`, { signal });
+    const response = await apiFetch(`/dashboard/${scopeId}`, { signal });
 
     if (!response.ok) {
         throw new Error(`Failed to fetch dashboard (${response.status})`);

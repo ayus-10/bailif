@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 
 /** @typedef {import("@/types/gantt").Gantt} Gantt */
 
@@ -8,7 +8,7 @@ import { API_URL } from "@/config";
  * @returns {Promise<Gantt>}
  */
 export async function fetchGantt(projectId, signal) {
-    const response = await fetch(`${API_URL}/gantt/${projectId}`, { signal });
+    const response = await apiFetch(`/gantt/${projectId}`, { signal });
 
     if (!response.ok) {
         throw new Error(`Failed to fetch gantt (${response.status})`);

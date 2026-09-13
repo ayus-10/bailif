@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 
 /** @typedef {import("@/types/document").Document} Document */
 
@@ -8,7 +8,7 @@ import { API_URL } from "@/config";
  * @returns {Promise<Document[]>}
  */
 export async function fetchDocuments(scopeId, signal) {
-    const response = await fetch(`${API_URL}/documents/${scopeId}`, { signal });
+    const response = await apiFetch(`/documents/${scopeId}`, { signal });
 
     if (!response.ok) {
         throw new Error(`Failed to fetch documents (${response.status})`);

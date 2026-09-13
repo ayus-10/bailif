@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 
 /** @typedef {import("@/types/settings").Settings} Settings */
 
@@ -8,7 +8,7 @@ import { API_URL } from "@/config";
  * @returns {Promise<Settings>}
  */
 export async function fetchSettings(scopeId, signal) {
-    const response = await fetch(`${API_URL}/settings/${scopeId}`, { signal });
+    const response = await apiFetch(`/settings/${scopeId}`, { signal });
 
     if (!response.ok) {
         throw new Error(`Failed to fetch settings (${response.status})`);

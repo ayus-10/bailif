@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 import { parseJson } from "./shared.api";
 
 /** @typedef {import("@/types/ai-actions").ChatRequest} ChatRequest */
@@ -11,7 +11,7 @@ import { parseJson } from "./shared.api";
  * @returns {Promise<ChatResponse>}
  */
 export async function chat(payload, signal) {
-    const response = await fetch(`${API_URL}/ai/chat`, {
+    const response = await apiFetch(`/ai/chat`, {
         method: "POST",
         signal,
         headers: {
@@ -29,7 +29,7 @@ export async function chat(payload, signal) {
  * @returns {Promise<ChatResponse>}
  */
 export async function suggestTasks(payload, signal) {
-    const response = await fetch(`${API_URL}/ai/chat?mode=suggest_tasks`, {
+    const response = await apiFetch(`/ai/chat?mode=suggest_tasks`, {
         method: "POST",
         signal,
         headers: {
@@ -47,7 +47,7 @@ export async function suggestTasks(payload, signal) {
  * @returns {Promise<ChatResponse>}
  */
 export async function searchTasks(payload, signal) {
-    const response = await fetch(`${API_URL}/ai/chat?mode=search_tasks`, {
+    const response = await apiFetch(`/ai/chat?mode=search_tasks`, {
         method: "POST",
         signal,
         headers: {
