@@ -66,6 +66,10 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         render_item=render_item,
         compare_type=compare_type,
+        autogenerate_plugins=[
+            "alembic.autogenerate.*",
+            "alembic.ext.checkconstraint_byname",
+        ],
     )
     with context.begin_transaction():
         context.run_migrations()
@@ -85,6 +89,10 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             render_item=render_item,
             compare_type=compare_type,
+            autogenerate_plugins=[
+                "alembic.autogenerate.*",
+                "alembic.ext.checkconstraint_byname",
+            ],
         )
         with context.begin_transaction():
             context.run_migrations()

@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 import { parseJson } from "./shared.api";
 
 /** @typedef {import("@/types/project").ProjectRead} ProjectRead */
@@ -21,7 +21,7 @@ export async function listProjects(params = {}, signal) {
         }
     }
 
-    const response = await fetch(`${API_URL}/projects?${search}`, {
+    const response = await apiFetch(`/projects?${search}`, {
         signal,
     });
 
@@ -34,7 +34,7 @@ export async function listProjects(params = {}, signal) {
  * @returns {Promise<ProjectRead>}
  */
 export async function getProject(id, signal) {
-    const response = await fetch(`${API_URL}/projects/${id}`, {
+    const response = await apiFetch(`/projects/${id}`, {
         signal,
     });
 
@@ -46,7 +46,7 @@ export async function getProject(id, signal) {
  * @returns {Promise<ProjectRead>}
  */
 export async function createProject(payload) {
-    const response = await fetch(`${API_URL}/projects`, {
+    const response = await apiFetch(`/projects`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -63,7 +63,7 @@ export async function createProject(payload) {
  * @returns {Promise<ProjectRead>}
  */
 export async function updateProject(id, payload) {
-    const response = await fetch(`${API_URL}/projects/${id}`, {
+    const response = await apiFetch(`/projects/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export async function updateProject(id, payload) {
  * @returns {Promise<void>}
  */
 export async function deleteProject(id) {
-    const response = await fetch(`${API_URL}/projects/${id}`, {
+    const response = await apiFetch(`/projects/${id}`, {
         method: "DELETE",
     });
 

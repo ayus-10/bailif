@@ -87,6 +87,9 @@ def generate_refresh_token(
 def redeem_refresh_token(
     db: Session,
     refresh_token: str,
+    *,
+    user_agent: str | None,
+    ip_address: str | None,
 ) -> tuple[str, str]:
     stored_token = _find_stored_token_by_raw(db, refresh_token)
 
@@ -115,8 +118,8 @@ def redeem_refresh_token(
         user_id=stored_token.user_id,
         selector=issued.selector,
         verifier_hash=issued.verifier_hash,
-        user_agent=stored_token.user_agent,  # TODO: should this be updated?
-        ip_address=stored_token.ip_address,  # TODO: should this be updated?
+        user_agent=stored_token.user_agent if user_agent is None else user_agent,
+        ip_address=stored_token.ip_address if ip_address is None else ip_address,
         expires_at=issued.expires_at,
     )
 

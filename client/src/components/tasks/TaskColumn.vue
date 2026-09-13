@@ -28,6 +28,7 @@ const props = defineProps({
     },
     projectId: {
         type: String,
+        required: true,
     },
     taskboardId: {
         type: /** @type {import("vue").PropType<string | null>} */ (String),

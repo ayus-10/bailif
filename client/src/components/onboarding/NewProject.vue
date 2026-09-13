@@ -7,9 +7,10 @@ import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useProjectsStore } from "@/stores/projects.store";
 
 /** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
+/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
 /** @typedef {ProjectCreate & { color?: string }} ProjectCreateForm */
 
-/** @type {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} */
+/** @type {VFormRef} */
 const formRef = ref(null);
 
 const projectsStore = useProjectsStore();

@@ -5,9 +5,10 @@ import ColorInput from "@/components/common/ColorInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboard.store";
 
+/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
 /** @typedef {import("@/types/taskboard").TaskboardForm} TaskboardForm */
 
-/** @type {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} */
+/** @type {VFormRef} */
 const formRef = ref(null);
 
 const taskboardsStore = useTaskboardsStore();

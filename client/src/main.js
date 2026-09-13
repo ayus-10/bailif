@@ -7,12 +7,29 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import "@mdi/font/css/materialdesignicons.css";
+import { useAuthStore } from "./stores/auth";
 
+const app = createApp(App);
+const pinia = createPinia();
 const vuetify = createVuetify({
     components,
     directives,
 });
 
-const pinia = createPinia();
+app.use(pinia);
+app.use(vuetify);
 
-createApp(App).use(pinia).use(router).use(vuetify).mount("#app");
+const authStore = useAuthStore();
+
+async function bootstrap() {
+    try {
+        await authStore.initialize();
+    } catch (err) {
+        console.error("Auth initialization failed:", err);
+    } finally {
+        app.use(router);
+        app.mount("#app");
+    }
+}
+
+bootstrap();

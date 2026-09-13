@@ -1,4 +1,4 @@
-import { API_URL } from "@/config";
+import { apiFetch } from "./client";
 import { parseJson } from "./shared.api";
 
 /** @typedef {import("@/types/taskboard").TaskboardCreate} TaskboardCreate */
@@ -20,7 +20,7 @@ export async function listTaskboards(projectId, signal) {
 
     search.set("project_id", projectId);
 
-    const response = await fetch(`${API_URL}/taskboards?${search}`, {
+    const response = await apiFetch(`/taskboards?${search}`, {
         signal,
     });
 
@@ -33,7 +33,7 @@ export async function listTaskboards(projectId, signal) {
  * @returns {Promise<TaskboardRead>}
  */
 export async function getTaskboard(id, signal) {
-    const response = await fetch(`${API_URL}/taskboards/${id}`, {
+    const response = await apiFetch(`/taskboards/${id}`, {
         signal,
     });
 
@@ -45,7 +45,7 @@ export async function getTaskboard(id, signal) {
  * @returns {Promise<TaskboardRead>}
  */
 export async function createTaskboard(payload) {
-    const response = await fetch(`${API_URL}/taskboards`, {
+    const response = await apiFetch(`/taskboards`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export async function createTaskboard(payload) {
  * @returns {Promise<TaskboardRead>}
  */
 export async function updateTaskboard(id, payload) {
-    const response = await fetch(`${API_URL}/taskboards/${id}`, {
+    const response = await apiFetch(`/taskboards/${id}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -78,7 +78,7 @@ export async function updateTaskboard(id, payload) {
  * @returns {Promise<void>}
  */
 export async function deleteTaskboard(id) {
-    const response = await fetch(`${API_URL}/taskboards/${id}`, {
+    const response = await apiFetch(`/taskboards/${id}`, {
         method: "DELETE",
     });
 
@@ -93,7 +93,7 @@ export async function deleteTaskboard(id) {
  * @returns {Promise<TaskboardTaskRead>}
  */
 export async function addTaskToBoard(boardId, payload) {
-    const response = await fetch(`${API_URL}/taskboards/${boardId}/tasks`, {
+    const response = await apiFetch(`/taskboards/${boardId}/tasks`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -110,12 +110,9 @@ export async function addTaskToBoard(boardId, payload) {
  * @returns {Promise<void>}
  */
 export async function removeTaskFromBoard(boardId, taskId) {
-    const response = await fetch(
-        `${API_URL}/taskboards/${boardId}/tasks/${taskId}`,
-        {
-            method: "DELETE",
-        }
-    );
+    const response = await apiFetch(`/taskboards/${boardId}/tasks/${taskId}`, {
+        method: "DELETE",
+    });
 
     if (!response.ok) {
         throw new Error(`Request failed (${response.status})`);
@@ -128,16 +125,13 @@ export async function removeTaskFromBoard(boardId, taskId) {
  * @returns {Promise<void>}
  */
 export async function repositionTask(boardId, payload) {
-    const response = await fetch(
-        `${API_URL}/taskboards/${boardId}/tasks/reposition`,
-        {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        }
-    );
+    const response = await apiFetch(`/taskboards/${boardId}/tasks/reposition`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
 
     if (!response.ok) {
         throw new Error(`Request failed (${response.status})`);

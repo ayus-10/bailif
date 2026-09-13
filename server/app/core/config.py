@@ -2,6 +2,8 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    environment: str = "development"
+
     database_url: str = "postgresql+psycopg2://aayush:1234@localhost:5432/local"
 
     jwt_secret_key: str = ""
