@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ValidationError
@@ -9,7 +9,7 @@ from app.features.projects.schemas import (
     ProjectRead,
     ProjectUpdate,
 )
-from app.models.db import User
+from app.models.db import Task, Taskboard, User
 from app.models.db.project import Project
 from app.utils.date_validation import validate_datetime_range
 
@@ -62,7 +62,10 @@ def list_projects(
     user: User,
     filters: ProjectFilterParams,
 ) -> ProjectListResponse:
-    stmt = select(Project).where(Project.user_id == user.id)
+    stmt = select(Project).where(
+        Project.user_id == user.id,
+        Project.deleted_at.is_(None),
+    )
 
     if filters.status is not None:
         stmt = stmt.where(Project.status == filters.status)
@@ -79,7 +82,7 @@ def list_projects(
 
     stmt = stmt.order_by(
         Project.created_at.desc(),
-        Project.id.desc(),
+        Project.public_id.desc(),
     )
     stmt = stmt.limit(5)
 
@@ -92,6 +95,31 @@ def list_projects(
 
 def delete_project(db: Session, project: Project, user: User) -> None:
     project.soft_delete(deleted_by=user.id)
+
+    db.flush()
+
+    now = project.deleted_at
+
+    db.execute(
+        update(Task)
+        .where(
+            Task.project_id == project.id,
+            Task.deleted_at.is_(None),
+        )
+        .values(deleted_at=now, deleted_by=user.id),
+        execution_options={"synchronize_session": "fetch"},
+    )
+
+    db.execute(
+        update(Taskboard)
+        .where(
+            Taskboard.project_id == project.id,
+            Taskboard.deleted_at.is_(None),
+        )
+        .values(deleted_at=now, deleted_by=user.id),
+        execution_options={"synchronize_session": "fetch"},
+    )
+
     db.flush()
 
 

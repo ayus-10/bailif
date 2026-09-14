@@ -50,6 +50,7 @@ def create_task(
             Task.public_id == payload.parent_public_id,
             Task.deleted_at.is_(None),
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
         )
         .scalar_subquery()
         if payload.parent_public_id is not None
@@ -115,6 +116,7 @@ def update_task(
                     Task.public_id == payload.parent_public_id,
                     Task.deleted_at.is_(None),
                     Project.user_id == task.project.user_id,
+                    Project.deleted_at.is_(None),
                 )
                 .scalar_subquery()
             )
@@ -148,6 +150,7 @@ def list_tasks(
         .join(Project, Task.project_id == Project.id)
         .where(
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
             Task.project_id == user.active_project.id,
             Task.deleted_at.is_(None),
         )
@@ -192,6 +195,7 @@ def list_tasks(
                 Task.public_id == filters.parent_public_id,
                 Task.deleted_at.is_(None),
                 Project.user_id == user.id,
+                Project.deleted_at.is_(None),
             )
             .scalar_subquery()
         )

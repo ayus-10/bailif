@@ -21,6 +21,7 @@ def get_task_by_public_id(
             Task.public_id == public_id,
             Task.deleted_at.is_(None),
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
         )
     ).scalar_one_or_none()
 
