@@ -17,7 +17,7 @@ from app.features.tasks.schemas import (
 )
 from app.models.db import Project, TaskboardTask, User
 from app.models.db.task import Task
-from app.utils.date_validation import validate_task_dates
+from app.utils.date_validation import validate_datetime_range
 from app.utils.pagination import decode_cursor, encode_cursor
 
 
@@ -79,7 +79,7 @@ def create_task(
     task = Task(**payload.model_dump())
 
     try:
-        validate_task_dates(task)
+        _validate_task_dates(task)
     except ValueError:
         raise ValidationError()
 
@@ -98,7 +98,7 @@ def update_task(
     updates = payload.model_dump(exclude_unset=True)
 
     try:
-        validate_task_dates(task, updates)
+        _validate_task_dates(task, updates)
     except ValueError:
         raise ValidationError()
 
@@ -175,3 +175,9 @@ def list_tasks(db: Session, user: User, filters: TaskFilterParams) -> TaskListRe
 
 def delete_task(db: Session, task: Task) -> None:
     db.delete(task)
+
+
+def _validate_task_dates(task: "Task", updates: dict = {}) -> None:
+    start = updates.get("start_date", task.start_date)
+    due = updates.get("due_date", task.due_date)
+    validate_datetime_range(start, due)

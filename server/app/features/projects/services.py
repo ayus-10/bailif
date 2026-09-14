@@ -11,7 +11,7 @@ from app.features.projects.schemas import (
 )
 from app.models.db import User
 from app.models.db.project import Project
-from app.utils.date_validation import validate_project_dates
+from app.utils.date_validation import validate_datetime_range
 
 
 def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
@@ -21,9 +21,11 @@ def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
     )
 
     try:
-        validate_project_dates(project)
-    except ValueError:
-        raise ValidationError()
+        _validate_project_dates(project)
+    except ValueError as exc:
+        raise ValidationError(
+            "Invalid project dates: target_end_date and actual_end_date must be on or after start_date."
+        ) from exc
 
     db.add(project)
     db.flush()
@@ -40,9 +42,11 @@ def update_project(
     updates = payload.model_dump(exclude_unset=True)
 
     try:
-        validate_project_dates(project, updates)
-    except ValueError:
-        raise ValidationError()
+        _validate_project_dates(project)
+    except ValueError as exc:
+        raise ValidationError(
+            "Invalid project dates: target_end_date and actual_end_date must be on or after start_date."
+        ) from exc
 
     for field, value in updates.items():
         setattr(project, field, value)
@@ -59,6 +63,7 @@ def list_projects(
     filters: ProjectFilterParams,
 ) -> ProjectListResponse:
     stmt = select(Project).where(Project.user_id == user.id)
+
     if filters.status is not None:
         stmt = stmt.where(Project.status == filters.status)
     if filters.agent_enabled is not None:
@@ -71,20 +76,28 @@ def list_projects(
         stmt = stmt.where(Project.target_end_date <= filters.target_end_date_before)
     if filters.target_end_date_after is not None:
         stmt = stmt.where(Project.target_end_date >= filters.target_end_date_after)
-    if filters.archived:
-        stmt = stmt.where(Project.archived_at.is_not(None))
-    else:
-        stmt = stmt.where(Project.archived_at.is_(None))
+
     stmt = stmt.order_by(
         Project.created_at.desc(),
         Project.id.desc(),
     )
     stmt = stmt.limit(5)
+
     rows = list(db.execute(stmt).scalars().all())
+
     return ProjectListResponse(
         items=[ProjectRead.model_validate(row) for row in rows],
     )
 
 
-def delete_project(db: Session, project: Project) -> None:
-    db.delete(project)
+def delete_project(db: Session, project: Project, user: User) -> None:
+    project.soft_delete(deleted_by=user.id)
+    db.flush()
+
+
+def _validate_project_dates(project: "Project", updates: dict = {}) -> None:
+    start = updates.get("start_date", project.start_date)
+    target_end = updates.get("target_end_date", project.target_end_date)
+    actual_end = updates.get("actual_end_date", project.actual_end_date)
+    validate_datetime_range(start, target_end)
+    validate_datetime_range(start, actual_end)
