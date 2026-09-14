@@ -4,6 +4,9 @@ from app.core.config import settings
 
 
 async def get_embedding(text: str) -> list[float]:
+    if settings.environment == "development":
+        return [0.69 for _ in range(2560)]
+
     async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.post(
             f"{settings.ollama_base_url}/api/embed",

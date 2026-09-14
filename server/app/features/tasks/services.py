@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
+from app.agent.llm.embeddings import get_embedding
 from app.core.database import SessionLocal
 from app.core.exceptions import ValidationError
 from app.features.projects.exceptions import ProjectNotFoundError
@@ -19,46 +20,6 @@ from app.models.db import Project, TaskboardTask, User
 from app.models.db.task import Task
 from app.utils.date_validation import validate_datetime_range
 from app.utils.pagination import decode_cursor, encode_cursor
-
-
-async def generate_task_embedding(task: Task) -> list[float]:
-    embedding_text = f"""
-    Title: {task.title}
-
-    Description:
-    {task.description}
-
-    Tags:
-    {" ".join(task.tags)}
-
-    Status:
-    {task.status}
-
-    Priority:
-    {task.priority}
-    """.strip()
-
-    # return await get_embedding(embedding_text)
-    return [0.69 for _ in range(2560)]
-
-
-def generate_and_save_task_embedding(task_id: UUID):
-    db = SessionLocal()
-    try:
-        task = db.get(Task, task_id)
-
-        if task is None:
-            return
-
-        embedding = asyncio.run(generate_task_embedding(task))
-
-        task.embedding = embedding
-        db.commit()
-    except Exception:
-        db.rollback()
-        raise
-    finally:
-        db.close()
 
 
 def create_task(
@@ -177,7 +138,46 @@ def delete_task(db: Session, task: Task) -> None:
     db.delete(task)
 
 
+def generate_and_save_task_embedding(task_id: UUID):
+    db = SessionLocal()
+    try:
+        task = db.get(Task, task_id)
+
+        if task is None:
+            return
+
+        embedding = asyncio.run(_generate_task_embedding(task))
+
+        task.embedding = embedding
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
+
+
 def _validate_task_dates(task: "Task", updates: dict = {}) -> None:
     start = updates.get("start_date", task.start_date)
     due = updates.get("due_date", task.due_date)
     validate_datetime_range(start, due)
+
+
+async def _generate_task_embedding(task: Task) -> list[float]:
+    embedding_text = f"""
+    Title: {task.title}
+
+    Description:
+    {task.description}
+
+    Tags:
+    {" ".join(task.tags)}
+
+    Status:
+    {task.status}
+
+    Priority:
+    {task.priority}
+    """.strip()
+
+    return await get_embedding(embedding_text)
