@@ -13,7 +13,6 @@ from app.features.auth.exceptions import (
     AccessTokenExpiredError,
     AccessTokenInvalidError,
 )
-from app.features.users.schemas import UserRead
 from app.models.db.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -38,9 +37,15 @@ def get_current_user(
     except (KeyError, ValueError) as exc:
         raise AccessTokenInvalidError("Invalid access token payload") from exc
 
-    user = db.scalar(select(User).where(User.id == user_id))
+    user = db.scalar(
+        select(User).where(
+            User.id == user_id,
+            User.deleted_at.is_(None),
+            User.is_active.is_(True),
+        )
+    )
 
     if user is None:
-        raise AccessTokenInvalidError()
+        raise AccessTokenInvalidError("Invalid access token")
 
     return user
