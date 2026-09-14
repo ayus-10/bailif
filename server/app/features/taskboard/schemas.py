@@ -1,7 +1,4 @@
-import re
 from datetime import datetime
-from typing import List
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -10,62 +7,56 @@ from app.features.tasks.schemas import TaskRead
 
 class TaskboardCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
-    description: str | None = Field(default="", max_length=5000)
+    description: str = Field(default="", max_length=50000)
     color: str | None = Field(None, pattern=r"#[0-9a-fA-F]{6}")
-    project_id: UUID
 
 
 class TaskboardUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     name: str | None = Field(None, min_length=1, max_length=255)
-    description: str | None = Field(None, max_length=5000)
+    description: str | None = Field(None, max_length=50000)
     color: str | None = Field(None, pattern=r"#[0-9a-fA-F]{6}")
 
 
 class TaskboardTaskRead(BaseModel):
-    id: UUID
-    task_id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
     position: int
     task: TaskRead | None = None
 
-    class Config:
-        from_attributes = True
-
 
 class TaskboardRead(BaseModel):
-    id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+    public_id: int
     name: str
     description: str
     color: str | None
-    project_id: UUID
+    project_public_id: int
     created_at: datetime
     updated_at: datetime
-    tasks: List[TaskboardTaskRead] = []
-
-    class Config:
-        from_attributes = True
+    tasks: list[TaskboardTaskRead] = Field(default_factory=list)
 
 
 class TaskboardListRead(BaseModel):
-    id: UUID
+    model_config = ConfigDict(from_attributes=True)
+
+    public_id: int
     name: str
     description: str
     color: str | None
-    project_id: UUID
+    project_public_id: int
     task_count: int
-
-    class Config:
-        from_attributes = True
 
 
 class TaskAssignment(BaseModel):
-    task_id: UUID
+    task_public_id: int
     position: int | None = Field(default=None, ge=0)
 
 
 class TaskReposition(BaseModel):
-    task_id: UUID
+    task_public_id: int
     position: int = Field(ge=0)
 
 
