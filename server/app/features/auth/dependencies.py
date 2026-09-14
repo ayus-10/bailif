@@ -44,15 +44,3 @@ def get_current_user(
         raise AccessTokenInvalidError()
 
     return user
-
-
-def get_current_user_read(
-    user: User = Depends(get_current_user),
-) -> UserRead:
-    return UserRead(
-        public_id=user.public_id,
-        username=user.username,
-        active_project_public_id=(
-            user.active_project.public_id if user.active_project is not None else None
-        ),
-    )
