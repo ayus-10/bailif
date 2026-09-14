@@ -32,7 +32,7 @@ def create_task(
 
     project = db.execute(
         select(Project).where(
-            Project.public_id == user.active_project.public_id,
+            Project.id == user.active_project.id,
             Project.user_id == user.id,
             Project.deleted_at.is_(None),
         )

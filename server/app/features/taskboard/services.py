@@ -27,17 +27,28 @@ def create_taskboard(
     user: User,
     payload: TaskboardCreate,
 ) -> Taskboard:
+    if user.active_project is None:
+        raise ProjectNotFoundError("User must have an active project")
+
     project = db.execute(
         select(Project).where(
-            Project.id == payload.project_id,
+            Project.id == user.active_project.id,
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
         )
     ).scalar_one_or_none()
 
     if project is None:
-        raise ProjectNotFoundError(str(payload.project_id))
+        raise ProjectNotFoundError(
+            f"Active project {user.active_project.public_id} not found"
+        )
 
-    board = Taskboard(**payload.model_dump())
+    board = Taskboard(
+        name=payload.name,
+        description=payload.description,
+        color=payload.color,
+        project_id=project.id,
+    )
 
     db.add(board)
     db.flush()
@@ -51,6 +62,7 @@ def update_taskboard(
     board: Taskboard,
     payload: TaskboardUpdate,
 ) -> Taskboard:
+    # TODO: we are here, replace model_dump from here and from project services too
     updates = payload.model_dump(exclude_unset=True)
 
     for field, value in updates.items():

@@ -38,7 +38,7 @@ def create_dependency(
     payload: TaskDependencyCreate,
 ) -> TaskDependency:
     if task.id == payload.depends_on_id:
-        raise SelfDependencyError(f"Task {task.id} cannot depend on itself")
+        raise SelfDependencyError(f"Task {task.id} cannot depend on itself") # TODO: do not leak PK
 
     dependency_task = db.execute(
         select(Task)
@@ -54,7 +54,7 @@ def create_dependency(
 
     if task.parent_id != dependency_task.parent_id:
         raise TaskLevelMismatchError(
-            f"{task.id} and {dependency_task.id} must be on same level"
+            f"{task.id} and {dependency_task.id} must be on same level" # TODO: do not leak PK
         )
 
     existing = db.execute(
