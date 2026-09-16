@@ -6,17 +6,27 @@ from app.features.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
     ProjectListResponse,
-    ProjectRead,
     ProjectUpdate,
 )
 from app.models.db import Task, Taskboard, User
 from app.models.db.project import Project
 from app.utils.date_validation import validate_datetime_range
+from app.utils.model_to_read import project_to_read
 
 
 def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
     project = Project(
-        **payload.model_dump(),
+        name=payload.name,
+        description=payload.description,
+        icon=payload.icon,
+        color=payload.color,
+        status=payload.status,
+        start_date=payload.start_date,
+        target_end_date=payload.target_end_date,
+        actual_end_date=payload.actual_end_date,
+        timezone=payload.timezone,
+        agent_enabled=payload.agent_enabled,
+        default_agent_permission_level=payload.default_agent_permission_level,
         user_id=user.id,
     )
 
@@ -39,7 +49,34 @@ def update_project(
     project: Project,
     payload: ProjectUpdate,
 ) -> Project:
-    updates = payload.model_dump(exclude_unset=True)
+    if "name" in payload.model_fields_set and payload.name is not None:
+        project.name = payload.name
+    if "description" in payload.model_fields_set:
+        project.description = payload.description or ""
+    if "icon" in payload.model_fields_set and payload.icon is not None:
+        project.icon = payload.icon
+    if "color" in payload.model_fields_set:
+        project.color = payload.color
+    if "status" in payload.model_fields_set and payload.status is not None:
+        project.status = payload.status
+    if "start_date" in payload.model_fields_set:
+        project.start_date = payload.start_date
+    if "target_end_date" in payload.model_fields_set:
+        project.target_end_date = payload.target_end_date
+    if "actual_end_date" in payload.model_fields_set:
+        project.actual_end_date = payload.actual_end_date
+    if "timezone" in payload.model_fields_set:
+        project.timezone = payload.timezone
+    if (
+        "agent_enabled" in payload.model_fields_set
+        and payload.agent_enabled is not None
+    ):
+        project.agent_enabled = payload.agent_enabled
+    if (
+        "default_agent_permission_level" in payload.model_fields_set
+        and payload.default_agent_permission_level is not None
+    ):
+        project.default_agent_permission_level = payload.default_agent_permission_level
 
     try:
         _validate_project_dates(project)
@@ -47,9 +84,6 @@ def update_project(
         raise ValidationError(
             "Invalid project dates: target_end_date and actual_end_date must be on or after start_date."
         ) from exc
-
-    for field, value in updates.items():
-        setattr(project, field, value)
 
     db.flush()
     db.refresh(project)
@@ -89,7 +123,7 @@ def list_projects(
     rows = list(db.execute(stmt).scalars().all())
 
     return ProjectListResponse(
-        items=[ProjectRead.model_validate(row) for row in rows],
+        items=[project_to_read(row) for row in rows],
     )
 
 

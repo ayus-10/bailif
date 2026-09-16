@@ -1,6 +1,7 @@
+from app.features.projects.schemas import ProjectRead
 from app.features.tasks.schemas import TaskRead
 from app.features.users.schemas import UserRead
-from app.models.db import Task, User
+from app.models.db import Project, Task, User
 
 
 def user_to_read(user: User) -> UserRead:
@@ -28,4 +29,23 @@ def task_to_read(task: Task) -> TaskRead:
         due_date=task.due_date,
         created_at=task.created_at,
         updated_at=task.updated_at,
+    )
+
+
+def project_to_read(project: Project) -> ProjectRead:
+    return ProjectRead(
+        public_id=project.public_id,
+        name=project.name,
+        description=project.description,
+        icon=project.icon,
+        color=project.color,
+        status=project.status,
+        start_date=project.start_date,
+        target_end_date=project.target_end_date,
+        actual_end_date=project.actual_end_date,
+        timezone=project.timezone,
+        agent_enabled=project.agent_enabled,
+        default_agent_permission_level=project.default_agent_permission_level,
+        created_at=project.created_at,
+        updated_at=project.updated_at,
     )

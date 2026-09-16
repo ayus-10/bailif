@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 from typing import Annotated
-from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -110,7 +109,7 @@ class ProjectUpdate(ProjectFieldValidators):
 class ProjectRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    public_id: UUID
+    public_id: int
     name: str
     description: str
     icon: str

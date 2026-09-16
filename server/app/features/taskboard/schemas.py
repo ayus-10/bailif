@@ -12,8 +12,6 @@ class TaskboardCreate(BaseModel):
 
 
 class TaskboardUpdate(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=50000)
     color: str | None = Field(None, pattern=r"#[0-9a-fA-F]{6}")

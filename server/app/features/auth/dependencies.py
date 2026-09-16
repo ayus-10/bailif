@@ -45,6 +45,8 @@ def get_current_user(
         )
     )
 
+    # TODO: user.active_project is lazy joined but nobody checked if the project is softdeleted
+
     if user is None:
         raise AccessTokenInvalidError("Invalid access token")
 

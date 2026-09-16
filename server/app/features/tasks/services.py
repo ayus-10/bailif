@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from app.agent.llm.embeddings import get_embedding
 from app.core.database import SessionLocal
-from app.core.exceptions import ValidationError
 from app.features.projects.exceptions import ProjectNotFoundError
+from app.features.tasks.exceptions import TaskValidationError
 from app.features.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
@@ -73,7 +73,7 @@ def create_task(
     try:
         _validate_task_dates(task)
     except ValueError as exc:
-        raise ValidationError(str(exc)) from exc
+        raise TaskValidationError(str(exc)) from exc
 
     db.add(task)
     db.flush()
@@ -124,7 +124,7 @@ def update_task(
     try:
         _validate_task_dates(task, updates)
     except ValueError as exc:
-        raise ValidationError(str(exc)) from exc
+        raise TaskValidationError(str(exc)) from exc
 
     for field, value in updates.items():
         setattr(task, field, value)
