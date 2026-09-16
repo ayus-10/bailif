@@ -10,7 +10,7 @@ from app.models.db.task import Task
 
 
 def get_task_by_public_id(
-    public_id: int,
+    task_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Task:
@@ -18,7 +18,7 @@ def get_task_by_public_id(
         select(Task)
         .join(Project, Task.project_id == Project.id)
         .where(
-            Task.public_id == public_id,
+            Task.public_id == task_public_id,
             Task.deleted_at.is_(None),
             Project.user_id == user.id,
             Project.deleted_at.is_(None),
@@ -26,6 +26,6 @@ def get_task_by_public_id(
     ).scalar_one_or_none()
 
     if task is None:
-        raise TaskNotFoundError(f"Task with public_id {public_id} not found")
+        raise TaskNotFoundError(f"Task with public_id {task_public_id} not found")
 
     return task

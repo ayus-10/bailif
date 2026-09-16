@@ -4,12 +4,16 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
-from app.features.taskboard.exceptions import TaskboardNotFoundError
-from app.models.db import Project, Taskboard, User
+from app.features.taskboard.exceptions import (
+    TaskboardNotFoundError,
+    TaskNotInBoardError,
+)
+from app.features.tasks.dependencies import get_task_by_public_id
+from app.models.db import Project, Task, Taskboard, User
 
 
 def get_taskboard_by_public_id(
-    public_id: int,
+    taskboard_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Taskboard:
@@ -17,7 +21,7 @@ def get_taskboard_by_public_id(
         select(Taskboard)
         .join(Project, Taskboard.project_id == Project.id)
         .where(
-            Taskboard.public_id == public_id,
+            Taskboard.public_id == taskboard_public_id,
             Taskboard.deleted_at.is_(None),
             Project.user_id == user.id,
             Project.deleted_at.is_(None),
@@ -25,6 +29,19 @@ def get_taskboard_by_public_id(
     ).scalar_one_or_none()
 
     if board is None:
-        raise TaskboardNotFoundError(f"Taskboard with public_id {public_id} not found")
+        raise TaskboardNotFoundError(
+            f"Taskboard with public_id {taskboard_public_id} not found"
+        )
 
     return board
+
+
+def get_task_on_current_board(
+    taskboard: Taskboard = Depends(get_taskboard_by_public_id),
+    task: Task = Depends(get_task_by_public_id),
+) -> Task:
+    if task.project_id != taskboard.project_id:
+        raise TaskNotInBoardError(
+            f"Task {task.public_id} is not in board {taskboard.public_id}"
+        )
+    return task

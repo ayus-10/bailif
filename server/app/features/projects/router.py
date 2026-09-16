@@ -44,7 +44,7 @@ def list_projects(
 
 
 @router.get(
-    "/{public_id}",
+    "/{project_public_id}",
     response_model=ProjectRead,
 )
 def get_project(
@@ -54,7 +54,7 @@ def get_project(
 
 
 @router.patch(
-    "/{public_id}",
+    "/{project_public_id}",
     response_model=ProjectRead,
 )
 def update_project(
@@ -66,7 +66,7 @@ def update_project(
 
 
 @router.delete(
-    "/{public_id}",
+    "/{project_public_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_project(

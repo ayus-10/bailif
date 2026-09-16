@@ -225,7 +225,9 @@ def reposition_task_in_board(
     association = db.execute(stmt).scalar_one_or_none()
 
     if association is None:
-        raise TaskNotInBoardError(f"Task {task.public_id} is not in board {board.id}")
+        raise TaskNotInBoardError(
+            f"Task {task.public_id} is not in board {board.public_id}"
+        )
 
     old_position = association.position
 

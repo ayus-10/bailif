@@ -65,11 +65,11 @@ def create_dependency(
         )
     ).scalar_one_or_none()
     if existing is not None:
-        raise DuplicateDependencyError(f"{task.id}->{payload.depends_on_id}")
+        raise DuplicateDependencyError(f"{task.id}->{payload.depends_on_id}") # TODO: do not leak PK
 
     edge = _normalized_edge(task.id, payload.depends_on_id, payload.dependency_type)
     if edge is not None and _would_create_cycle(db, edge[0], edge[1]):
-        raise CycleDetectedError(f"{task.id}->{payload.depends_on_id}")
+        raise CycleDetectedError(f"{task.id}->{payload.depends_on_id}") # TODO: do not leak PK
 
     dependency = TaskDependency(
         task_id=task.id,

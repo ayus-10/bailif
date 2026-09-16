@@ -5,7 +5,10 @@ from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
 from app.features.projects.dependencies import get_project_by_public_id
 from app.features.taskboard import services
-from app.features.taskboard.dependencies import get_taskboard_by_public_id
+from app.features.taskboard.dependencies import (
+    get_task_on_current_board,
+    get_taskboard_by_public_id,
+)
 from app.features.taskboard.schemas import (
     TaskAssignment,
     TaskboardCreate,
@@ -15,7 +18,6 @@ from app.features.taskboard.schemas import (
     TaskboardUpdate,
     TaskReposition,
 )
-from app.features.tasks.dependencies import get_task_by_public_id
 from app.models.db import Project, Task, User
 from app.models.db.taskboard import Taskboard, TaskboardTask
 
@@ -48,7 +50,7 @@ def list_taskboards(
 
 
 @router.get(
-    "/{public_id}",
+    "/{taskboard_public_id}",
     response_model=TaskboardRead,
 )
 def get_taskboard(
@@ -58,7 +60,7 @@ def get_taskboard(
 
 
 @router.patch(
-    "/{public_id}",
+    "/{taskboard_public_id}",
     response_model=TaskboardRead,
 )
 def update_taskboard(
@@ -71,7 +73,7 @@ def update_taskboard(
 
 
 @router.delete(
-    "/{public_id}",
+    "/{taskboard_public_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_taskboard(
@@ -83,16 +85,16 @@ def delete_taskboard(
 
 
 @router.post(
-    "/{public_id}/tasks",
+    "/{taskboard_public_id}/tasks/{task_public_id}",
     response_model=TaskboardTaskRead,
     status_code=status.HTTP_201_CREATED,
 )
 def add_task_to_board(
     payload: TaskAssignment,
-    board: Taskboard = Depends(get_taskboard_by_public_id), # not sure if this is gonna resolve from the url above
-    task: Task = Depends(get_task_by_public_id), # not sure if this is gonna resolve from the url above
+    board: Taskboard = Depends(get_taskboard_by_public_id),
+    task: Task = Depends(get_task_on_current_board),
     db: Session = Depends(get_db),
-) -> TaskboardTask:  # do not return db model
+) -> TaskboardTask:
     return services.add_task_to_board(
         db=db,
         board=board,
@@ -102,12 +104,12 @@ def add_task_to_board(
 
 
 @router.delete(
-    "/{public_id}/tasks/{task_id}",
+    "/{taskboard_public_id}/tasks/{task_public_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def remove_task_from_board(
-    task: Task = Depends(get_task_by_public_id), # not sure if this is gonna resolve from the url above
-    board: Taskboard = Depends(get_taskboard_by_public_id), # not sure if this is gonna resolve from the url above
+    board: Taskboard = Depends(get_taskboard_by_public_id),
+    task: Task = Depends(get_task_on_current_board),
     db: Session = Depends(get_db),
 ) -> None:
     services.remove_task_from_board(
@@ -118,13 +120,13 @@ def remove_task_from_board(
 
 
 @router.patch(
-    "/{public_id}/tasks/reposition",
+    "/{taskboard_public_id}/tasks/{task_public_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def reposition_task(
     payload: TaskReposition,
-    task: Task = Depends(get_task_by_public_id), # not sure if this is gonna resolve from the url above
-    board: Taskboard = Depends(get_taskboard_by_public_id), # not sure if this is gonna resolve from the url above
+    board: Taskboard = Depends(get_taskboard_by_public_id),
+    task: Task = Depends(get_task_on_current_board),
     db: Session = Depends(get_db),
 ) -> None:
     services.reposition_task_in_board(

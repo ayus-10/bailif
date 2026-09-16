@@ -49,14 +49,14 @@ def list_tasks(
     return services.list_tasks(db, user, filters)
 
 
-@router.get("/{public_id}", response_model=TaskRead)
+@router.get("/{task_public_id}", response_model=TaskRead)
 def get_task(
     task: Task = Depends(get_task_by_public_id),
 ) -> TaskRead:
     return task_to_read(task)
 
 
-@router.patch("/{public_id}", response_model=TaskRead)
+@router.patch("/{task_public_id}", response_model=TaskRead)
 def update_task(
     payload: TaskUpdate,
     background_tasks: BackgroundTasks,
@@ -79,7 +79,7 @@ def update_task(
 
 
 @router.delete(
-    "/{public_id}",
+    "/{task_public_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_task(
