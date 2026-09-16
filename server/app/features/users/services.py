@@ -9,6 +9,7 @@ from app.features.users.exceptions import (
 )
 from app.features.users.schemas import UserCreate, UserRead
 from app.models.db.user import User
+from app.utils.model_to_read import user_to_read
 
 password_hash = PasswordHash.recommended()
 
@@ -38,4 +39,4 @@ def create_user(
     db.flush()
     db.refresh(user)
 
-    return UserRead.model_validate(user)
+    return user_to_read(user)

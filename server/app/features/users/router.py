@@ -6,6 +6,7 @@ from app.features.auth.dependencies import get_current_user
 from app.features.users import services
 from app.features.users.schemas import UserCreate, UserRead
 from app.models.db import User
+from app.utils.model_to_read import user_to_read
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -25,5 +26,5 @@ def create_user(
 @router.get("/me", response_model=UserRead)
 def get_me(
     current_user: User = Depends(get_current_user),
-) -> User:
-    return current_user
+) -> UserRead:
+    return user_to_read(current_user)

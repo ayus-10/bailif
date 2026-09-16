@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
@@ -27,17 +25,28 @@ def create_taskboard(
     user: User,
     payload: TaskboardCreate,
 ) -> Taskboard:
+    if user.active_project is None:
+        raise ProjectNotFoundError("User must have an active project")
+
     project = db.execute(
         select(Project).where(
-            Project.id == payload.project_id,
+            Project.id == user.active_project.id,
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
         )
     ).scalar_one_or_none()
 
     if project is None:
-        raise ProjectNotFoundError(str(payload.project_id))
+        raise ProjectNotFoundError(
+            f"Active project {user.active_project.public_id} not found"
+        )
 
-    board = Taskboard(**payload.model_dump())
+    board = Taskboard(
+        name=payload.name,
+        description=payload.description,
+        color=payload.color,
+        project_id=project.id,
+    )
 
     db.add(board)
     db.flush()
@@ -51,10 +60,12 @@ def update_taskboard(
     board: Taskboard,
     payload: TaskboardUpdate,
 ) -> Taskboard:
-    updates = payload.model_dump(exclude_unset=True)
-
-    for field, value in updates.items():
-        setattr(board, field, value)
+    if "name" in payload.model_fields_set and payload.name:
+        board.name = payload.name
+    if "description" in payload.model_fields_set:
+        board.description = payload.description or ""
+    if "color" in payload.model_fields_set:
+        board.color = payload.color
 
     db.flush()
     db.refresh(board)
@@ -64,28 +75,29 @@ def update_taskboard(
 
 def list_taskboards(
     db: Session,
-    project_id: UUID,
+    project: Project,
 ) -> TaskboardListResponse:
     stmt = (
-        (
-            select(
-                Taskboard,
-                func.count(Task.id).label("task_count"),
-            )
-            .outerjoin(
-                TaskboardTask,
-                TaskboardTask.taskboard_id == Taskboard.id,
-            )
-            .outerjoin(
-                Task,
-                Task.id == TaskboardTask.task_id,
-            )
+        select(
+            Taskboard,
+            func.count(Task.id).label("task_count"),
         )
-        .where(Taskboard.project_id == project_id)
+        .outerjoin(
+            TaskboardTask,
+            TaskboardTask.taskboard_id == Taskboard.id,
+        )
+        .outerjoin(
+            Task,
+            (Task.id == TaskboardTask.task_id) & Task.deleted_at.is_(None),
+        )
+        .where(
+            Taskboard.project_id == project.id,
+            Taskboard.deleted_at.is_(None),
+        )
         .group_by(Taskboard.id)
         .order_by(
             Taskboard.created_at.asc(),
-            Taskboard.id.asc(),
+            Taskboard.public_id.asc(),
         )
     )
 
@@ -94,11 +106,11 @@ def list_taskboards(
     return TaskboardListResponse(
         items=[
             TaskboardListRead(
-                id=taskboard.id,
+                public_id=taskboard.public_id,
                 name=taskboard.name,
                 description=taskboard.description,
                 color=taskboard.color,
-                project_id=taskboard.project_id,
+                project_public_id=project.public_id,
                 task_count=task_count,
             )
             for taskboard, task_count in rows
@@ -109,37 +121,29 @@ def list_taskboards(
 def delete_taskboard(
     db: Session,
     board: Taskboard,
+    user: User,
 ) -> None:
-    db.delete(board)
+    board.soft_delete(deleted_by=user.id)
+    db.flush()
 
 
 def add_task_to_board(
     db: Session,
     board: Taskboard,
-    user: User,
-    task_id: UUID,
+    task: Task,
     position: int | None = None,
 ) -> TaskboardTask:
-    task = db.execute(
-        select(Task)
-        .join(Project, Task.project_id == Project.id)
-        .where(
-            Task.id == task_id,
-            Project.user_id == user.id,
-        )
-    ).scalar_one_or_none()
-
-    if task is None:
-        raise TaskNotFoundError(str(task_id))
+    if task.project_id != board.project_id:
+        raise TaskNotFoundError(f"Task with public_id {task.public_id} not found")
 
     stmt = select(TaskboardTask).where(
         TaskboardTask.taskboard_id == board.id,
-        TaskboardTask.task_id == task_id,
+        TaskboardTask.task_id == task.id,
     )
     existing = db.execute(stmt).scalar_one_or_none()
 
     if existing is not None:
-        raise TaskAlreadyInBoardError()
+        raise TaskAlreadyInBoardError(f"Task {task.public_id} is already in this board")
 
     count_stmt = (
         select(func.count())
@@ -179,16 +183,16 @@ def add_task_to_board(
 def remove_task_from_board(
     db: Session,
     board: Taskboard,
-    task_id: UUID,
+    task: Task,
 ) -> None:
     stmt = select(TaskboardTask).where(
         TaskboardTask.taskboard_id == board.id,
-        TaskboardTask.task_id == task_id,
+        TaskboardTask.task_id == task.id,
     )
     association = db.execute(stmt).scalar_one_or_none()
 
     if association is None:
-        raise TaskNotInBoardError()
+        raise TaskAlreadyInBoardError(f"Task {task.public_id} is not in this board")
 
     position = association.position
 
@@ -208,17 +212,22 @@ def remove_task_from_board(
 def reposition_task_in_board(
     db: Session,
     board: Taskboard,
-    task_id: UUID,
+    task: Task,
     position: int,
 ) -> None:
+    if task.project_id != board.project_id:
+        raise TaskNotFoundError(f"Task with public_id {task.public_id} not found")
+
     stmt = select(TaskboardTask).where(
         TaskboardTask.taskboard_id == board.id,
-        TaskboardTask.task_id == task_id,
+        TaskboardTask.task_id == task.id,
     )
     association = db.execute(stmt).scalar_one_or_none()
 
     if association is None:
-        raise TaskNotInBoardError()
+        raise TaskNotInBoardError(
+            f"Task {task.public_id} is not in board {board.public_id}"
+        )
 
     old_position = association.position
 
@@ -228,14 +237,14 @@ def reposition_task_in_board(
     count_stmt = (
         select(func.count())
         .select_from(TaskboardTask)
-        .where(
-            TaskboardTask.taskboard_id == board.id,
-        )
+        .where(TaskboardTask.taskboard_id == board.id)
     )
     task_count = db.execute(count_stmt).scalar_one()
 
     if position >= task_count:
-        raise InvalidTaskPositionError()
+        raise InvalidTaskPositionError(
+            f"Invalid position {position}: board has {task_count} tasks"
+        )
 
     if position > old_position:
         stmt = (

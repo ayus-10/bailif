@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -11,19 +9,22 @@ from app.models.db import User
 from app.models.db.project import Project
 
 
-def get_project_by_id(
-    project_id: UUID,
+def get_project_by_public_id(
+    project_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Project:
     project = db.execute(
         select(Project).where(
-            Project.id == project_id,
+            Project.public_id == project_public_id,
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
         )
     ).scalar_one_or_none()
 
     if project is None:
-        raise ProjectNotFoundError(str(project_id))
+        raise ProjectNotFoundError(
+            f"Project with public_id {project_public_id} not found"
+        )
 
     return project

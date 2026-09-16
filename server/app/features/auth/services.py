@@ -35,12 +35,12 @@ def authenticate_user(
     stored_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
 
     try:
-        valid = password_hasher.verify(password, stored_hash)
+        is_password_correct = password_hasher.verify(password, stored_hash)
     except UnknownHashError as exc:
-        raise InternalServerError() from exc
+        raise InternalServerError("Unable to verify the provided password.") from exc
 
-    if user is None or not valid:
-        raise InvalidCredentialsError()
+    if user is None or not is_password_correct or not user.is_valid():
+        raise InvalidCredentialsError("Invalid username or password.")
 
     return user
 
@@ -94,7 +94,7 @@ def redeem_refresh_token(
     stored_token = _find_stored_token_by_raw(db, refresh_token)
 
     if stored_token is None:
-        raise InvalidCredentialsError()
+        raise InvalidCredentialsError("Invalid or expired refresh token.")
 
     now = datetime.now(UTC)
 
@@ -103,12 +103,19 @@ def redeem_refresh_token(
         stored_token.expires_at,
         refresh_token,
     ):
-        raise InvalidCredentialsError()
+        raise InvalidCredentialsError("Invalid or expired refresh token.")
 
     if stored_token.revoked_at is not None:
         _revoke_all_tokens_for_user(db, stored_token.user_id)
         db.commit()
-        raise InvalidCredentialsError()
+        raise InvalidCredentialsError("Refresh token has already been used.")
+
+    user = db.scalar(select(User).where(User.id == stored_token.user_id))
+
+    if user is None or not user.is_valid():
+        _revoke_all_tokens_for_user(db, stored_token.user_id)
+        db.commit()
+        raise InvalidCredentialsError("Invalid or expired refresh token.")
 
     stored_token.revoked_at = now
 
@@ -146,6 +153,11 @@ def logout(db: Session, refresh_token: str) -> None:
         stored_token.expires_at,
         refresh_token,
     ):
+        return
+
+    user = db.scalar(select(User).where(User.id == stored_token.user_id))
+
+    if user is None or not user.is_valid():
         return
 
     stored_token.revoked_at = datetime.now(UTC)

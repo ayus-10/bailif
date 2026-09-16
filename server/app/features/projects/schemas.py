@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
 from typing import Annotated
-from uuid import UUID
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -10,7 +9,7 @@ from app.models.db.project import (
     AgentPermissionLevel,
     ProjectStatus,
 )
-from app.utils.date_validation import after
+from app.utils.date_validation import validate_datetime_range
 
 
 class ProjectFieldValidators(BaseModel):
@@ -30,8 +29,8 @@ class ProjectFieldValidators(BaseModel):
         if v is None:
             return v
         v = v.strip()
-        if len(v) > 5000:
-            raise ValueError("description cannot exceed 5000 characters")
+        if len(v) > 50000:
+            raise ValueError("description cannot exceed 50000 characters")
         return v
 
     @field_validator("color", check_fields=False)
@@ -56,7 +55,7 @@ class ProjectFieldValidators(BaseModel):
 
 
 class ProjectCreate(ProjectFieldValidators):
-    name: str = Field(min_length=1, max_length=500)
+    name: str = Field(min_length=1, max_length=255)
     description: str = ""
     icon: Annotated[str, Field(max_length=50)] = "mdi-folder-outline"
     color: str | None = None
@@ -75,8 +74,8 @@ class ProjectCreate(ProjectFieldValidators):
 
     @model_validator(mode="after")
     def validate_date_order(self: ProjectCreate):
-        after(self.start_date, self.target_end_date)
-        after(self.start_date, self.actual_end_date)
+        validate_datetime_range(self.start_date, self.target_end_date)
+        validate_datetime_range(self.start_date, self.actual_end_date)
         return self
 
 
@@ -102,15 +101,15 @@ class ProjectUpdate(ProjectFieldValidators):
 
     @model_validator(mode="after")
     def validate_date_order(self: ProjectUpdate):
-        after(self.start_date, self.target_end_date)
-        after(self.start_date, self.actual_end_date)
+        validate_datetime_range(self.start_date, self.target_end_date)
+        validate_datetime_range(self.start_date, self.actual_end_date)
         return self
 
 
 class ProjectRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
+    public_id: int
     name: str
     description: str
     icon: str
@@ -128,7 +127,6 @@ class ProjectRead(BaseModel):
 
     created_at: datetime
     updated_at: datetime
-    archived_at: datetime | None
 
 
 class ProjectFilterParams(BaseModel):
@@ -138,7 +136,6 @@ class ProjectFilterParams(BaseModel):
     start_date_after: datetime | None = None
     target_end_date_before: datetime | None = None
     target_end_date_after: datetime | None = None
-    archived: bool = False
 
 
 class ProjectListResponse(BaseModel):

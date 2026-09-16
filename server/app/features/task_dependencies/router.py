@@ -4,17 +4,19 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
 from app.features.task_dependencies import services
-from app.features.task_dependencies.dependencies import get_task_dependency_by_id
+from app.features.task_dependencies.dependencies import (
+    get_task_dependency_by_public_id,
+)
 from app.features.task_dependencies.schemas import (
     TaskDependencyCreate,
     TaskDependencyRead,
 )
-from app.features.tasks.dependencies import get_task_by_id
+from app.features.tasks.dependencies import get_task_by_public_id
 from app.models.db import User
 from app.models.db.task import Task, TaskDependency
 
 router = APIRouter(
-    prefix="/tasks/{task_id}/dependencies",
+    prefix="/tasks/{task_public_id}/dependencies",
     tags=["task-dependencies"],
 )
 
@@ -26,7 +28,7 @@ router = APIRouter(
 )
 def create_dependency(
     payload: TaskDependencyCreate,
-    task: Task = Depends(get_task_by_id),
+    task: Task = Depends(get_task_by_public_id),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> TaskDependency:
@@ -38,18 +40,18 @@ def create_dependency(
     response_model=list[TaskDependencyRead],
 )
 def list_dependencies(
-    task: Task = Depends(get_task_by_id),
+    task: Task = Depends(get_task_by_public_id),
     db: Session = Depends(get_db),
 ) -> list[TaskDependency]:
-    return services.list_dependencies_for_task(db, task.id)
+    return services.list_dependencies_for_task(db, task)
 
 
 @router.delete(
-    "/{dependency_id}",
+    "/{dependency_public_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_dependency(
-    dependency: TaskDependency = Depends(get_task_dependency_by_id),
+    dependency: TaskDependency = Depends(get_task_dependency_by_public_id),
     db: Session = Depends(get_db),
 ) -> None:
     services.delete_dependency(db, dependency)

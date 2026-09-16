@@ -25,21 +25,29 @@ def get_current_user(
     try:
         payload = decode(token)
     except TokenExpiredError as exc:
-        raise AccessTokenExpiredError() from exc
+        raise AccessTokenExpiredError("Access token has expired") from exc
     except TokenInvalidError as exc:
-        raise AccessTokenInvalidError() from exc
+        raise AccessTokenInvalidError("Invalid access token") from exc
 
     try:
         if payload["type"] != TokenType.ACCESS:
-            raise AccessTokenInvalidError()
+            raise AccessTokenInvalidError("Token is not an access token")
 
         user_id = UUID(payload["sub"])
     except (KeyError, ValueError) as exc:
-        raise AccessTokenInvalidError() from exc
+        raise AccessTokenInvalidError("Invalid access token payload") from exc
 
-    user = db.scalar(select(User).where(User.id == user_id))
+    user = db.scalar(
+        select(User).where(
+            User.id == user_id,
+            User.deleted_at.is_(None),
+            User.is_active.is_(True),
+        )
+    )
+
+    # TODO: user.active_project is lazy joined but nobody checked if the project is softdeleted
 
     if user is None:
-        raise AccessTokenInvalidError()
+        raise AccessTokenInvalidError("Invalid access token")
 
     return user

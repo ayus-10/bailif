@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -20,6 +18,6 @@ class UserCreate(BaseModel):
 class UserRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
+    public_id: int
     username: str
-    active_project_id: UUID | None = None
+    active_project_public_id: int | None = None

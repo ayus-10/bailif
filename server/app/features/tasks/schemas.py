@@ -1,13 +1,12 @@
 import re
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.features.projects.schemas import ProjectRead
 from app.models.enums.shared import TaskPriority, TaskStatus
 from app.models.enums.task import TaskType
-from app.utils.date_validation import after
+from app.utils.date_validation import validate_datetime_range
 
 
 class TaskFieldValidators(BaseModel):
@@ -27,8 +26,8 @@ class TaskFieldValidators(BaseModel):
         if v is None:
             return v
         v = v.strip()
-        if len(v) > 5000:
-            raise ValueError("description cannot exceed 5000 characters")
+        if len(v) > 50000:
+            raise ValueError("description cannot exceed 50000 characters")
         return v
 
     @field_validator("tags", check_fields=False)
@@ -43,20 +42,19 @@ class TaskFieldValidators(BaseModel):
 
 
 class TaskCreate(TaskFieldValidators):
-    title: str = Field(min_length=1, max_length=500)
+    title: str = Field(min_length=1, max_length=255)
     description: str = ""
     status: TaskStatus = TaskStatus.OPEN
     priority: TaskPriority = TaskPriority.MEDIUM
     type: TaskType = TaskType.TASK
     tags: str = ""
-    project_id: UUID
-    parent_id: UUID | None = None
+    parent_public_id: int | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
 
     @model_validator(mode="after")
     def validate_date_order(self):
-        after(self.start_date, self.due_date)
+        validate_datetime_range(self.start_date, self.due_date)
         return self
 
 
@@ -71,26 +69,26 @@ class TaskUpdate(TaskFieldValidators):
     priority: TaskPriority | None = None
     type: TaskType | None = None
     tags: str | None = None
-    parent_id: UUID | None = None
+    parent_public_id: int | None = None
     start_date: datetime | None = None
     due_date: datetime | None = None
 
     @model_validator(mode="after")
     def validate_date_order(self):
-        after(self.start_date, self.due_date)
+        validate_datetime_range(self.start_date, self.due_date)
         return self
 
 
 class TaskRead(BaseModel):
-    id: UUID
+    public_id: int
     title: str
     description: str
     status: TaskStatus
     priority: TaskPriority
     type: TaskType
     tags: str
-    project_id: UUID
-    parent_id: UUID | None
+    project_public_id: int
+    parent_public_id: int | None
     due_date: datetime | None
     created_at: datetime
     updated_at: datetime
@@ -101,13 +99,12 @@ class TaskRead(BaseModel):
 
 
 class TaskFilterParams(BaseModel):
-    project_id: UUID
     status: TaskStatus | None = None
     priority: TaskPriority | None = None
     type: TaskType | None = None
     tag: str | None = None
-    parent_id: UUID | None = None
-    taskboard_id: UUID | None = None
+    parent_public_id: int | None = None
+    taskboard_public_id: int | None = None
     only_root: bool = False
     due_before: datetime | None = None
     due_after: datetime | None = None
@@ -116,8 +113,8 @@ class TaskFilterParams(BaseModel):
 
     @model_validator(mode="after")
     def validate_parent_filters(self):
-        if self.only_root and self.parent_id is not None:
-            raise ValueError("only_root and parent_id cannot be used together")
+        if self.only_root and self.parent_public_id is not None:
+            raise ValueError("only_root and parent_public_id cannot be used together")
         return self
 
 
