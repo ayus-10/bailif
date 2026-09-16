@@ -28,7 +28,7 @@ def _normalized_edge(
 
 # TODO: hand the traversal to the DB and let its query planner figure out which rows are relevant
 def _would_create_cycle(db: Session, from_id: UUID, to_id: UUID) -> bool:
-    return False  # we good bro
+    return False
 
 
 def create_dependency(
@@ -37,70 +37,84 @@ def create_dependency(
     user: User,
     payload: TaskDependencyCreate,
 ) -> TaskDependency:
-    if task.id == payload.depends_on_id:
-        raise SelfDependencyError(
-            f"Task {task.id} cannot depend on itself"
-        )  # TODO: do not leak PK
-
     dependency_task = db.execute(
         select(Task)
         .join(Project, Project.id == Task.project_id)
         .where(
-            Task.id == payload.depends_on_id,
+            Task.public_id == payload.depends_on_public_id,
+            Task.deleted_at.is_(None),
             Project.user_id == user.id,
+            Project.deleted_at.is_(None),
         )
     ).scalar_one_or_none()
 
     if dependency_task is None:
-        raise TaskNotFoundError(str(payload.depends_on_id))
+        raise TaskNotFoundError(f"Task {payload.depends_on_public_id} not found")
+
+    if task.id == dependency_task.id:
+        raise SelfDependencyError(f"Task {task.public_id} cannot depend on itself")
 
     if task.parent_id != dependency_task.parent_id:
         raise TaskLevelMismatchError(
-            f"{task.id} and {dependency_task.id} must be on same level"  # TODO: do not leak PK
+            f"Tasks {task.public_id} and "
+            f"{dependency_task.public_id} must be on the same level"
         )
 
     existing = db.execute(
         select(TaskDependency).where(
             TaskDependency.task_id == task.id,
-            TaskDependency.depends_on_id == payload.depends_on_id,
+            TaskDependency.depends_on_id == dependency_task.id,
             TaskDependency.dependency_type == payload.dependency_type,
         )
     ).scalar_one_or_none()
+
     if existing is not None:
         raise DuplicateDependencyError(
-            f"{task.id}->{payload.depends_on_id}"
-        )  # TODO: do not leak PK
+            f"Dependency already exists between "
+            f"{task.public_id} and {dependency_task.public_id}"
+        )
 
-    edge = _normalized_edge(task.id, payload.depends_on_id, payload.dependency_type)
+    edge = _normalized_edge(
+        task.id,
+        dependency_task.id,
+        payload.dependency_type,
+    )
+
     if edge is not None and _would_create_cycle(db, edge[0], edge[1]):
         raise CycleDetectedError(
-            f"{task.id}->{payload.depends_on_id}"
-        )  # TODO: do not leak PK
+            f"Adding dependency from task {task.public_id} "
+            f"to {dependency_task.public_id} would create a cycle"
+        )
 
     dependency = TaskDependency(
         task_id=task.id,
-        depends_on_id=payload.depends_on_id,
+        depends_on_id=dependency_task.id,
         dependency_type=payload.dependency_type,
     )
+
     db.add(dependency)
     db.flush()
     db.refresh(dependency)
+
     return dependency
 
 
 def list_dependencies_for_task(
-    db: Session, task_id: UUID | None
+    db: Session,
+    task: Task,
 ) -> list[TaskDependency]:
-    stmt = select(TaskDependency)
-    if task_id is not None:
-        stmt = stmt.where(
-            or_(
-                TaskDependency.task_id == task_id,
-                TaskDependency.depends_on_id == task_id,
-            )
+    stmt = select(TaskDependency).where(
+        or_(
+            TaskDependency.task_id == task.id,
+            TaskDependency.depends_on_id == task.id,
         )
+    )
+
     return list(db.execute(stmt).scalars().all())
 
 
-def delete_dependency(db: Session, dependency: TaskDependency) -> None:
+def delete_dependency(
+    db: Session,
+    dependency: TaskDependency,
+) -> None:
     db.delete(dependency)

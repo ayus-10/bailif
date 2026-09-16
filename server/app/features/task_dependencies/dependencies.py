@@ -9,7 +9,7 @@ from app.models.db import Project, Task, User
 from app.models.db.task import TaskDependency
 
 
-def get_task_dependency_by_id(
+def get_task_dependency_by_public_id(
     task_public_id: int,
     dependency_public_id: int,
     db: Session = Depends(get_db),
