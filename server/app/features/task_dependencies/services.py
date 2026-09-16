@@ -38,7 +38,9 @@ def create_dependency(
     payload: TaskDependencyCreate,
 ) -> TaskDependency:
     if task.id == payload.depends_on_id:
-        raise SelfDependencyError(f"Task {task.id} cannot depend on itself") # TODO: do not leak PK
+        raise SelfDependencyError(
+            f"Task {task.id} cannot depend on itself"
+        )  # TODO: do not leak PK
 
     dependency_task = db.execute(
         select(Task)
@@ -54,7 +56,7 @@ def create_dependency(
 
     if task.parent_id != dependency_task.parent_id:
         raise TaskLevelMismatchError(
-            f"{task.id} and {dependency_task.id} must be on same level" # TODO: do not leak PK
+            f"{task.id} and {dependency_task.id} must be on same level"  # TODO: do not leak PK
         )
 
     existing = db.execute(
@@ -65,11 +67,15 @@ def create_dependency(
         )
     ).scalar_one_or_none()
     if existing is not None:
-        raise DuplicateDependencyError(f"{task.id}->{payload.depends_on_id}") # TODO: do not leak PK
+        raise DuplicateDependencyError(
+            f"{task.id}->{payload.depends_on_id}"
+        )  # TODO: do not leak PK
 
     edge = _normalized_edge(task.id, payload.depends_on_id, payload.dependency_type)
     if edge is not None and _would_create_cycle(db, edge[0], edge[1]):
-        raise CycleDetectedError(f"{task.id}->{payload.depends_on_id}") # TODO: do not leak PK
+        raise CycleDetectedError(
+            f"{task.id}->{payload.depends_on_id}"
+        )  # TODO: do not leak PK
 
     dependency = TaskDependency(
         task_id=task.id,

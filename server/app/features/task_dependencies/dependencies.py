@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,8 +10,8 @@ from app.models.db.task import TaskDependency
 
 
 def get_task_dependency_by_id(
-    task_id: UUID,
-    dependency_id: UUID,
+    task_public_id: int,
+    dependency_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> TaskDependency:
@@ -22,12 +20,17 @@ def get_task_dependency_by_id(
         .join(Task, Task.id == TaskDependency.task_id)
         .join(Project, Project.id == Task.project_id)
         .where(
-            TaskDependency.id == dependency_id,
-            Task.id == task_id,
+            TaskDependency.public_id == dependency_public_id,
+            Task.public_id == task_public_id,
+            Task.deleted_at.is_(None),
+            Project.deleted_at.is_(None),
             Project.user_id == user.id,
         )
     ).scalar_one_or_none()
 
     if dependency is None:
-        raise TaskDependencyNotFoundError(str(dependency_id))
+        raise TaskDependencyNotFoundError(
+            f"Task dependency {dependency_public_id} not found"
+        )
+
     return dependency

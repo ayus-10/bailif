@@ -275,6 +275,14 @@ class TaskDependency(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
+    public_id: Mapped[int] = mapped_column(
+        BigInteger,
+        Identity(start=1000, increment=1),
+        unique=True,
+        nullable=False,
+        index=True,
+    )
+
     dependency_type: Mapped[DependencyType] = mapped_column(
         Enum(DependencyType, name="dependency_type_enum"),
         nullable=False,

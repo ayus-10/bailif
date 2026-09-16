@@ -23,6 +23,8 @@ def get_project_by_public_id(
     ).scalar_one_or_none()
 
     if project is None:
-        raise ProjectNotFoundError(f"Project with public_id {project_public_id} not found")
+        raise ProjectNotFoundError(
+            f"Project with public_id {project_public_id} not found"
+        )
 
     return project
