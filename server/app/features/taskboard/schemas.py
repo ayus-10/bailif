@@ -49,12 +49,10 @@ class TaskboardListRead(BaseModel):
 
 
 class TaskAssignment(BaseModel):
-    task_public_id: int
     position: int | None = Field(default=None, ge=0)
 
 
 class TaskReposition(BaseModel):
-    task_public_id: int
     position: int = Field(ge=0)
 
 
