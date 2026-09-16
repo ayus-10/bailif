@@ -20,6 +20,7 @@ from app.features.taskboard.schemas import (
 )
 from app.models.db import Project, Task, User
 from app.models.db.taskboard import Taskboard, TaskboardTask
+from app.utils.model_to_read import taskboard_to_read
 
 router = APIRouter(prefix="/taskboards", tags=["taskboards"])
 
@@ -35,7 +36,7 @@ def create_taskboard(
     user: User = Depends(get_current_user),
 ) -> TaskboardRead:
     board = services.create_taskboard(db, user, payload)
-    return taskboard_to_read(board)  # this utility funco dont exist
+    return taskboard_to_read(board)
 
 
 @router.get(
@@ -56,7 +57,7 @@ def list_taskboards(
 def get_taskboard(
     board: Taskboard = Depends(get_taskboard_by_public_id),
 ) -> TaskboardRead:
-    return taskboard_to_read(board)  # this utility funco dont exist
+    return taskboard_to_read(board)
 
 
 @router.patch(
@@ -69,7 +70,7 @@ def update_taskboard(
     db: Session = Depends(get_db),
 ) -> TaskboardRead:
     board = services.update_taskboard(db, board, payload)
-    return taskboard_to_read(board)  # this utility funco dont exist
+    return taskboard_to_read(board)
 
 
 @router.delete(

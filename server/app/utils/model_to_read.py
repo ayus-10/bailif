@@ -1,7 +1,10 @@
+from multiprocessing import context
+
 from app.features.projects.schemas import ProjectRead
+from app.features.taskboard.schemas import TaskboardRead, TaskboardTaskRead
 from app.features.tasks.schemas import TaskRead
 from app.features.users.schemas import UserRead
-from app.models.db import Project, Task, User
+from app.models.db import Project, Task, Taskboard, User
 
 
 def user_to_read(user: User) -> UserRead:
@@ -48,4 +51,23 @@ def project_to_read(project: Project) -> ProjectRead:
         default_agent_permission_level=project.default_agent_permission_level,
         created_at=project.created_at,
         updated_at=project.updated_at,
+    )
+
+
+def taskboard_to_read(taskboard: Taskboard) -> TaskboardRead:
+    return TaskboardRead(
+        public_id=taskboard.public_id,
+        name=taskboard.name,
+        description=taskboard.description,
+        color=taskboard.color,
+        project_public_id=taskboard.project.public_id,
+        created_at=taskboard.created_at,
+        updated_at=taskboard.updated_at,
+        tasks=[
+            TaskboardTaskRead(
+                position=association.position,
+                task=task_to_read(association.task),
+            )
+            for association in taskboard.task_associations
+        ],
     )
