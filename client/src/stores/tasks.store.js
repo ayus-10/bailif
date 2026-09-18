@@ -145,7 +145,7 @@ export const useTasksStore = defineStore("tasks", {
                     ? [...existing, ...data.items]
                     : data.items;
 
-                this.nextCursor[key] = data.next_cursor;
+                this.nextCursor[key] = data.next_cursor ?? null;
                 this.queries[key] = query;
                 this.status[key] = "success";
 
