@@ -72,10 +72,10 @@ def taskboard_to_read(taskboard: Taskboard) -> TaskboardRead:
     )
 
 
-def task_edge_to_read(dependency: TaskEdge) -> TaskEdgeRead:
+def task_edge_to_read(edge: TaskEdge) -> TaskEdgeRead:
     return TaskEdgeRead(
-        public_id=dependency.public_id,
-        task_public_id=dependency.task.public_id,
-        depends_on_public_id=dependency.depends_on.public_id,
-        edge_type=dependency.edge_type,
+        public_id=edge.public_id,
+        task_public_id=edge.task.public_id,
+        depends_on_public_id=edge.depends_on.public_id,
+        edge_type=edge.edge_type,
     )

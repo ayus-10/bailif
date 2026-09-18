@@ -11,7 +11,7 @@ from app.models.db import Project, Task, User
 from app.models.db.task import TaskEdge
 
 
-def get_task_for_dependencies(
+def get_task_for_edges(
     task_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -57,32 +57,30 @@ def get_depends_on_task_from_payload(
     return task
 
 
-def get_dependency_on_task(
-    dependency_public_id: int,
-    task: Task = Depends(get_task_for_dependencies),
+def get_edge_on_task(
+    edge_public_id: int,
+    task: Task = Depends(get_task_for_edges),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> TaskEdge:
-    dependency = db.execute(
+    edge = db.execute(
         select(TaskEdge)
         .join(Task, Task.id == TaskEdge.task_id)
         .join(Project, Project.id == Task.project_id)
         .where(
-            TaskEdge.public_id == dependency_public_id,
+            TaskEdge.public_id == edge_public_id,
             Task.deleted_at.is_(None),
             Project.deleted_at.is_(None),
             Project.user_id == user.id,
         )
     ).scalar_one_or_none()
 
-    if dependency is None:
-        raise TaskEdgeNotFoundError(f"Task dependency {dependency_public_id} not found")
+    if edge is None:
+        raise TaskEdgeNotFoundError(f"Task edge {edge_public_id} not found")
 
-    is_attached_to_task = (
-        dependency.task_id == task.id or dependency.depends_on_id == task.id
-    )
+    is_attached_to_task = edge.task_id == task.id or edge.depends_on_id == task.id
 
     if not is_attached_to_task:
-        raise TaskEdgeNotFoundError(f"Task dependency {dependency_public_id} not found")
+        raise TaskEdgeNotFoundError(f"Task edge {edge_public_id} not found")
 
-    return dependency
+    return edge

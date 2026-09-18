@@ -5,16 +5,16 @@ class TaskEdgeNotFoundError(NotFoundError):
     code = "task_edge_not_found"
 
 
-class DuplicateDependencyError(ConflictError):
-    code = "duplicate_dependency"
+class DuplicateEdgeError(ConflictError):
+    code = "duplicate_edge"
 
 
 class CycleDetectedError(ConflictError):
     code = "cycle_detected"
 
 
-class SelfDependencyError(ConflictError):
-    code = "self_dependency"
+class SelfEdgeError(ConflictError):
+    code = "self_edge"
 
 
 class TaskLevelMismatchError(ConflictError):
