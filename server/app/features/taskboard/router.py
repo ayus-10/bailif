@@ -85,9 +85,8 @@ def delete_taskboard(
     services.delete_taskboard(db, board, user)
 
 
-# TODO: this isnt restful
 @router.post(
-    "/{taskboard_public_id}/tasks/{task_public_id}",
+    "/{taskboard_public_id}/tasks",
     response_model=TaskboardTaskRead,
     status_code=status.HTTP_201_CREATED,
 )

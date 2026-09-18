@@ -14,6 +14,19 @@ def get_owned_task(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Task:
+    return resolve_owned_task(
+        task_public_id=task_public_id,
+        db=db,
+        user=user,
+    )
+
+
+# TODO: prefix with _ once refactored
+def resolve_owned_task(
+    task_public_id: int,
+    db: Session,
+    user: User,
+) -> Task:
     task = db.execute(
         select(Task)
         .join(Project, Task.project_id == Project.id)

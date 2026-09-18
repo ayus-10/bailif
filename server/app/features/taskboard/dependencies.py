@@ -8,7 +8,8 @@ from app.features.taskboard.exceptions import (
     TaskboardNotFoundError,
     TaskNotInBoardError,
 )
-from app.features.tasks.dependencies import get_owned_task
+from app.features.taskboard.schemas import TaskAssignment
+from app.features.tasks.dependencies import get_owned_task, resolve_owned_task
 from app.models.db import Project, Task, Taskboard, User
 
 
@@ -43,5 +44,24 @@ def get_task_on_owned_taskboard(
     if task.project_id != taskboard.project_id:
         raise TaskNotInBoardError(
             f"Task {task.public_id} is not in board {taskboard.public_id}"
+        )
+    return task
+
+
+def get_task_on_owned_taskboard_from_payload(
+    payload: TaskAssignment,
+    board: Taskboard = Depends(get_owned_taskboard),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> Task:
+    task = resolve_owned_task(
+        task_public_id=payload.task_public_id,
+        db=db,
+        user=user,
+    )
+
+    if task.project_id != board.project_id:
+        raise TaskNotInBoardError(
+            f"Task {task.public_id} is not in board {board.public_id}"
         )
     return task
