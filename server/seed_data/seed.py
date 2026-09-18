@@ -3,10 +3,7 @@ import uuid
 from datetime import datetime
 
 from app.core.database import SessionLocal
-from app.models.db.project import Project
-from app.models.db.task import Task
-from app.models.db.taskboard import Taskboard, TaskboardTask
-from app.models.db.user import User
+from app.models.db import Project, Task, Taskboard, TaskboardTask, User
 
 
 def load_data(path: str) -> dict:

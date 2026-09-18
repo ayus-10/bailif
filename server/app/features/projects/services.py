@@ -8,8 +8,7 @@ from app.features.projects.schemas import (
     ProjectListResponse,
     ProjectUpdate,
 )
-from app.models.db import Task, Taskboard, User
-from app.models.db.project import Project
+from app.models.db import Project, Task, Taskboard, User
 from app.utils.date_validation import validate_datetime_range
 from app.utils.model_to_read import project_to_read
 

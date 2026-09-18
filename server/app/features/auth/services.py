@@ -19,8 +19,7 @@ from app.features.auth.exceptions import (
     InvalidCredentialsError,
     RefreshTokenIssuanceError,
 )
-from app.models.db.refresh_token import RefreshToken
-from app.models.db.user import User
+from app.models.db import RefreshToken, User
 
 password_hasher = PasswordHash.recommended()
 

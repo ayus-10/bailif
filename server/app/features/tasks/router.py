@@ -9,8 +9,7 @@ from app.features.tasks.schemas import (
     TaskListResponse,
     TaskUpdate,
 )
-from app.models.db import User
-from app.models.db.task import Task
+from app.models.db import Task, User
 from app.shared.dependencies.auth import get_current_user
 from app.shared.dependencies.tasks import get_owned_task
 from app.shared.schemas import TaskRead

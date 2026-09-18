@@ -12,10 +12,7 @@ from app.features.taskboards.schemas import (
     TaskboardListResponse,
     TaskboardUpdate,
 )
-from app.models.db import User
-from app.models.db.project import Project
-from app.models.db.task import Task
-from app.models.db.taskboard import Taskboard, TaskboardTask
+from app.models.db import Project, Task, Taskboard, TaskboardTask, User
 from app.shared.exceptions import ProjectNotFoundError, TaskNotFoundError
 
 
@@ -24,7 +21,7 @@ def create_taskboard(
     user: User,
     payload: TaskboardCreate,
 ) -> Taskboard:
-    if user.active_project is None:
+    if user.active_project is None or user.active_project.deleted_at is not None:
         raise ProjectNotFoundError("User must have an active project")
 
     project = db.execute(

@@ -5,10 +5,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.models.db.project import (
-    AgentPermissionLevel,
-    ProjectStatus,
-)
+from app.models.enums.project import ProjectStatus
+from app.shared.enums import AgentPermissionLevel
 from app.shared.schemas import ProjectRead
 from app.utils.date_validation import validate_datetime_range
 

@@ -10,7 +10,7 @@ from app.features.task_edges.exceptions import (
     TaskLevelMismatchError,
 )
 from app.features.task_edges.schemas import TaskEdgeCreate
-from app.models.db.task import Task, TaskEdge
+from app.models.db import Task, TaskEdge
 from app.models.enums.task import EdgeType
 
 

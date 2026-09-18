@@ -9,8 +9,7 @@ from app.features.projects.schemas import (
     ProjectListResponse,
     ProjectUpdate,
 )
-from app.models.db import User
-from app.models.db.project import Project
+from app.models.db import Project, User
 from app.shared.dependencies.auth import get_current_user
 from app.shared.dependencies.projects import get_owned_project
 from app.shared.schemas import ProjectRead

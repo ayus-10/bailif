@@ -2,12 +2,9 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
-from app.models.db.project import (
-    AgentPermissionLevel,
-    ProjectStatus,
-)
+from app.models.enums.project import ProjectStatus
 from app.models.enums.task import TaskType
-from app.shared.enums import TaskPriority, TaskStatus
+from app.shared.enums import AgentPermissionLevel, TaskPriority, TaskStatus
 
 
 class ProjectRead(BaseModel):

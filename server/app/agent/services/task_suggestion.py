@@ -4,7 +4,7 @@ from app.agent.schemas.api_schemas import (
     TaskSuggestionRequest,
     TaskSuggestionResponse,
 )
-from app.models.db.task import Task
+from app.models.db import Task
 
 
 def build_prompt(

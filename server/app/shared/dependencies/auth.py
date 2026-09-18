@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security.exceptions import TokenExpiredError, TokenInvalidError
 from app.core.security.jwt import decode
-from app.models.db.user import User
+from app.models.db import User
 from app.shared.constants import TokenType
 from app.shared.exceptions import (
     AccessTokenExpiredError,
@@ -44,8 +44,6 @@ def get_current_user(
             User.is_active.is_(True),
         )
     )
-
-    # TODO: user.active_project is lazy joined but nobody checked if the project is softdeleted
 
     if user is None:
         raise AccessTokenInvalidError("Invalid access token")

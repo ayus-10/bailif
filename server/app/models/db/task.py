@@ -35,7 +35,7 @@ from app.shared.enums import (
 )
 
 if TYPE_CHECKING:
-    from app.models.db.project import Project
+    from app.models.db import Project
 
 
 EMBEDDING_DIM = 2560

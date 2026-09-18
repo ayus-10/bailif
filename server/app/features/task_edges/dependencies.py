@@ -5,8 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.features.task_edges.exceptions import TaskEdgeNotFoundError
 from app.features.task_edges.schemas import TaskEdgeCreate
-from app.models.db import Project, Task, User
-from app.models.db.task import TaskEdge
+from app.models.db import Project, Task, TaskEdge, User
 from app.shared.dependencies.auth import get_current_user
 from app.shared.dependencies.tasks import get_owned_task
 from app.shared.exceptions import TaskNotFoundError

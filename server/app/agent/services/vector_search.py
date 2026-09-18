@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.agent.llm.embeddings import get_embedding
-from app.models.db.task import Task
+from app.models.db import Task
 
 DEFAULT_TOP_K = 5
 DEFAULT_MAX_DISTANCE = 0.35

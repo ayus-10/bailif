@@ -17,8 +17,7 @@ from app.features.taskboards.schemas import (
     TaskboardUpdate,
     TaskReposition,
 )
-from app.models.db import Project, Task, User
-from app.models.db.taskboard import Taskboard, TaskboardTask
+from app.models.db import Project, Task, Taskboard, TaskboardTask, User
 from app.shared.dependencies.auth import get_current_user
 from app.shared.dependencies.projects import get_owned_project
 from app.utils.model_to_read import taskboard_to_read
