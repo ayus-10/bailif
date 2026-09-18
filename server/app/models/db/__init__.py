@@ -1,6 +1,6 @@
 from app.models.db.action import Action
 from app.models.db.project import Project
-from app.models.db.task import Task, TaskDependency
+from app.models.db.task import Task, TaskEdge
 from app.models.db.taskboard import Taskboard, TaskboardTask
 from app.models.db.user import User
 
@@ -10,6 +10,6 @@ __all__ = [
     "Action",
     "Taskboard",
     "TaskboardTask",
-    "TaskDependency",
+    "TaskEdge",
     "User",
 ]

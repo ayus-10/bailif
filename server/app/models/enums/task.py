@@ -8,7 +8,7 @@ class TaskType(str, Enum):
     BUG = "bug"
 
 
-class DependencyType(str, Enum):
+class EdgeType(str, Enum):
     BLOCKS = "blocks"
     BLOCKED_BY = "blocked_by"
     RELATES_TO = "relates_to"

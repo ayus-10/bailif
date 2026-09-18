@@ -30,7 +30,7 @@ from app.models.enums.shared import (
     TaskStatus,
 )
 from app.models.enums.task import (
-    DependencyType,
+    EdgeType,
     TaskType,
 )
 
@@ -100,7 +100,7 @@ class Task(Base):
     )
 
     # ------------------------------------------------------------------
-    # Hierarchy / dependencies
+    # Hierarchy / edges
     # ------------------------------------------------------------------
     parent_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
@@ -117,14 +117,14 @@ class Task(Base):
         remote_side="Task.id",
         lazy="raise",
     )
-    outgoing_dependencies: Mapped[list["TaskDependency"]] = relationship(
-        foreign_keys="TaskDependency.task_id",
+    outgoing_edges: Mapped[list["TaskEdge"]] = relationship(
+        foreign_keys="TaskEdge.task_id",
         back_populates="task",
         cascade="all, delete-orphan",
         lazy="raise",
     )
-    incoming_dependencies: Mapped[list["TaskDependency"]] = relationship(
-        foreign_keys="TaskDependency.depends_on_id",
+    incoming_edges: Mapped[list["TaskEdge"]] = relationship(
+        foreign_keys="TaskEdge.depends_on_id",
         back_populates="depends_on",
         lazy="raise",
     )
@@ -247,11 +247,11 @@ class Task(Base):
             return False
         return True
 
-    def has_unresolved_blocking_dependencies(self) -> bool:
+    def has_unresolved_blocking_edges(self) -> bool:
         return any(
-            dep.dependency_type == DependencyType.BLOCKS
+            dep.edge_type == EdgeType.BLOCKS
             and dep.task.status != TaskStatus.DONE
-            for dep in self.incoming_dependencies
+            for dep in self.incoming_edges
         )
 
     def is_awaiting_approval(self) -> bool:
@@ -264,13 +264,8 @@ class Task(Base):
         return self.approval_status == ApprovalStatus.REJECTED
 
 
-class TaskDependency(Base):
-    """
-    Typed edge between two tasks. dependency_type is stored from the perspective of `task_id`
-    e.g. task_id="blocks" depends_on_id means task_id blocks depends_on_id.
-    """
-
-    __tablename__ = "task_dependencies"
+class TaskEdge(Base):
+    __tablename__ = "task_edges"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -283,10 +278,10 @@ class TaskDependency(Base):
         index=True,
     )
 
-    dependency_type: Mapped[DependencyType] = mapped_column(
-        Enum(DependencyType, name="dependency_type_enum"),
+    edge_type: Mapped[EdgeType] = mapped_column(
+        Enum(EdgeType, name="edge_type_enum"),
         nullable=False,
-        default=DependencyType.BLOCKS,
+        default=EdgeType.BLOCKS,
     )
 
     task_id: Mapped[uuid.UUID] = mapped_column(
@@ -301,26 +296,26 @@ class TaskDependency(Base):
     )
 
     task: Mapped["Task"] = relationship(
-        foreign_keys="TaskDependency.task_id",
-        back_populates="outgoing_dependencies",
+        foreign_keys="TaskEdge.task_id",
+        back_populates="outgoing_edges",
         lazy="raise",
     )
     depends_on: Mapped["Task"] = relationship(
-        foreign_keys="TaskDependency.depends_on_id",
-        back_populates="incoming_dependencies",
+        foreign_keys="TaskEdge.depends_on_id",
+        back_populates="incoming_edges",
         lazy="raise",
     )
 
     __table_args__ = (
         CheckConstraint(
             "task_id <> depends_on_id",
-            name="ck_task_dependencies_no_self_reference",
+            name="ck_task_edges_no_self_reference",
         ),
         UniqueConstraint(
             "task_id",
             "depends_on_id",
-            "dependency_type",
-            name="uq_task_dependencies_edge",
+            "edge_type",
+            name="uq_task_edge",
         ),
     )
 

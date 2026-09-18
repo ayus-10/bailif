@@ -15,7 +15,7 @@ from app.models.db.project import Project  # noqa: F401
 from app.models.db.refresh_token import RefreshToken  # noqa: F401
 from app.models.db.task import (  # noqa: F401
     Task,
-    TaskDependency,
+    TaskEdge,
 )
 from app.models.db.taskboard import (  # noqa: F401
     Taskboard,
