@@ -1,8 +1,9 @@
 from app.features.projects.schemas import ProjectRead
+from app.features.task_dependencies.schemas import TaskDependencyRead
 from app.features.taskboard.schemas import TaskboardRead, TaskboardTaskRead
 from app.features.tasks.schemas import TaskRead
 from app.features.users.schemas import UserRead
-from app.models.db import Project, Task, Taskboard, User
+from app.models.db import Project, Task, Taskboard, TaskDependency, User
 
 
 def user_to_read(user: User) -> UserRead:
@@ -68,4 +69,13 @@ def taskboard_to_read(taskboard: Taskboard) -> TaskboardRead:
             )
             for association in taskboard.task_associations
         ],
+    )
+
+
+def task_dependency_to_read(dependency: TaskDependency) -> TaskDependencyRead:
+    return TaskDependencyRead(
+        public_id=dependency.public_id,
+        task_public_id=dependency.task.public_id,
+        depends_on_public_id=dependency.depends_on.public_id,
+        dependency_type=dependency.dependency_type,
     )
