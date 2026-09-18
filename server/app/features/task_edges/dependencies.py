@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.auth.dependencies import get_current_user
+from app.dependencies.auth import get_current_user
 from app.features.task_edges.exceptions import TaskEdgeNotFoundError
 from app.features.task_edges.schemas import TaskEdgeCreate
 from app.features.tasks.dependencies import resolve_owned_task

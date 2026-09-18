@@ -2,7 +2,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.auth.dependencies import get_current_user
+from app.dependencies.auth import get_current_user
 from app.features.tasks import services
 from app.features.tasks.dependencies import get_owned_task
 from app.features.tasks.schemas import (
