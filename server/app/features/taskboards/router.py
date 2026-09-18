@@ -4,13 +4,13 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
 from app.features.projects.dependencies import get_owned_project
-from app.features.taskboard import services
-from app.features.taskboard.dependencies import (
+from app.features.taskboards import services
+from app.features.taskboards.dependencies import (
     get_owned_taskboard,
     get_task_on_owned_taskboard,
     get_task_on_owned_taskboard_from_payload,
 )
-from app.features.taskboard.schemas import (
+from app.features.taskboards.schemas import (
     TaskAssignment,
     TaskboardCreate,
     TaskboardListResponse,

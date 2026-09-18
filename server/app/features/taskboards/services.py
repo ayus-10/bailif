@@ -2,12 +2,12 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.features.projects.exceptions import ProjectNotFoundError
-from app.features.taskboard.exceptions import (
+from app.features.taskboards.exceptions import (
     InvalidTaskPositionError,
     TaskAlreadyInBoardError,
     TaskNotInBoardError,
 )
-from app.features.taskboard.schemas import (
+from app.features.taskboards.schemas import (
     TaskboardCreate,
     TaskboardListRead,
     TaskboardListResponse,

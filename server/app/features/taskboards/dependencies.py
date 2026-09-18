@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
-from app.features.taskboard.exceptions import (
+from app.features.taskboards.exceptions import (
     TaskboardNotFoundError,
     TaskNotInBoardError,
 )
-from app.features.taskboard.schemas import TaskAssignment
+from app.features.taskboards.schemas import TaskAssignment
 from app.features.tasks.dependencies import get_owned_task, resolve_owned_task
 from app.models.db import Project, Task, Taskboard, User
 
