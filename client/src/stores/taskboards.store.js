@@ -8,16 +8,16 @@ import {
     removeTaskFromBoard,
     repositionTask,
     updateTaskboard,
-} from "@/api/taskboard.api";
+} from "@/api/taskboards.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
-/** @typedef {import("@/types/taskboard").TaskboardRead} TaskboardRead */
-/** @typedef {import("@/types/taskboard").TaskboardListRead} TaskboardListRead */
-/** @typedef {import("@/types/taskboard").TaskboardCreate} TaskboardCreate */
-/** @typedef {import("@/types/taskboard").TaskboardUpdate} TaskboardUpdate */
-/** @typedef {import("@/types/taskboard").TaskAssignment} TaskAssignment */
-/** @typedef {import("@/types/taskboard").TaskReposition} TaskReposition */
-/** @typedef {import("@/types/taskboard").TaskboardTaskRead} TaskboardTaskRead */
+/** @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead */
+/** @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead */
+/** @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate */
+/** @typedef {import("@/types/taskboards").TaskboardUpdate} TaskboardUpdate */
+/** @typedef {import("@/types/taskboards").TaskAssignment} TaskAssignment */
+/** @typedef {import("@/types/taskboards").TaskReposition} TaskReposition */
+/** @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead */
 /** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
 
 /**
@@ -40,21 +40,21 @@ export const useTaskboardsStore = defineStore("taskboards", {
     actions: {
         /**
          * @param {Object} options
-         * @param {string} options.projectId
+         * @param {number} options.projectPublicId
          * @param {boolean} [options.forceRefresh=false]
          */
-        async fetch({ projectId, forceRefresh = false }) {
+        async fetch({ projectPublicId, forceRefresh = false }) {
             if (this.status === "loading" && !forceRefresh) return;
 
             this.status = "loading";
             this.error = null;
 
-            const cacheKey = `taskboards:project:${projectId}`;
+            const cacheKey = `taskboards:project:${projectPublicId}`;
 
             try {
                 const data = await cachedRequest(
                     cacheKey,
-                    () => listTaskboards(projectId),
+                    () => listTaskboards(projectPublicId),
                     { forceRefresh }
                 );
 
@@ -69,16 +69,16 @@ export const useTaskboardsStore = defineStore("taskboards", {
         },
 
         /**
-         * @param {string} boardId
+         * @param {number} boardPublicId
          * @param {Object} [options]
          * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<TaskboardRead | undefined>}
          */
-        async get(boardId, { forceRefresh = false } = {}) {
+        async get(boardPublicId, { forceRefresh = false } = {}) {
             try {
                 const board = await cachedRequest(
-                    `taskboard:${boardId}`,
-                    () => getTaskboard(boardId),
+                    `taskboard:${boardPublicId}`,
+                    () => getTaskboard(boardPublicId),
                     { forceRefresh }
                 );
 
@@ -103,7 +103,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
                 this.items = [...this.items, { ...board, task_count: 0 }]; // TODO: figure out if this is safe
 
                 invalidateRequestCache(
-                    `taskboards:project:${payload.project_id}`
+                    `taskboards:project:${board.project_public_id}`
                 );
 
                 return board;
@@ -113,20 +113,20 @@ export const useTaskboardsStore = defineStore("taskboards", {
         },
 
         /**
-         * @param {string} boardId
+         * @param {number} boardPublicId
          * @param {TaskboardUpdate} payload
          * @returns {Promise<TaskboardRead | undefined>}
          * @throws {Error}
          */
-        async update(boardId, payload) {
+        async update(boardPublicId, payload) {
             try {
                 const index = this.items.findIndex(
-                    (item) => item.id === boardId
+                    (item) => item.public_id === boardPublicId
                 );
 
                 if (index === -1) return;
 
-                const board = await updateTaskboard(boardId, payload);
+                const board = await updateTaskboard(boardPublicId, payload);
 
                 this.items = [
                     ...this.items.slice(0, index),
@@ -137,13 +137,13 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     ...this.items.slice(index + 1),
                 ];
 
-                if (this.currentTaskboard?.id === boardId) {
+                if (this.currentTaskboard?.public_id === boardPublicId) {
                     this.currentTaskboard = board;
                 }
 
-                invalidateRequestCache(`taskboard:${boardId}`);
+                invalidateRequestCache(`taskboard:${boardPublicId}`);
                 invalidateRequestCache(
-                    `taskboards:project:${board.project_id}`
+                    `taskboards:project:${board.project_public_id}`
                 );
 
                 return board;
@@ -153,25 +153,29 @@ export const useTaskboardsStore = defineStore("taskboards", {
         },
 
         /**
-         * @param {string} boardId
+         * @param {number} boardPublicId
          * @throws {Error}
          */
-        async remove(boardId) {
+        async remove(boardPublicId) {
             try {
-                const board = this.items.find((item) => item.id === boardId);
+                const board = this.items.find(
+                    (item) => item.public_id === boardPublicId
+                );
                 if (!board) return;
 
-                await deleteTaskboard(boardId);
+                await deleteTaskboard(boardPublicId);
 
-                this.items = this.items.filter((item) => item.id !== boardId);
+                this.items = this.items.filter(
+                    (item) => item.public_id !== boardPublicId
+                );
 
-                if (this.currentTaskboard?.id === boardId) {
+                if (this.currentTaskboard?.public_id === boardPublicId) {
                     this.currentTaskboard = null;
                 }
 
-                invalidateRequestCache(`taskboard:${boardId}`);
+                invalidateRequestCache(`taskboard:${boardPublicId}`);
                 invalidateRequestCache(
-                    `taskboards:project:${board.project_id}`
+                    `taskboards:project:${board.project_public_id}`
                 );
             } catch (err) {
                 throw err;
@@ -179,23 +183,23 @@ export const useTaskboardsStore = defineStore("taskboards", {
         },
 
         /**
-         * @param {string} boardId
+         * @param {number} boardPublicId
          * @param {TaskAssignment} payload
          * @returns {Promise<TaskboardTaskRead | undefined>}
          * @throws {Error}
          */
-        async addTask(boardId, payload) {
+        async addTask(boardPublicId, payload) {
             try {
-                const task = await addTaskToBoard(boardId, payload);
+                const task = await addTaskToBoard(boardPublicId, payload);
 
-                if (this.currentTaskboard?.id === boardId) {
+                if (this.currentTaskboard?.public_id === boardPublicId) {
                     this.currentTaskboard = {
                         ...this.currentTaskboard,
                         tasks: [...(this.currentTaskboard.tasks ?? []), task],
                     };
                 }
 
-                invalidateRequestCache(`taskboard:${boardId}`);
+                invalidateRequestCache(`taskboard:${boardPublicId}`);
 
                 return task;
             } catch (err) {
@@ -204,43 +208,44 @@ export const useTaskboardsStore = defineStore("taskboards", {
         },
 
         /**
-         * @param {string} boardId
-         * @param {string} taskId
+         * @param {number} boardPublicId
+         * @param {number} taskPublicId
          * @throws {Error}
          */
-        async removeTask(boardId, taskId) {
+        async removeTask(boardPublicId, taskPublicId) {
             try {
-                await removeTaskFromBoard(boardId, taskId);
+                await removeTaskFromBoard(boardPublicId, taskPublicId);
 
-                if (this.currentTaskboard?.id === boardId) {
+                if (this.currentTaskboard?.public_id === boardPublicId) {
                     this.currentTaskboard = {
                         ...this.currentTaskboard,
                         tasks: (this.currentTaskboard.tasks ?? []).filter(
-                            (t) => t.task_id !== taskId
+                            (t) => t.task?.public_id !== taskPublicId
                         ),
                     };
                 }
 
-                invalidateRequestCache(`taskboard:${boardId}`);
+                invalidateRequestCache(`taskboard:${boardPublicId}`);
             } catch (err) {
                 throw err;
             }
         },
 
         /**
-         * @param {string} boardId
+         * @param {number} boardPublicId
+         * @param {number} taskPublicId
          * @param {TaskReposition} payload
          * @throws {Error}
          */
-        async repositionTask(boardId, payload) {
+        async repositionTask(boardPublicId, taskPublicId, payload) {
             try {
-                await repositionTask(boardId, payload);
+                await repositionTask(boardPublicId, taskPublicId, payload);
 
-                if (this.currentTaskboard?.id === boardId) {
+                if (this.currentTaskboard?.public_id === boardPublicId) {
                     const tasks = [...(this.currentTaskboard.tasks ?? [])];
 
                     const fromIndex = tasks.findIndex(
-                        (task) => task.task_id === payload.task_id
+                        (entry) => entry.task?.public_id === taskPublicId
                     );
 
                     if (fromIndex !== -1) {
@@ -250,15 +255,15 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                         this.currentTaskboard = {
                             ...this.currentTaskboard,
-                            tasks: tasks.map((task, index) => ({
-                                ...task,
+                            tasks: tasks.map((entry, index) => ({
+                                ...entry,
                                 position: index,
                             })),
                         };
                     }
                 }
 
-                invalidateRequestCache(`taskboard:${boardId}`);
+                invalidateRequestCache(`taskboard:${boardPublicId}`);
             } catch (err) {
                 throw err;
             }

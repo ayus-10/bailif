@@ -5,7 +5,7 @@ import BoardHeader from "@/components/taskboards/BoardHeader.vue";
 import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { TASK_COLUMNS } from "@/constants/tasks";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import("@/types/task").TaskRead} TaskRead */

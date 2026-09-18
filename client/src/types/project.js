@@ -8,7 +8,7 @@
 
 /**
  * @typedef {Object} ProjectRead
- * @property {string} id
+ * @property {number} public_id
  * @property {string} name
  * @property {string} description
  * @property {string} icon
@@ -22,7 +22,6 @@
  * @property {AgentPermissionLevel} default_agent_permission_level
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
- * @property {string | null} archived_at ISO datetime
  */
 
 /**
@@ -63,7 +62,6 @@
  * @property {string | null} [start_date_after] ISO datetime
  * @property {string | null} [target_end_date_before] ISO datetime
  * @property {string | null} [target_end_date_after] ISO datetime
- * @property {boolean} [archived]
  */
 
 /**

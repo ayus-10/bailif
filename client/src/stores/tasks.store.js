@@ -17,11 +17,11 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
 /** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
 
 /**
- * @param {string} projectId
+ * @param {number} projectPublicId
  * @param {TaskFetchOptions} options
  * @returns {string}
  */
-function collectionKey(projectId, options = {}) {
+function collectionKey(projectPublicId, options = {}) {
     const {
         parentId = null,
         taskboardId = null,
@@ -36,7 +36,7 @@ function collectionKey(projectId, options = {}) {
     const queryMode = parentId ? "child-tasks" : "root-tasks";
 
     return [
-        projectId,
+        projectPublicId,
         queryMode,
         parentId ?? "root",
         taskboardId ?? "all",
@@ -62,11 +62,11 @@ export const useTasksStore = defineStore("tasks", {
 
     actions: {
         /**
-         * @param {string} projectId
+         * @param {number} projectPublicId
          * @param {TaskFetchOptions} [options]
          */
         async fetch(
-            projectId,
+            projectPublicId,
             {
                 queryMode = "root-tasks",
                 parentId = null,
@@ -82,8 +82,8 @@ export const useTasksStore = defineStore("tasks", {
                 forceRefresh = false,
             } = {}
         ) {
-            if (!projectId) {
-                throw new Error("projectId is required");
+            if (projectPublicId == null) {
+                throw new Error("projectPublicId is required");
             }
 
             if (queryMode === "child-tasks" && !parentId) {
@@ -107,7 +107,7 @@ export const useTasksStore = defineStore("tasks", {
                 forceRefresh,
             };
 
-            const key = collectionKey(projectId, query);
+            const key = collectionKey(projectPublicId, query);
 
             if (this.status[key] === "loading" && !forceRefresh) {
                 return;
@@ -117,12 +117,13 @@ export const useTasksStore = defineStore("tasks", {
             this.errors[key] = null;
 
             const params = {
-                project_id: projectId,
                 cursor,
                 ...(queryMode === "child-tasks" && parentId
-                    ? { parent_id: parentId }
+                    ? { parent_public_id: parentId }
                     : { only_root: true }),
-                ...(taskboardId != null ? { taskboard_id: taskboardId } : {}),
+                ...(taskboardId != null
+                    ? { taskboard_public_id: taskboardId }
+                    : {}),
                 ...(status != null ? { status } : {}),
                 ...(priority != null ? { priority } : {}),
                 ...(type != null ? { type } : {}),
@@ -156,18 +157,18 @@ export const useTasksStore = defineStore("tasks", {
         },
 
         /**
-         * @param {string} projectId
+         * @param {number} projectPublicId
          * @param {TaskFetchOptions} [options]
          */
-        async loadMore(projectId, options = {}) {
-            const key = collectionKey(projectId, options);
+        async loadMore(projectPublicId, options = {}) {
+            const key = collectionKey(projectPublicId, options);
             const cursor = this.nextCursor[key];
 
             if (!cursor) {
                 return;
             }
 
-            return this.fetch(projectId, {
+            return this.fetch(projectPublicId, {
                 ...options,
                 cursor,
                 append: true,
@@ -175,16 +176,16 @@ export const useTasksStore = defineStore("tasks", {
         },
 
         /**
-         * @param {string} taskId
+         * @param {number} taskPublicId
          * @param {Object} [options]
          * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<TaskRead | undefined>}
          */
-        async get(taskId, { forceRefresh = false } = {}) {
+        async get(taskPublicId, { forceRefresh = false } = {}) {
             try {
                 const task = await cachedRequest(
-                    `task:${taskId}`,
-                    () => getTask(taskId),
+                    `task:${taskPublicId}`,
+                    () => getTask(taskPublicId),
                     { forceRefresh }
                 );
 
@@ -203,20 +204,17 @@ export const useTasksStore = defineStore("tasks", {
          * @throws {Error}
          */
         async create(payload) {
-            const projectId = payload?.project_id;
-
-            if (!projectId) {
-                throw new Error("project_id is required");
-            }
-
             try {
                 const task = await createTask(payload);
+                const projectPublicId = task.project_public_id;
 
-                invalidateRequestCache(`tasks:${projectId}:`);
+                invalidateRequestCache(`tasks:${projectPublicId}:`);
 
-                const rootKey = collectionKey(projectId, {
-                    queryMode: task.parent_id ? "child-tasks" : "root-tasks",
-                    parentId: task.parent_id ?? undefined,
+                const rootKey = collectionKey(projectPublicId, {
+                    queryMode: task.parent_public_id
+                        ? "child-tasks"
+                        : "root-tasks",
+                    parentId: task.parent_public_id ?? undefined,
                 });
 
                 if (this.items[rootKey]) {
@@ -230,22 +228,24 @@ export const useTasksStore = defineStore("tasks", {
         },
 
         /**
-         * @param {string} taskId
+         * @param {number} taskPublicId
          * @param {TaskUpdate} payload
          * @returns {Promise<TaskRead | undefined>}
          * @throws {Error}
          */
-        async update(taskId, payload) {
+        async update(taskPublicId, payload) {
             try {
-                const task = await updateTask(taskId, payload);
+                const task = await updateTask(taskPublicId, payload);
 
-                if (task.id === this.currentTask?.id) {
+                if (task.public_id === this.currentTask?.public_id) {
                     this.currentTask = task;
                 }
 
                 for (const key of Object.keys(this.items)) {
                     const tasks = this.items[key];
-                    const index = tasks.findIndex((item) => item.id === taskId);
+                    const index = tasks.findIndex(
+                        (item) => item.public_id === taskPublicId
+                    );
 
                     if (index === -1) {
                         continue;
@@ -258,8 +258,8 @@ export const useTasksStore = defineStore("tasks", {
                     ];
                 }
 
-                invalidateRequestCache(`task:${taskId}`);
-                invalidateRequestCache(`tasks:${task.project_id}:`);
+                invalidateRequestCache(`task:${taskPublicId}`);
+                invalidateRequestCache(`tasks:${task.project_public_id}:`);
 
                 return task;
             } catch (err) {
@@ -268,30 +268,30 @@ export const useTasksStore = defineStore("tasks", {
         },
 
         /**
-         * @param {string} taskId
-         * @param {string} projectId
+         * @param {number} taskPublicId
+         * @param {number} projectPublicId
          * @throws {Error}
          */
-        async remove(taskId, projectId) {
-            if (!projectId) {
-                throw new Error("projectId is required");
+        async remove(taskPublicId, projectPublicId) {
+            if (projectPublicId == null) {
+                throw new Error("projectPublicId is required");
             }
 
             try {
-                await deleteTask(taskId);
+                await deleteTask(taskPublicId);
 
                 for (const key of Object.keys(this.items)) {
                     this.items[key] = this.items[key].filter(
-                        (item) => item.id !== taskId
+                        (item) => item.public_id !== taskPublicId
                     );
                 }
 
-                if (this.currentTask?.id === taskId) {
+                if (this.currentTask?.public_id === taskPublicId) {
                     this.currentTask = null;
                 }
 
-                invalidateRequestCache(`task:${taskId}`);
-                invalidateRequestCache(`tasks:${projectId}:`);
+                invalidateRequestCache(`task:${taskPublicId}`);
+                invalidateRequestCache(`tasks:${projectPublicId}:`);
             } catch (err) {
                 throw err;
             }
@@ -301,36 +301,36 @@ export const useTasksStore = defineStore("tasks", {
     getters: {
         /**
          * @param {TasksState} state
-         * @returns {(projectId: string, options?: TaskFetchOptions) => TaskRead[]}
+         * @returns {(projectPublicId: number, options?: TaskFetchOptions) => TaskRead[]}
          */
         tasksByQuery:
             (state) =>
-            (projectId, options = {}) => {
-                const key = collectionKey(projectId, options);
+            (projectPublicId, options = {}) => {
+                const key = collectionKey(projectPublicId, options);
 
                 return state.items[key] ?? [];
             },
 
         /**
          * @param {TasksState} state
-         * @returns {(projectId: string, options?: TaskFetchOptions) => FetchStatus | null}
+         * @returns {(projectPublicId: number, options?: TaskFetchOptions) => FetchStatus | null}
          */
         statusByQuery:
             (state) =>
-            (projectId, options = {}) => {
-                const key = collectionKey(projectId, options);
+            (projectPublicId, options = {}) => {
+                const key = collectionKey(projectPublicId, options);
 
                 return state.status[key] ?? null;
             },
 
         /**
          * @param {TasksState} state
-         * @returns {(projectId: string, options?: TaskFetchOptions) => unknown}
+         * @returns {(projectPublicId: number, options?: TaskFetchOptions) => unknown}
          */
         errorByQuery:
             (state) =>
-            (projectId, options = {}) => {
-                const key = collectionKey(projectId, options);
+            (projectPublicId, options = {}) => {
+                const key = collectionKey(projectPublicId, options);
 
                 return state.errors[key] ?? null;
             },

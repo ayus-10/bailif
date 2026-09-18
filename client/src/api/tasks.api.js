@@ -6,18 +6,16 @@ import { parseJson } from "./shared.api";
 /** @typedef {import("@/types/task").TaskCreate} TaskCreate */
 /** @typedef {import("@/types/task").TaskUpdate} TaskUpdate */
 /** @typedef {import("@/types/task").TaskListParams} TaskListParams */
-/** @typedef {import("@/types/task").TaskDependencyRead} TaskDependencyRead */
-/** @typedef {import("@/types/task").TaskDependencyCreate} TaskDependencyCreate */
 
 /**
- * @param {TaskListParams} params
+ * @param {TaskListParams} [params]
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskListResponse>}
  */
-export async function listTasks(params, signal) {
+export async function listTasks(params = {}, signal) {
     const search = new URLSearchParams();
 
-    for (const [key, value] of Object.entries(params || {})) {
+    for (const [key, value] of Object.entries(params)) {
         if (value != null) {
             search.set(key, String(value));
         }
@@ -31,12 +29,12 @@ export async function listTasks(params, signal) {
 }
 
 /**
- * @param {string} id
+ * @param {number} publicId
  * @param {AbortSignal} [signal]
  * @returns {Promise<TaskRead>}
  */
-export async function getTask(id, signal) {
-    const response = await apiFetch(`/tasks/${id}`, {
+export async function getTask(publicId, signal) {
+    const response = await apiFetch(`/tasks/${publicId}`, {
         signal,
     });
 
@@ -60,12 +58,12 @@ export async function createTask(payload) {
 }
 
 /**
- * @param {string} id
+ * @param {number} publicId
  * @param {TaskUpdate} payload
  * @returns {Promise<TaskRead>}
  */
-export async function updateTask(id, payload) {
-    const response = await apiFetch(`/tasks/${id}`, {
+export async function updateTask(publicId, payload) {
+    const response = await apiFetch(`/tasks/${publicId}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -77,61 +75,13 @@ export async function updateTask(id, payload) {
 }
 
 /**
- * @param {string} id
+ * @param {number} publicId
  * @returns {Promise<void>}
  */
-export async function deleteTask(id) {
-    const response = await apiFetch(`/tasks/${id}`, {
+export async function deleteTask(publicId) {
+    const response = await apiFetch(`/tasks/${publicId}`, {
         method: "DELETE",
     });
-
-    if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
-    }
-}
-
-/**
- * @param {string} taskId
- * @param {AbortSignal} [signal]
- * @returns {Promise<TaskDependencyRead[]>}
- */
-export async function listDependencies(taskId, signal) {
-    const response = await apiFetch(`/tasks/${taskId}/dependencies`, {
-        signal,
-    });
-
-    return parseJson(response);
-}
-
-/**
- * @param {string} taskId
- * @param {TaskDependencyCreate} payload
- * @returns {Promise<TaskDependencyRead>}
- */
-export async function createDependency(taskId, payload) {
-    const response = await apiFetch(`/tasks/${taskId}/dependencies`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
-
-    return parseJson(response);
-}
-
-/**
- * @param {string} taskId
- * @param {string} dependencyId
- * @returns {Promise<void>}
- */
-export async function deleteDependency(taskId, dependencyId) {
-    const response = await apiFetch(
-        `/tasks/${taskId}/dependencies/${dependencyId}`,
-        {
-            method: "DELETE",
-        }
-    );
 
     if (!response.ok) {
         throw new Error(`Request failed (${response.status})`);

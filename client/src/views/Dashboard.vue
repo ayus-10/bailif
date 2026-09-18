@@ -2,7 +2,7 @@
 import { onMounted, ref } from "vue";
 import Sidebar from "@/components/layout/Sidebar.vue";
 import CreateTaskBoardModel from "@/components/taskboards/CreateTaskBoardModel.vue";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
 
 const taskboardsStore = useTaskboardsStore();
 

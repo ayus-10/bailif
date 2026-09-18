@@ -13,28 +13,24 @@
  */
 
 /**
- * @typedef {"blocks" | "blocked_by" | "relates_to"} DependencyType
- */
-
-/**
  * @typedef {"root-tasks" | "child-tasks"} TaskQueryMode
  */
 
 /**
- * @typedef {import("@/api/projects.api").ProjectRead} ProjectRead
+ * @typedef {import("@/types/project").ProjectRead} ProjectRead
  */
 
 /**
  * @typedef {Object} TaskRead
- * @property {string} id
+ * @property {number} public_id
  * @property {string} title
  * @property {string} description
  * @property {TaskStatus} status
  * @property {TaskPriority} priority
  * @property {TaskType} type
  * @property {string} tags
- * @property {string} project_id
- * @property {string | null} parent_id
+ * @property {number} project_public_id
+ * @property {number | null} parent_public_id
  * @property {string | null} start_date ISO datetime
  * @property {string | null} due_date ISO datetime
  * @property {string} created_at ISO datetime
@@ -45,26 +41,25 @@
 /**
  * @typedef {Object} TaskCreate
  * @property {string} title
- * @property {string} project_id
  * @property {string} [description]
  * @property {TaskStatus} [status]
  * @property {TaskPriority} [priority]
  * @property {TaskType} [type]
  * @property {string} [tags]
- * @property {string | null} [parent_id]
+ * @property {number | null} [parent_public_id]
  * @property {string | null} [start_date] ISO datetime
  * @property {string | null} [due_date] ISO datetime
  */
 
 /**
  * @typedef {Object} TaskUpdate
- * @property {string} [title]
+ * @property {string | null} [title]
  * @property {string | null} [description]
  * @property {TaskStatus | null} [status]
  * @property {TaskPriority | null} [priority]
  * @property {TaskType | null} [type]
  * @property {string | null} [tags]
- * @property {string | null} [parent_id]
+ * @property {number | null} [parent_public_id]
  * @property {string | null} [start_date] ISO datetime
  * @property {string | null} [due_date] ISO datetime
  */
@@ -72,36 +67,22 @@
 /**
  * @typedef {Object} TaskListResponse
  * @property {TaskRead[]} items
- * @property {string | null} next_cursor
+ * @property {string | null} [next_cursor]
  */
 
 /**
  * @typedef {Object} TaskListParams
- * @property {string} project_id
  * @property {TaskStatus | null} [status]
  * @property {TaskPriority | null} [priority]
  * @property {TaskType | null} [type]
  * @property {string | null} [tag]
- * @property {string | null} [parent_id]
+ * @property {number | null} [parent_public_id]
+ * @property {number | null} [taskboard_public_id]
  * @property {boolean} [only_root]
  * @property {string | null} [due_before] ISO datetime
  * @property {string | null} [due_after] ISO datetime
  * @property {string | null} [cursor]
  * @property {number} [limit]
- */
-
-/**
- * @typedef {Object} TaskDependencyRead
- * @property {string} id
- * @property {string} task_id
- * @property {string} depends_on_id
- * @property {DependencyType} dependency_type
- */
-
-/**
- * @typedef {Object} TaskDependencyCreate
- * @property {string} depends_on_id
- * @property {DependencyType} dependency_type
  */
 
 /**
@@ -118,8 +99,8 @@
 /**
  * @typedef {Object} TaskFetchOptions
  * @property {TaskQueryMode} [queryMode="root-tasks"]
- * @property {string | null} [parentId]
- * @property {string | null} [taskboardId]
+ * @property {number | null} [parentId]
+ * @property {number | null} [taskboardId]
  * @property {import("@/types/task").TaskStatus | null} [status]
  * @property {import("@/types/task").TaskPriority | null} [priority]
  * @property {import("@/types/task").TaskType | null} [type]

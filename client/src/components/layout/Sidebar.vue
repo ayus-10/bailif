@@ -1,7 +1,7 @@
 <script setup>
 import { onUnmounted, ref } from "vue";
 
-/** @typedef {import("@/stores/taskboard.store").TaskboardListRead} TaskboardListRead */
+/** @typedef {import("@/stores/taskboards.store").TaskboardListRead} TaskboardListRead */
 
 const props = defineProps({
     taskBoards: {

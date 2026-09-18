@@ -2,9 +2,9 @@
 import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
 
-/** @typedef {import("@/types/taskboard").TaskboardForm} TaskboardForm */
+/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
 
 const props = defineProps({
     modelValue: {
