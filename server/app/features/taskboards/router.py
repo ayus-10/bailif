@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.dependencies.auth import get_current_user
-from app.features.projects.dependencies import get_owned_project
+from app.dependencies.projects import get_owned_project
 from app.features.taskboards import services
 from app.features.taskboards.dependencies import (
     get_owned_taskboard,

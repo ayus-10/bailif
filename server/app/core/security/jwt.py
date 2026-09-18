@@ -5,7 +5,6 @@ from uuid import uuid4
 import jwt
 
 from app.core.config import settings
-from app.core.constants import TokenType
 from app.core.security.config import get_jwt_secret
 from app.core.security.constants import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -13,6 +12,7 @@ from app.core.security.constants import (
     CLOCK_SKEW_LEEWAY_SECONDS,
 )
 from app.core.security.exceptions import TokenExpiredError, TokenInvalidError
+from app.shared.constants import TokenType
 
 
 def encode(payload: dict[str, Any]) -> str:

@@ -20,7 +20,6 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.constants import TASK_STATUS_TRANSITIONS
 from app.core.database import Base
 from app.models.enums.shared import (
     AgentPermissionLevel,
@@ -33,6 +32,7 @@ from app.models.enums.task import (
     EdgeType,
     TaskType,
 )
+from app.shared.constants import TASK_STATUS_TRANSITIONS
 
 if TYPE_CHECKING:
     from app.models.db.project import Project
