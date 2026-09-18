@@ -3,13 +3,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user
-from app.dependencies.tasks import get_owned_task
 from app.features.task_edges.exceptions import TaskEdgeNotFoundError
 from app.features.task_edges.schemas import TaskEdgeCreate
-from app.features.tasks.exceptions import TaskNotFoundError
 from app.models.db import Project, Task, User
 from app.models.db.task import TaskEdge
+from app.shared.dependencies.auth import get_current_user
+from app.shared.dependencies.tasks import get_owned_task
+from app.shared.exceptions import TaskNotFoundError
 
 
 def get_task_for_edges(

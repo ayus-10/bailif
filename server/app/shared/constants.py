@@ -1,4 +1,4 @@
-from app.models.enums.shared import TaskStatus
+from app.shared.enums import TaskStatus
 
 
 class TokenType:

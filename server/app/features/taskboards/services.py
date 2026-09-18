@@ -1,7 +1,6 @@
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from app.features.projects.exceptions import ProjectNotFoundError
 from app.features.taskboards.exceptions import (
     InvalidTaskPositionError,
     TaskAlreadyInBoardError,
@@ -13,11 +12,11 @@ from app.features.taskboards.schemas import (
     TaskboardListResponse,
     TaskboardUpdate,
 )
-from app.features.tasks.exceptions import TaskNotFoundError
 from app.models.db import User
 from app.models.db.project import Project
 from app.models.db.task import Task
 from app.models.db.taskboard import Taskboard, TaskboardTask
+from app.shared.exceptions import ProjectNotFoundError, TaskNotFoundError
 
 
 def create_taskboard(

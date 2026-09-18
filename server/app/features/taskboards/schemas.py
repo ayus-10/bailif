@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.features.tasks.schemas import TaskRead
+from app.shared.schemas import TaskRead
 
 
 class TaskboardCreate(BaseModel):

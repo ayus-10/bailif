@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from app.agent.llm.embeddings import get_embedding
 from app.core.database import SessionLocal
-from app.features.projects.exceptions import ProjectNotFoundError
 from app.features.tasks.exceptions import TaskValidationError
 from app.features.tasks.schemas import (
     TaskCreate,
@@ -17,6 +16,7 @@ from app.features.tasks.schemas import (
 )
 from app.models.db import Project, Taskboard, TaskboardTask, User
 from app.models.db.task import Task
+from app.shared.exceptions import ProjectNotFoundError
 from app.utils.date_validation import validate_datetime_range
 from app.utils.model_to_read import task_to_read
 from app.utils.pagination import decode_cursor, encode_cursor

@@ -3,14 +3,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user
-from app.dependencies.tasks import get_owned_task
 from app.features.taskboards.exceptions import (
     TaskboardNotFoundError,
     TaskNotInBoardError,
 )
 from app.features.taskboards.schemas import TaskAssignment
 from app.models.db import Project, Task, Taskboard, User
+from app.shared.dependencies.auth import get_current_user
+from app.shared.dependencies.tasks import get_owned_task
 
 
 def get_owned_taskboard(

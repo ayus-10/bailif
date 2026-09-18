@@ -1,9 +1,8 @@
-from app.features.projects.schemas import ProjectRead
 from app.features.task_edges.schemas import TaskEdgeRead
 from app.features.taskboards.schemas import TaskboardRead, TaskboardTaskRead
-from app.features.tasks.schemas import TaskRead
 from app.features.users.schemas import UserRead
 from app.models.db import Project, Task, Taskboard, TaskEdge, User
+from app.shared.schemas import ProjectRead, TaskRead
 
 
 def user_to_read(user: User) -> UserRead:

@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.dependencies.auth import get_current_user
-from app.dependencies.projects import get_owned_project
 from app.features.taskboards import services
 from app.features.taskboards.dependencies import (
     get_owned_taskboard,
@@ -21,6 +19,8 @@ from app.features.taskboards.schemas import (
 )
 from app.models.db import Project, Task, User
 from app.models.db.taskboard import Taskboard, TaskboardTask
+from app.shared.dependencies.auth import get_current_user
+from app.shared.dependencies.projects import get_owned_project
 from app.utils.model_to_read import taskboard_to_read
 
 router = APIRouter(prefix="/taskboards", tags=["taskboards"])
