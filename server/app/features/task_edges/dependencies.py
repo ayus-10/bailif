@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
-from app.features.task_dependencies.exceptions import TaskDependencyNotFoundError
-from app.features.task_dependencies.schemas import TaskDependencyCreate
+from app.features.task_edges.exceptions import TaskEdgeNotFoundError
+from app.features.task_edges.schemas import TaskEdgeCreate
 from app.features.tasks.exceptions import TaskNotFoundError
 from app.models.db import Project, Task, User
-from app.models.db.task import TaskDependency
+from app.models.db.task import TaskEdge
 
 
 def get_task_for_dependencies(
@@ -34,7 +34,7 @@ def get_task_for_dependencies(
 
 
 def get_depends_on_task_from_payload(
-    payload: TaskDependencyCreate,
+    payload: TaskEdgeCreate,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Task:
@@ -62,13 +62,13 @@ def get_dependency_on_task(
     task: Task = Depends(get_task_for_dependencies),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> TaskDependency:
+) -> TaskEdge:
     dependency = db.execute(
-        select(TaskDependency)
-        .join(Task, Task.id == TaskDependency.task_id)
+        select(TaskEdge)
+        .join(Task, Task.id == TaskEdge.task_id)
         .join(Project, Project.id == Task.project_id)
         .where(
-            TaskDependency.public_id == dependency_public_id,
+            TaskEdge.public_id == dependency_public_id,
             Task.deleted_at.is_(None),
             Project.deleted_at.is_(None),
             Project.user_id == user.id,
@@ -76,17 +76,13 @@ def get_dependency_on_task(
     ).scalar_one_or_none()
 
     if dependency is None:
-        raise TaskDependencyNotFoundError(
-            f"Task dependency {dependency_public_id} not found"
-        )
+        raise TaskEdgeNotFoundError(f"Task dependency {dependency_public_id} not found")
 
     is_attached_to_task = (
         dependency.task_id == task.id or dependency.depends_on_id == task.id
     )
 
     if not is_attached_to_task:
-        raise TaskDependencyNotFoundError(
-            f"Task dependency {dependency_public_id} not found"
-        )
+        raise TaskEdgeNotFoundError(f"Task dependency {dependency_public_id} not found")
 
     return dependency

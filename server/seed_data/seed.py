@@ -4,7 +4,7 @@ from datetime import datetime
 
 from app.core.database import SessionLocal
 from app.models.db.project import Project
-from app.models.db.task import Task, TaskDependency
+from app.models.db.task import Task
 from app.models.db.taskboard import Taskboard, TaskboardTask
 from app.models.db.user import User
 
@@ -152,33 +152,14 @@ def seed_taskboard_tasks(db, associations: list[dict]) -> None:
     db.commit()
 
 
-def seed_dependencies(db, dependencies: list[dict]) -> None:
-    for item in dependencies:
-        try:
-            dependency = TaskDependency(
-                task_id=parse_uuid(item["task_id"]),
-                depends_on_id=parse_uuid(item["depends_on_id"]),
-                dependency_type=item.get("dependency_type", "blocks"),
-            )
-            db.add(dependency)
-            db.flush()
-            print(f"dependency: {item['task_id']} -> {item['depends_on_id']}")
-        except Exception as e:
-            db.rollback()
-            print(f"dependency {item.get('task_id')}: {e}")
-
-    db.commit()
-
-
 def main() -> None:
-    data = load_data("sample_data/filtered_data.json")
+    data = load_data("seed_data/filtered_data.json")
 
     users = data.get("users", [])
     projects = data.get("projects", [])
     tasks = data.get("tasks", [])
     taskboards = data.get("taskboards", [])
     taskboard_tasks = data.get("taskboard_tasks", [])
-    dependencies = data.get("task_dependencies", [])
 
     db = SessionLocal()
 
@@ -189,7 +170,6 @@ def main() -> None:
         seed_tasks(db, tasks)
         seed_taskboards(db, taskboards)
         seed_taskboard_tasks(db, taskboard_tasks)
-        seed_dependencies(db, dependencies)
     finally:
         db.close()
 

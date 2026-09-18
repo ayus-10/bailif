@@ -249,8 +249,7 @@ class Task(Base):
 
     def has_unresolved_blocking_edges(self) -> bool:
         return any(
-            dep.edge_type == EdgeType.BLOCKS
-            and dep.task.status != TaskStatus.DONE
+            dep.edge_type == EdgeType.BLOCKS and dep.task.status != TaskStatus.DONE
             for dep in self.incoming_edges
         )
 

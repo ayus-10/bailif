@@ -1,8 +1,8 @@
 from app.core.exceptions import ConflictError, NotFoundError
 
 
-class TaskDependencyNotFoundError(NotFoundError):
-    code = "task_dependency_not_found"
+class TaskEdgeNotFoundError(NotFoundError):
+    code = "task_edge_not_found"
 
 
 class DuplicateDependencyError(ConflictError):

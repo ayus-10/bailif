@@ -3,23 +3,23 @@ from uuid import UUID
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, joinedload
 
-from app.features.task_dependencies.exceptions import (
+from app.features.task_edges.exceptions import (
     CycleDetectedError,
     DuplicateDependencyError,
     SelfDependencyError,
     TaskLevelMismatchError,
 )
-from app.features.task_dependencies.schemas import TaskDependencyCreate
-from app.models.db.task import Task, TaskDependency
-from app.models.enums.task import DependencyType
+from app.features.task_edges.schemas import TaskEdgeCreate
+from app.models.db.task import Task, TaskEdge
+from app.models.enums.task import EdgeType
 
 
 def create_dependency(
     db: Session,
     task: Task,
     depends_on_task: Task,
-    payload: TaskDependencyCreate,
-) -> TaskDependency:
+    payload: TaskEdgeCreate,
+) -> TaskEdge:
     if task.id == depends_on_task.id:
         raise SelfDependencyError(f"Task {task.public_id} cannot depend on itself")
 
@@ -30,10 +30,10 @@ def create_dependency(
         )
 
     existing = db.execute(
-        select(TaskDependency).where(
-            TaskDependency.task_id == task.id,
-            TaskDependency.depends_on_id == depends_on_task.id,
-            TaskDependency.dependency_type == payload.dependency_type,
+        select(TaskEdge).where(
+            TaskEdge.task_id == task.id,
+            TaskEdge.depends_on_id == depends_on_task.id,
+            TaskEdge.edge_type == payload.edge_type,
         )
     ).scalar_one_or_none()
 
@@ -43,7 +43,7 @@ def create_dependency(
             f"{task.public_id} and {depends_on_task.public_id}"
         )
 
-    edge = _normalized_edge(task.id, depends_on_task.id, payload.dependency_type)
+    edge = _normalized_edge(task.id, depends_on_task.id, payload.edge_type)
 
     if edge is not None and _would_create_cycle(db, edge[0], edge[1]):
         raise CycleDetectedError(
@@ -51,10 +51,10 @@ def create_dependency(
             f"to {depends_on_task.public_id} would create a cycle"
         )
 
-    dependency = TaskDependency(
+    dependency = TaskEdge(
         task_id=task.id,
         depends_on_id=depends_on_task.id,
-        dependency_type=payload.dependency_type,
+        edge_type=payload.edge_type,
     )
 
     # Assigned directly from objects already in hand rather than re-query
@@ -70,33 +70,33 @@ def create_dependency(
     return dependency
 
 
-def list_dependencies_for_task(db: Session, task: Task) -> list[TaskDependency]:
+def list_dependencies_for_task(db: Session, task: Task) -> list[TaskEdge]:
     stmt = (
-        select(TaskDependency)
+        select(TaskEdge)
         .options(
-            joinedload(TaskDependency.task),
-            joinedload(TaskDependency.depends_on),
+            joinedload(TaskEdge.task),
+            joinedload(TaskEdge.depends_on),
         )
         .where(
             or_(
-                TaskDependency.task_id == task.id,
-                TaskDependency.depends_on_id == task.id,
+                TaskEdge.task_id == task.id,
+                TaskEdge.depends_on_id == task.id,
             )
         )
     )
     return list(db.execute(stmt).scalars().all())
 
 
-def delete_dependency(db: Session, dependency: TaskDependency) -> None:
+def delete_dependency(db: Session, dependency: TaskEdge) -> None:
     db.delete(dependency)
 
 
 def _normalized_edge(
-    task_id: UUID, depends_on_id: UUID, dependency_type: DependencyType
+    task_id: UUID, depends_on_id: UUID, edge_type: EdgeType
 ) -> tuple[UUID, UUID] | None:
-    if dependency_type == DependencyType.BLOCKS:
+    if edge_type == EdgeType.BLOCKS:
         return task_id, depends_on_id
-    if dependency_type == DependencyType.BLOCKED_BY:
+    if edge_type == EdgeType.BLOCKED_BY:
         return depends_on_id, task_id
     return None
 

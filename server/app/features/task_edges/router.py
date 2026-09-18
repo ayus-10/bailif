@@ -2,18 +2,18 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.task_dependencies import services
-from app.features.task_dependencies.dependencies import (
+from app.features.task_edges import services
+from app.features.task_edges.dependencies import (
     get_dependency_on_task,
     get_depends_on_task_from_payload,
     get_task_for_dependencies,
 )
-from app.features.task_dependencies.schemas import (
-    TaskDependencyCreate,
-    TaskDependencyRead,
+from app.features.task_edges.schemas import (
+    TaskEdgeCreate,
+    TaskEdgeRead,
 )
-from app.models.db import Task, TaskDependency
-from app.utils.model_to_read import task_dependency_to_read
+from app.models.db import Task, TaskEdge
+from app.utils.model_to_read import task_edge_to_read
 
 router = APIRouter(
     prefix="/tasks/{task_public_id}/dependencies",
@@ -23,34 +23,34 @@ router = APIRouter(
 
 @router.post(
     "",
-    response_model=TaskDependencyRead,
+    response_model=TaskEdgeRead,
     status_code=status.HTTP_201_CREATED,
 )
 def create_dependency(
-    payload: TaskDependencyCreate,
+    payload: TaskEdgeCreate,
     task: Task = Depends(get_task_for_dependencies),
     depends_on_task: Task = Depends(get_depends_on_task_from_payload),
     db: Session = Depends(get_db),
-) -> TaskDependencyRead:
+) -> TaskEdgeRead:
     dependency = services.create_dependency(db, task, depends_on_task, payload)
-    return task_dependency_to_read(dependency)
+    return task_edge_to_read(dependency)
 
 
 @router.get(
     "",
-    response_model=list[TaskDependencyRead],
+    response_model=list[TaskEdgeRead],
 )
 def list_dependencies(
     task: Task = Depends(get_task_for_dependencies),
     db: Session = Depends(get_db),
-) -> list[TaskDependencyRead]:
+) -> list[TaskEdgeRead]:
     dependencies = services.list_dependencies_for_task(db, task)
     live = [
         d
         for d in dependencies
         if d.task.deleted_at is None and d.depends_on.deleted_at is None
     ]
-    return [task_dependency_to_read(d) for d in live]
+    return [task_edge_to_read(d) for d in live]
 
 
 @router.delete(
@@ -58,7 +58,7 @@ def list_dependencies(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_dependency(
-    dependency: TaskDependency = Depends(get_dependency_on_task),
+    dependency: TaskEdge = Depends(get_dependency_on_task),
     db: Session = Depends(get_db),
 ) -> None:
     services.delete_dependency(db, dependency)
