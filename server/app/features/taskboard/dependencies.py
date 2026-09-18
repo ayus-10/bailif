@@ -8,11 +8,11 @@ from app.features.taskboard.exceptions import (
     TaskboardNotFoundError,
     TaskNotInBoardError,
 )
-from app.features.tasks.dependencies import get_task_by_public_id
+from app.features.tasks.dependencies import get_owned_task
 from app.models.db import Project, Task, Taskboard, User
 
 
-def get_taskboard_by_public_id(
+def get_owned_taskboard(
     taskboard_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -36,9 +36,9 @@ def get_taskboard_by_public_id(
     return board
 
 
-def get_task_on_current_board(
-    taskboard: Taskboard = Depends(get_taskboard_by_public_id),
-    task: Task = Depends(get_task_by_public_id),
+def get_task_on_owned_taskboard(
+    taskboard: Taskboard = Depends(get_owned_taskboard),
+    task: Task = Depends(get_owned_task),
 ) -> Task:
     if task.project_id != taskboard.project_id:
         raise TaskNotInBoardError(

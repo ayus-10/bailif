@@ -3,11 +3,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
-from app.features.projects.dependencies import get_project_by_public_id
+from app.features.projects.dependencies import get_owned_project
 from app.features.taskboard import services
 from app.features.taskboard.dependencies import (
-    get_task_on_current_board,
-    get_taskboard_by_public_id,
+    get_owned_taskboard,
+    get_task_on_owned_taskboard,
 )
 from app.features.taskboard.schemas import (
     TaskAssignment,
@@ -44,7 +44,7 @@ def create_taskboard(
     response_model=TaskboardListResponse,
 )
 def list_taskboards(
-    project: Project = Depends(get_project_by_public_id),
+    project: Project = Depends(get_owned_project),
     db: Session = Depends(get_db),
 ) -> TaskboardListResponse:
     return services.list_taskboards(db, project)
@@ -55,7 +55,7 @@ def list_taskboards(
     response_model=TaskboardRead,
 )
 def get_taskboard(
-    board: Taskboard = Depends(get_taskboard_by_public_id),
+    board: Taskboard = Depends(get_owned_taskboard),
 ) -> TaskboardRead:
     return taskboard_to_read(board)
 
@@ -66,7 +66,7 @@ def get_taskboard(
 )
 def update_taskboard(
     payload: TaskboardUpdate,
-    board: Taskboard = Depends(get_taskboard_by_public_id),
+    board: Taskboard = Depends(get_owned_taskboard),
     db: Session = Depends(get_db),
 ) -> TaskboardRead:
     board = services.update_taskboard(db, board, payload)
@@ -78,7 +78,7 @@ def update_taskboard(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_taskboard(
-    board: Taskboard = Depends(get_taskboard_by_public_id),
+    board: Taskboard = Depends(get_owned_taskboard),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> None:
@@ -93,8 +93,8 @@ def delete_taskboard(
 )
 def add_task_to_board(
     payload: TaskAssignment,
-    board: Taskboard = Depends(get_taskboard_by_public_id),
-    task: Task = Depends(get_task_on_current_board),
+    board: Taskboard = Depends(get_owned_taskboard),
+    task: Task = Depends(get_task_on_owned_taskboard),
     db: Session = Depends(get_db),
 ) -> TaskboardTask:
     return services.add_task_to_board(
@@ -110,8 +110,8 @@ def add_task_to_board(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def remove_task_from_board(
-    board: Taskboard = Depends(get_taskboard_by_public_id),
-    task: Task = Depends(get_task_on_current_board),
+    board: Taskboard = Depends(get_owned_taskboard),
+    task: Task = Depends(get_task_on_owned_taskboard),
     db: Session = Depends(get_db),
 ) -> None:
     services.remove_task_from_board(
@@ -127,8 +127,8 @@ def remove_task_from_board(
 )
 def reposition_task(
     payload: TaskReposition,
-    board: Taskboard = Depends(get_taskboard_by_public_id),
-    task: Task = Depends(get_task_on_current_board),
+    board: Taskboard = Depends(get_owned_taskboard),
+    task: Task = Depends(get_task_on_owned_taskboard),
     db: Session = Depends(get_db),
 ) -> None:
     services.reposition_task_in_board(

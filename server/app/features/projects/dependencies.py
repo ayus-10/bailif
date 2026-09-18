@@ -9,7 +9,7 @@ from app.models.db import User
 from app.models.db.project import Project
 
 
-def get_project_by_public_id(
+def get_owned_project(
     project_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),

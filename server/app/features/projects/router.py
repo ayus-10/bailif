@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
 from app.features.projects import services
-from app.features.projects.dependencies import get_project_by_public_id
+from app.features.projects.dependencies import get_owned_project
 from app.features.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
@@ -48,7 +48,7 @@ def list_projects(
     response_model=ProjectRead,
 )
 def get_project(
-    project: Project = Depends(get_project_by_public_id),
+    project: Project = Depends(get_owned_project),
 ) -> Project:
     return project
 
@@ -59,7 +59,7 @@ def get_project(
 )
 def update_project(
     payload: ProjectUpdate,
-    project: Project = Depends(get_project_by_public_id),
+    project: Project = Depends(get_owned_project),
     db: Session = Depends(get_db),
 ) -> Project:
     return services.update_project(db, project, payload)
@@ -70,7 +70,7 @@ def update_project(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_project(
-    project: Project = Depends(get_project_by_public_id),
+    project: Project = Depends(get_owned_project),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> None:

@@ -9,7 +9,7 @@ from app.models.db import Project, User
 from app.models.db.task import Task
 
 
-def get_task_by_public_id(
+def get_owned_task(
     task_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
