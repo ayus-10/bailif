@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.features.auth.dependencies import get_current_user
 from app.features.task_edges.exceptions import TaskEdgeNotFoundError
 from app.features.task_edges.schemas import TaskEdgeCreate
+from app.features.tasks.dependencies import resolve_owned_task
 from app.features.tasks.exceptions import TaskNotFoundError
 from app.models.db import Project, Task, User
 from app.models.db.task import TaskEdge
@@ -38,23 +39,11 @@ def get_depends_on_task_from_payload(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Task:
-    task = db.execute(
-        select(Task)
-        .join(Project, Project.id == Task.project_id)
-        .where(
-            Task.public_id == payload.depends_on_public_id,
-            Task.deleted_at.is_(None),
-            Project.user_id == user.id,
-            Project.deleted_at.is_(None),
-        )
-    ).scalar_one_or_none()
-
-    if task is None:
-        raise TaskNotFoundError(
-            f"Task with public_id {payload.depends_on_public_id} not found"
-        )
-
-    return task
+    return resolve_owned_task(
+        task_public_id=payload.depends_on_public_id,
+        db=db,
+        user=user,
+    )
 
 
 def get_edge_on_task(
