@@ -8,6 +8,7 @@ from app.features.taskboard import services
 from app.features.taskboard.dependencies import (
     get_owned_taskboard,
     get_task_on_owned_taskboard,
+    get_task_on_owned_taskboard_from_payload,
 )
 from app.features.taskboard.schemas import (
     TaskAssignment,
@@ -93,7 +94,7 @@ def delete_taskboard(
 def add_task_to_board(
     payload: TaskAssignment,
     board: Taskboard = Depends(get_owned_taskboard),
-    task: Task = Depends(get_task_on_owned_taskboard),
+    task: Task = Depends(get_task_on_owned_taskboard_from_payload),
     db: Session = Depends(get_db),
 ) -> TaskboardTask:
     return services.add_task_to_board(
