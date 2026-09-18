@@ -2,18 +2,17 @@ from fastapi import APIRouter, BackgroundTasks, Depends, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.auth.dependencies import get_current_user
 from app.features.tasks import services
-from app.features.tasks.dependencies import get_task_by_public_id
 from app.features.tasks.schemas import (
     TaskCreate,
     TaskFilterParams,
     TaskListResponse,
-    TaskRead,
     TaskUpdate,
 )
-from app.models.db import User
-from app.models.db.task import Task
+from app.models.db import Task, User
+from app.shared.dependencies.auth import get_current_user
+from app.shared.dependencies.tasks import get_owned_task
+from app.shared.schemas import TaskRead
 from app.utils.model_to_read import task_to_read
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -51,7 +50,7 @@ def list_tasks(
 
 @router.get("/{task_public_id}", response_model=TaskRead)
 def get_task(
-    task: Task = Depends(get_task_by_public_id),
+    task: Task = Depends(get_owned_task),
 ) -> TaskRead:
     return task_to_read(task)
 
@@ -60,7 +59,7 @@ def get_task(
 def update_task(
     payload: TaskUpdate,
     background_tasks: BackgroundTasks,
-    task: Task = Depends(get_task_by_public_id),
+    task: Task = Depends(get_owned_task),
     db: Session = Depends(get_db),
 ) -> TaskRead:
     task, updated_field_count = services.update_task(
@@ -83,7 +82,7 @@ def update_task(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_task(
-    task: Task = Depends(get_task_by_public_id),
+    task: Task = Depends(get_owned_task),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> None:

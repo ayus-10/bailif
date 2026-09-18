@@ -5,15 +5,15 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.constants import TokenType
 from app.core.database import get_db
 from app.core.security.exceptions import TokenExpiredError, TokenInvalidError
 from app.core.security.jwt import decode
-from app.features.auth.exceptions import (
+from app.models.db import User
+from app.shared.constants import TokenType
+from app.shared.exceptions import (
     AccessTokenExpiredError,
     AccessTokenInvalidError,
 )
-from app.models.db.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -44,8 +44,6 @@ def get_current_user(
             User.is_active.is_(True),
         )
     )
-
-    # TODO: user.active_project is lazy joined but nobody checked if the project is softdeleted
 
     if user is None:
         raise AccessTokenInvalidError("Invalid access token")

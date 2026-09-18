@@ -15,4 +15,4 @@ dev:
 	poetry run uvicorn app.main:app --reload
 
 seed:
-	poetry run python -m sample_data.seed
+	poetry run python -m seed_data.seed

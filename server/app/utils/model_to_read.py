@@ -1,8 +1,8 @@
-from app.features.projects.schemas import ProjectRead
-from app.features.taskboard.schemas import TaskboardRead, TaskboardTaskRead
-from app.features.tasks.schemas import TaskRead
+from app.features.task_edges.schemas import TaskEdgeRead
+from app.features.taskboards.schemas import TaskboardRead, TaskboardTaskRead
 from app.features.users.schemas import UserRead
-from app.models.db import Project, Task, Taskboard, User
+from app.models.db import Project, Task, Taskboard, TaskEdge, User
+from app.shared.schemas import ProjectRead, TaskRead
 
 
 def user_to_read(user: User) -> UserRead:
@@ -68,4 +68,13 @@ def taskboard_to_read(taskboard: Taskboard) -> TaskboardRead:
             )
             for association in taskboard.task_associations
         ],
+    )
+
+
+def task_edge_to_read(edge: TaskEdge) -> TaskEdgeRead:
+    return TaskEdgeRead(
+        public_id=edge.public_id,
+        task_public_id=edge.task.public_id,
+        depends_on_public_id=edge.depends_on.public_id,
+        edge_type=edge.edge_type,
     )

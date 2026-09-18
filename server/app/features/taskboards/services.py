@@ -1,23 +1,19 @@
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
-from app.features.projects.exceptions import ProjectNotFoundError
-from app.features.taskboard.exceptions import (
+from app.features.taskboards.exceptions import (
     InvalidTaskPositionError,
     TaskAlreadyInBoardError,
     TaskNotInBoardError,
 )
-from app.features.taskboard.schemas import (
+from app.features.taskboards.schemas import (
     TaskboardCreate,
     TaskboardListRead,
     TaskboardListResponse,
     TaskboardUpdate,
 )
-from app.features.tasks.exceptions import TaskNotFoundError
-from app.models.db import User
-from app.models.db.project import Project
-from app.models.db.task import Task
-from app.models.db.taskboard import Taskboard, TaskboardTask
+from app.models.db import Project, Task, Taskboard, TaskboardTask, User
+from app.shared.exceptions import ProjectNotFoundError, TaskNotFoundError
 
 
 def create_taskboard(
@@ -25,7 +21,7 @@ def create_taskboard(
     user: User,
     payload: TaskboardCreate,
 ) -> Taskboard:
-    if user.active_project is None:
+    if user.active_project is None or user.active_project.deleted_at is not None:
         raise ProjectNotFoundError("User must have an active project")
 
     project = db.execute(

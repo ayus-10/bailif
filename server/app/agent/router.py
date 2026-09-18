@@ -20,8 +20,7 @@ from app.agent.services.plan_generation import generate_action_plan
 from app.agent.services.task_suggestion import generate_task_suggestions
 from app.agent.services.vector_search import semantic_search
 from app.core.database import get_db
-from app.models.db import Task
-from app.models.db.action import Action
+from app.models.db import Action, Task
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 

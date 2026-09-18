@@ -3,9 +3,9 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.features.projects.schemas import ProjectRead
-from app.models.enums.shared import TaskPriority, TaskStatus
 from app.models.enums.task import TaskType
+from app.shared.enums import TaskPriority, TaskStatus
+from app.shared.schemas import TaskRead
 from app.utils.date_validation import validate_datetime_range
 
 
@@ -77,25 +77,6 @@ class TaskUpdate(TaskFieldValidators):
     def validate_date_order(self):
         validate_datetime_range(self.start_date, self.due_date)
         return self
-
-
-class TaskRead(BaseModel):
-    public_id: int
-    title: str
-    description: str
-    status: TaskStatus
-    priority: TaskPriority
-    type: TaskType
-    tags: str
-    project_public_id: int
-    parent_public_id: int | None
-    due_date: datetime | None
-    created_at: datetime
-    updated_at: datetime
-    start_date: datetime | None
-    project: ProjectRead | None = None
-
-    model_config = {"from_attributes": True}
 
 
 class TaskFilterParams(BaseModel):

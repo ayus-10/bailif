@@ -1,8 +1,4 @@
-from app.core.exceptions import ConflictError, NotFoundError, ValidationError
-
-
-class TaskNotFoundError(NotFoundError):
-    error_code = "task_not_found"
+from app.core.exceptions import ConflictError, ValidationError
 
 
 class DuplicateTaskError(ConflictError):

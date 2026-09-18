@@ -3,16 +3,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.auth.dependencies import get_current_user
-from app.features.taskboard.exceptions import (
+from app.features.taskboards.exceptions import (
     TaskboardNotFoundError,
     TaskNotInBoardError,
 )
-from app.features.tasks.dependencies import get_task_by_public_id
+from app.features.taskboards.schemas import TaskAssignment
 from app.models.db import Project, Task, Taskboard, User
+from app.shared.dependencies.auth import get_current_user
+from app.shared.dependencies.tasks import get_owned_task
 
 
-def get_taskboard_by_public_id(
+def get_owned_taskboard(
     taskboard_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -36,12 +37,31 @@ def get_taskboard_by_public_id(
     return board
 
 
-def get_task_on_current_board(
-    taskboard: Taskboard = Depends(get_taskboard_by_public_id),
-    task: Task = Depends(get_task_by_public_id),
+def get_task_on_owned_taskboard(
+    taskboard: Taskboard = Depends(get_owned_taskboard),
+    task: Task = Depends(get_owned_task),
 ) -> Task:
     if task.project_id != taskboard.project_id:
         raise TaskNotInBoardError(
             f"Task {task.public_id} is not in board {taskboard.public_id}"
+        )
+    return task
+
+
+def get_task_on_owned_taskboard_from_payload(
+    payload: TaskAssignment,
+    board: Taskboard = Depends(get_owned_taskboard),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> Task:
+    task = get_owned_task(
+        task_public_id=payload.task_public_id,
+        db=db,
+        user=user,
+    )
+
+    if task.project_id != board.project_id:
+        raise TaskNotInBoardError(
+            f"Task {task.public_id} is not in board {board.public_id}"
         )
     return task

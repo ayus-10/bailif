@@ -3,12 +3,11 @@ from datetime import datetime
 from typing import Annotated
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.models.db.project import (
-    AgentPermissionLevel,
-    ProjectStatus,
-)
+from app.models.enums.project import ProjectStatus
+from app.shared.enums import AgentPermissionLevel
+from app.shared.schemas import ProjectRead
 from app.utils.date_validation import validate_datetime_range
 
 
@@ -104,29 +103,6 @@ class ProjectUpdate(ProjectFieldValidators):
         validate_datetime_range(self.start_date, self.target_end_date)
         validate_datetime_range(self.start_date, self.actual_end_date)
         return self
-
-
-class ProjectRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    public_id: int
-    name: str
-    description: str
-    icon: str
-    color: str | None
-    status: ProjectStatus
-
-    start_date: datetime | None
-    target_end_date: datetime | None
-    actual_end_date: datetime | None
-    timezone: str | None
-
-    agent_enabled: bool
-    default_agent_permission_level: AgentPermissionLevel
-    # external_refs: dict
-
-    created_at: datetime
-    updated_at: datetime
 
 
 class ProjectFilterParams(BaseModel):

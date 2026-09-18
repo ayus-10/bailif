@@ -21,7 +21,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 from app.models.enums.project import ProjectStatus
-from app.models.enums.shared import AgentPermissionLevel
+from app.shared.enums import AgentPermissionLevel
 
 if TYPE_CHECKING:
     from app.models.db import Task, Taskboard, User

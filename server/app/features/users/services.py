@@ -8,7 +8,7 @@ from app.features.users.exceptions import (
     UserPasswordHashError,
 )
 from app.features.users.schemas import UserCreate, UserRead
-from app.models.db.user import User
+from app.models.db import User
 from app.utils.model_to_read import user_to_read
 
 password_hash = PasswordHash.recommended()

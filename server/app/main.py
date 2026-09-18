@@ -7,7 +7,7 @@ from app.agent.router import router as ai_router
 from app.core.exceptions import CoreError
 from app.features.auth.router import router as auth_router
 from app.features.projects.router import router as projects_router
-from app.features.taskboard.router import router as taskboard_router
+from app.features.taskboards.router import router as taskboard_router
 from app.features.tasks.router import router as tasks_router
 from app.features.users.router import router as users_router
 

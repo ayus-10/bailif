@@ -6,10 +6,10 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.features.auth import services
 from app.features.auth.constants import REFRESH_COOKIE_NAME, REFRESH_COOKIE_PATH
-from app.features.auth.dependencies import get_current_user
 from app.features.auth.exceptions import InvalidCredentialsError
 from app.features.auth.schemas import LoginResponse, TokenResponse
-from app.models.db.user import User
+from app.models.db import User
+from app.shared.dependencies.auth import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

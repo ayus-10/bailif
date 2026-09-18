@@ -3,13 +3,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.features.auth.dependencies import get_current_user
-from app.features.tasks.exceptions import TaskNotFoundError
-from app.models.db import Project, User
-from app.models.db.task import Task
+from app.models.db import Project, Task, User
+from app.shared.dependencies.auth import get_current_user
+from app.shared.exceptions import TaskNotFoundError
 
 
-def get_task_by_public_id(
+def get_owned_task(
     task_public_id: int,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),

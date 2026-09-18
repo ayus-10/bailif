@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "id": "c3c3c3c3-0001-4000-8000-000000000001",
+      "username": "yeezy",
+      "password_hash": "$argon2id$v=19$m=65536,t=3,p=4$ohsge9bEaAcCgqVbWYbEpw$9dxSZPtJnhKyTqoUYlPdixznQn/26VN/i500mBLmN7w",
+      "active_project_id": null
+    }
+  ]
+}

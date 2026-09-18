@@ -10,18 +10,16 @@ from alembic import context
 load_dotenv()
 
 from app.core.database import Base
-from app.models.db.action import Action  # noqa: F401
-from app.models.db.project import Project  # noqa: F401
-from app.models.db.refresh_token import RefreshToken  # noqa: F401
-from app.models.db.task import (  # noqa: F401
+from app.models.db import (  # noqa: F401
+    Action,
+    Project,
+    RefreshToken,
     Task,
-    TaskDependency,
-)
-from app.models.db.taskboard import (  # noqa: F401
     Taskboard,
     TaskboardTask,
+    TaskEdge,
+    User,
 )
-from app.models.db.user import User  # noqa: F401
 
 config = context.config
 

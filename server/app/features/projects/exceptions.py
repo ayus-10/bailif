@@ -1,8 +1,4 @@
-from app.core.exceptions import ConflictError, NotFoundError, ValidationError
-
-
-class ProjectNotFoundError(NotFoundError):
-    error_code = "project_not_found"
+from app.core.exceptions import ConflictError, ValidationError
 
 
 class DuplicateProjectError(ConflictError):
