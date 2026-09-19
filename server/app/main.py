@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,6 +12,8 @@ from app.features.projects.router import router as projects_router
 from app.features.taskboards.router import router as taskboard_router
 from app.features.tasks.router import router as tasks_router
 from app.features.users.router import router as users_router
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Bailif Server", version="0.1.0")
 
@@ -50,6 +54,12 @@ app.include_router(
 
 @app.exception_handler(CoreError)
 async def app_error_handler(_req, exc: CoreError):
+    logger.warning(
+        "Core error: %s - %s",
+        exc.error_code,
+        exc,
+    )
+
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": exc.error_code, "message": str(exc)},

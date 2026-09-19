@@ -52,7 +52,34 @@ def project_to_read(project: Project) -> ProjectRead:
     )
 
 
+def task_edge_to_read(edge: TaskEdge) -> TaskEdgeRead:
+    return TaskEdgeRead(
+        public_id=edge.public_id,
+        task_public_id=edge.task.public_id,
+        depends_on_public_id=edge.depends_on.public_id,
+        edge_type=edge.edge_type,
+    )
+
+
+def taskboard_to_read_with_tasks(taskboard: Taskboard) -> TaskboardRead:
+    tasks = [
+        TaskboardTaskRead(
+            position=association.position,
+            task=task_to_read(association.task),
+        )
+        for association in taskboard.task_associations
+    ]
+    return _taskboard_to_read(taskboard, tasks)
+
+
 def taskboard_to_read(taskboard: Taskboard) -> TaskboardRead:
+    return _taskboard_to_read(taskboard, [])
+
+
+def _taskboard_to_read(
+    taskboard: Taskboard,
+    tasks: list[TaskboardTaskRead],
+) -> TaskboardRead:
     return TaskboardRead(
         public_id=taskboard.public_id,
         name=taskboard.name,
@@ -61,20 +88,5 @@ def taskboard_to_read(taskboard: Taskboard) -> TaskboardRead:
         project_public_id=taskboard.project.public_id,
         created_at=taskboard.created_at,
         updated_at=taskboard.updated_at,
-        tasks=[
-            TaskboardTaskRead(
-                position=association.position,
-                task=task_to_read(association.task),
-            )
-            for association in taskboard.task_associations
-        ],
-    )
-
-
-def task_edge_to_read(edge: TaskEdge) -> TaskEdgeRead:
-    return TaskEdgeRead(
-        public_id=edge.public_id,
-        task_public_id=edge.task.public_id,
-        depends_on_public_id=edge.depends_on.public_id,
-        edge_type=edge.edge_type,
+        tasks=tasks,
     )
