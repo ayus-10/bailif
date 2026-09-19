@@ -53,7 +53,7 @@ def refresh(
     refresh_token = request.cookies.get(REFRESH_COOKIE_NAME)
 
     if refresh_token is None:
-        raise InvalidCredentialsError()
+        raise InvalidCredentialsError("Refresh token is required.")
 
     access_token, new_refresh_token = services.redeem_refresh_token(
         db,

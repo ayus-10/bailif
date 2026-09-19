@@ -52,9 +52,7 @@ app.include_router(
 async def app_error_handler(_req, exc: CoreError):
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            "error": exc.error_code,
-        },
+        content={"error": exc.error_code, "message": str(exc)},
     )
 
 

@@ -28,7 +28,7 @@ def create_user(
     try:
         hashed_password = password_hash.hash(payload.password)
     except HashingError as exc:
-        raise UserPasswordHashError() from exc
+        raise UserPasswordHashError("Unable to securely hash the password.") from exc
 
     user = User(
         username=payload.username,
