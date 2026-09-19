@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from "vue";
 import BoardHeader from "@/components/taskboards/BoardHeader.vue";
 import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
@@ -15,7 +16,8 @@ import { useTasksStore } from "@/stores/tasks.store";
 const route = useRoute();
 const router = useRouter();
 
-const projectId = ref(localStorage.getItem("project_id") ?? ""); // TODO: replace with session
+// TODO: implement error boundary
+const { projectId } = useActiveProject();
 
 const currentBoard = computed(() => {
     const id = route.params.id;
@@ -26,7 +28,7 @@ const currentBoard = computed(() => {
 
     return {
         type: "board",
-        id: Array.isArray(id) ? id[0] : id,
+        id: Array.isArray(id) ? Number(id[0]) : Number(id),
     };
 });
 
@@ -151,7 +153,7 @@ async function dropTask(targetStatus) {
     task.status = targetStatus;
 
     try {
-        await tasksStore.update(task.id, {
+        await tasksStore.update(task.public_id, {
             status: targetStatus,
         });
     } catch (err) {
@@ -164,7 +166,6 @@ async function dropTask(targetStatus) {
 
 function openNewTask() {
     pendingTask.value = {
-        project_id: projectId.value,
         title: "",
         status: "open",
     };

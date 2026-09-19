@@ -10,6 +10,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: project header -->
-</template>
+<template></template>

@@ -17,11 +17,11 @@ const props = defineProps({
         required: true,
     },
     projectId: {
-        type: String,
+        type: Number,
         required: true,
     },
     taskboardId: {
-        type: /** @type {import("vue").PropType<string | null>} */ (String),
+        type: /** @type {import("vue").PropType<number | null>} */ (Number),
         default: null,
     },
     tasks: {
@@ -102,7 +102,9 @@ async function handleCreate(payload) {
     if (!task) return;
 
     if (props.taskboardId)
-        await taskboardsStore.addTask(props.taskboardId, { task_id: task.id });
+        await taskboardsStore.addTask(props.taskboardId, {
+            task_public_id: task.public_id,
+        });
 
     emit("clear-pending-task");
 }
@@ -154,7 +156,7 @@ function handleCancel() {
             />
             <TaskCard
                 v-for="task in tasks"
-                :key="task.id"
+                :key="task.public_id"
                 :task="task"
                 :accent-color="column.color.value"
                 draggable="true"

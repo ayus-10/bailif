@@ -9,6 +9,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: gantt chart -->
-</template>
+<template></template>

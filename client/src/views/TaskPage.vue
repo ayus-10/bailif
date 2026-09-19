@@ -6,6 +6,7 @@ import TaskBody from "@/components/tasks/TaskBody.vue";
 import TaskDetails from "@/components/tasks/TaskDetails.vue";
 import TaskPageHeader from "@/components/tasks/TaskPageHeader.vue";
 import TaskTags from "@/components/tasks/TaskTags.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
 import { useTaskEditor } from "@/composables/useTaskEditor";
 import { useTasksStore } from "@/stores/tasks.store";
 
@@ -14,10 +15,11 @@ const router = useRouter();
 
 const currentTaskId = computed(() => {
     const id = route.params.id;
-    return Array.isArray(id) ? id[0] : id;
+    return Array.isArray(id) ? Number(id[0]) : Number(id);
 });
 
-const projectId = ref(localStorage.getItem("project_id") ?? ""); // TODO: replace with session
+// TODO: implement error boundary
+const { projectId } = useActiveProject();
 
 const tasksStore = useTasksStore();
 

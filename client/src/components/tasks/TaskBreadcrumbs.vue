@@ -28,8 +28,7 @@ const emit = defineEmits(["back"]);
         <v-icon icon="mdi-chevron-right" size="16" />
 
         <span class="task-page__breadcrumb-current">
-            <!-- TODO: replace with an identifier -->
-            {{ task.id }}
+            {{ task.public_id }}
         </span>
     </div>
 </template>

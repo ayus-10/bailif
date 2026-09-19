@@ -9,6 +9,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: notification list -->
-</template>
+<template></template>
