@@ -9,6 +9,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: calendar grid -->
-</template>
+<template></template>

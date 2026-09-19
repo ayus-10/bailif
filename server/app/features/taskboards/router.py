@@ -5,6 +5,7 @@ from app.core.database import get_db
 from app.features.taskboards import services
 from app.features.taskboards.dependencies import (
     get_owned_taskboard,
+    get_owned_taskboard_with_tasks,
     get_task_on_owned_taskboard,
     get_task_on_owned_taskboard_from_payload,
 )
@@ -20,7 +21,7 @@ from app.features.taskboards.schemas import (
 from app.models.db import Project, Task, Taskboard, TaskboardTask, User
 from app.shared.dependencies.auth import get_current_user
 from app.shared.dependencies.projects import get_owned_project
-from app.utils.model_to_read import taskboard_to_read
+from app.utils.model_to_read import taskboard_to_read, taskboard_to_read_with_tasks
 
 router = APIRouter(prefix="/taskboards", tags=["taskboards"])
 
@@ -55,9 +56,9 @@ def list_taskboards(
     response_model=TaskboardRead,
 )
 def get_taskboard(
-    board: Taskboard = Depends(get_owned_taskboard),
+    board: Taskboard = Depends(get_owned_taskboard_with_tasks),
 ) -> TaskboardRead:
-    return taskboard_to_read(board)
+    return taskboard_to_read_with_tasks(board)
 
 
 @router.patch(

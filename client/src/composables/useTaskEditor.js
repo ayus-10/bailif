@@ -15,9 +15,9 @@ import {
 
 /**
  * @param {import("vue").Ref<TaskRead | null>} task
- * @param {String} taskId
+ * @param {Number} taskPublicId
  */
-export function useTaskEditor(task, taskId) {
+export function useTaskEditor(task, taskPublicId) {
     const tasksStore = useTasksStore();
 
     const editMode = ref(/** @type {EditMode} */ ("none"));
@@ -123,7 +123,7 @@ export function useTaskEditor(task, taskId) {
         try {
             const payload = buildUpdatePayload(draft, initialDraft);
 
-            await tasksStore.update(taskId, payload);
+            await tasksStore.update(taskPublicId, payload);
 
             copyDraftValues(initialDraft, draft);
 
@@ -147,7 +147,7 @@ export function useTaskEditor(task, taskId) {
         savingRef.value = true;
 
         try {
-            await tasksStore.update(taskId, {
+            await tasksStore.update(taskPublicId, {
                 [field]: item.value,
             });
         } catch (error) {

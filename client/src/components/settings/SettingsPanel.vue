@@ -10,6 +10,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: settings panel -->
-</template>
+<template></template>

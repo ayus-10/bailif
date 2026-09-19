@@ -3,20 +3,24 @@
  */
 
 /**
- * @typedef {"CREATE_PROJECT"
- *   | "UPDATE_PROJECT"
- *   | "ARCHIVE_PROJECT"
- *   | "DELETE_PROJECT"
- *   | "CREATE_TASK"
- *   | "UPDATE_TASK"
- *   | "DELETE_TASK"
- *   | "COMPLETE_TASK"
- *   | "REOPEN_TASK"
- *   | "SEARCH_TASKS"
- *   | "SEARCH_PROJECTS"
- *   | "SUGGEST_TASKS"
- *   | "RECOMMEND_NEXT_TASK"
+ * @typedef {"create_project"
+ *   | "update_project"
+ *   | "archive_project"
+ *   | "delete_project"
+ *   | "create_task"
+ *   | "update_task"
+ *   | "delete_task"
+ *   | "complete_task"
+ *   | "reopen_task"
+ *   | "search_tasks"
+ *   | "search_projects"
+ *   | "suggest_tasks"
+ *   | "recommend_next_task"
  * } ActionType
+ */
+
+/**
+ * @typedef {"pending" | "completed" | "rejected" | "partially_failed" | "failed"} ActionStatus
  */
 
 /**
@@ -197,10 +201,25 @@
 
 /**
  * @typedef {Object} ChatResponse
- * @property {string | null} action_id
+ * @property {string | null} [action_id]
  * @property {string} reply
- * @property {ActionItem[]} actions
- * @property {any} results
+ * @property {ActionItem[]} [actions]
+ * @property {any | null} [results]
+ */
+
+/**
+ * @typedef {Object} ActionExecutionResult
+ * @property {ActionType} type
+ * @property {boolean} ok
+ * @property {any | null} [result]
+ * @property {string | null} [error]
+ */
+
+/**
+ * @typedef {Object} AcceptActionResponse
+ * @property {string} action_id
+ * @property {ActionStatus} status
+ * @property {ActionExecutionResult[]} results
  */
 
 export {};

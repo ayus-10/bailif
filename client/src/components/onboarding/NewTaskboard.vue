@@ -2,11 +2,16 @@
 import { useRouter } from "vue-router";
 import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
+import NoActiveProject from "@/components/projects/NoActiveProject.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
 import { DEFAULT_COLORS } from "@/constants/globals";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
 
 /** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
-/** @typedef {import("@/types/taskboard").TaskboardForm} TaskboardForm */
+/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
+/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
+
+const { projectId } = useActiveProject();
 
 /** @type {VFormRef} */
 const formRef = ref(null);
@@ -22,7 +27,6 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_id: localStorage.getItem("project_id") || "", // TODO: replace with session
 });
 
 const rules = {
@@ -31,6 +35,7 @@ const rules = {
 };
 
 async function handleSubmit() {
+    if (!projectId.value) return;
     if (!formRef.value) return;
 
     const { valid } = await formRef.value.validate();
@@ -39,11 +44,18 @@ async function handleSubmit() {
     isLoading.value = true;
 
     try {
-        const taskboard = await taskboardsStore.create(form);
+        /** @type {TaskboardPayload} */
+        const payload = {
+            ...form,
+            project_public_id: projectId.value,
+        };
+
+        const taskboard = await taskboardsStore.create(payload);
         if (!taskboard) throw new Error("No response from the API");
 
         router.push("/dashboard");
-    } catch {
+    } catch (e) {
+        console.error(e);
         alert("Something went wrong.");
     } finally {
         isLoading.value = false;
@@ -53,7 +65,7 @@ async function handleSubmit() {
 
 <template>
     <div class="new-taskboard-wrapper">
-        <v-card class="new-taskboard-card" variant="outlined">
+        <v-card v-if="projectId" class="new-taskboard-card" variant="outlined">
             <div class="card-header">
                 <h1 class="text-h6 font-weight-bold card-title">
                     Create New Taskboard
@@ -127,6 +139,8 @@ async function handleSubmit() {
                 </v-form>
             </v-card-text>
         </v-card>
+
+        <NoActiveProject v-else />
     </div>
 </template>
 

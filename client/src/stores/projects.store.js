@@ -34,7 +34,6 @@ function createFilterKey(params = {}) {
         start_date_after = null,
         target_end_date_before = null,
         target_end_date_after = null,
-        archived = null,
     } = params;
 
     return [
@@ -44,7 +43,6 @@ function createFilterKey(params = {}) {
         start_date_after ?? "none",
         target_end_date_before ?? "none",
         target_end_date_after ?? "none",
-        archived ?? "all",
     ].join(":");
 }
 
@@ -91,16 +89,16 @@ export const useProjectsStore = defineStore("projects", {
         },
 
         /**
-         * @param {string} projectId
+         * @param {number} projectPublicId
          * @param {Object} [options]
          * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<ProjectRead | undefined>}
          */
-        async get(projectId, { forceRefresh = false } = {}) {
+        async get(projectPublicId, { forceRefresh = false } = {}) {
             try {
                 const project = await cachedRequest(
-                    `project:${projectId}`,
-                    () => getProject(projectId),
+                    `project:${projectPublicId}`,
+                    () => getProject(projectPublicId),
                     { forceRefresh }
                 );
 
@@ -133,17 +131,17 @@ export const useProjectsStore = defineStore("projects", {
         },
 
         /**
-         * @param {string} projectId
+         * @param {number} projectPublicId
          * @param {ProjectUpdate} payload
          * @returns {Promise<ProjectRead | undefined>}
          * @throws {Error}
          */
-        async update(projectId, payload) {
+        async update(projectPublicId, payload) {
             try {
-                const project = await updateProject(projectId, payload);
+                const project = await updateProject(projectPublicId, payload);
 
                 const index = this.items.findIndex(
-                    (item) => item.id === projectId
+                    (item) => item.public_id === projectPublicId
                 );
 
                 if (index !== -1) {
@@ -154,12 +152,12 @@ export const useProjectsStore = defineStore("projects", {
                     ];
                 }
 
-                if (this.currentProject?.id === projectId) {
+                if (this.currentProject?.public_id === projectPublicId) {
                     this.currentProject = project;
                 }
 
                 invalidateRequestCache(`projects:all`);
-                invalidateRequestCache(`project:${projectId}`);
+                invalidateRequestCache(`project:${projectPublicId}`);
 
                 return project;
             } catch (err) {
@@ -168,21 +166,23 @@ export const useProjectsStore = defineStore("projects", {
         },
 
         /**
-         * @param {string} projectId
+         * @param {number} projectPublicId
          * @throws {Error}
          */
-        async remove(projectId) {
+        async remove(projectPublicId) {
             try {
-                await deleteProject(projectId);
+                await deleteProject(projectPublicId);
 
-                this.items = this.items.filter((item) => item.id !== projectId);
+                this.items = this.items.filter(
+                    (item) => item.public_id !== projectPublicId
+                );
 
-                if (this.currentProject?.id === projectId) {
+                if (this.currentProject?.public_id === projectPublicId) {
                     this.currentProject = null;
                 }
 
                 invalidateRequestCache(`projects:all`);
-                invalidateRequestCache(`project:${projectId}`);
+                invalidateRequestCache(`project:${projectPublicId}`);
             } catch (err) {
                 throw err;
             }

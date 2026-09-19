@@ -9,6 +9,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: dashboard metrics -->
-</template>
+<template></template>

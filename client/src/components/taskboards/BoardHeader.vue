@@ -27,34 +27,6 @@ const props = defineProps({
     },
 });
 
-const CONFIG = {
-    iconSize: "1.125rem",
-    actionIconSize: "1.125rem",
-    actions: {
-        share: {
-            key: "share",
-            label: "Share board",
-            icon: "mdi-share-variant-outline",
-        },
-        settings: {
-            key: "settings",
-            label: "Board settings",
-            icon: "mdi-cog-outline",
-        },
-        invite: {
-            key: "invite",
-            label: "Invite people",
-        },
-    },
-    buttons: {
-        invite: {
-            label: "Invite people",
-            icon: "mdi-account-plus-outline",
-            color: "primary",
-        },
-    },
-};
-
 const emit = defineEmits(["action"]);
 
 /** @param {string} action */
@@ -67,7 +39,7 @@ function handleAction(action) {
     <header class="board-header">
         <div class="board-header__identity">
             <div class="board-header__icon">
-                <v-icon :size="CONFIG.iconSize">
+                <v-icon size="1.125rem">
                     {{ props.icon }}
                 </v-icon>
             </div>
@@ -94,35 +66,31 @@ function handleAction(action) {
                 v-ripple
                 type="button"
                 class="board-header__icon-button"
-                :aria-label="CONFIG.actions.share.label"
-                @click="handleAction(CONFIG.actions.share.key)"
+                aria-label="Share board"
+                @click="handleAction('share')"
             >
-                <v-icon :size="CONFIG.actionIconSize">
-                    {{ CONFIG.actions.share.icon }}
-                </v-icon>
+                <v-icon size="1.125rem"> mdi-share-variant-outline </v-icon>
             </button>
 
             <button
                 v-ripple
                 type="button"
                 class="board-header__icon-button"
-                :aria-label="CONFIG.actions.settings.label"
-                @click="handleAction(CONFIG.actions.settings.key)"
+                aria-label="Board settings"
+                @click="handleAction('settings')"
             >
-                <v-icon :size="CONFIG.actionIconSize">
-                    {{ CONFIG.actions.settings.icon }}
-                </v-icon>
+                <v-icon size="1.125rem"> mdi-cog-outline </v-icon>
             </button>
 
             <v-btn
-                :color="CONFIG.buttons.invite.color"
-                :prepend-icon="CONFIG.buttons.invite.icon"
+                color="primary"
+                prepend-icon="mdi-account-plus-outline"
                 variant="flat"
                 density="comfortable"
                 class="text-none board-toolbar__invite"
-                @click="handleAction(CONFIG.actions.invite.key)"
+                @click="handleAction('invite')"
             >
-                {{ CONFIG.buttons.invite.label }}
+                Invite people
             </v-btn>
         </div>
     </header>

@@ -4,11 +4,14 @@ import { onMounted, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import IconInput from "@/components/common/IconInput.vue";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
+import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects.store";
 
 /** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
 /** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
 /** @typedef {ProjectCreate & { color?: string }} ProjectCreateForm */
+
+const authStore = useAuthStore();
 
 /** @type {VFormRef} */
 const formRef = ref(null);
@@ -57,8 +60,7 @@ async function handleSubmit() {
         const project = await projectsStore.create(form);
         if (!project) throw new Error("No response from the API");
 
-        // TODO: switch to session, once auth is implemented
-        localStorage.setItem("project_id", project.id);
+        authStore.refreshCurrentUser();
 
         router.push("/onboarding/taskboard");
     } catch {

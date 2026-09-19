@@ -2,6 +2,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ValidationError
+from app.features.projects.exceptions import ActiveProjectConflictError
 from app.features.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
@@ -35,6 +36,9 @@ def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
         raise ValidationError(
             "Invalid project dates: target_end_date and actual_end_date must be on or after start_date."
         ) from exc
+
+    if user.active_project is None or user.active_project.deleted_at is not None:
+        user.active_project = project
 
     db.add(project)
     db.flush()
@@ -76,6 +80,8 @@ def update_project(
         and payload.default_agent_permission_level is not None
     ):
         project.default_agent_permission_level = payload.default_agent_permission_level
+
+    # TODO: allow setting "active" project
 
     try:
         _validate_project_dates(project)
@@ -127,6 +133,9 @@ def list_projects(
 
 
 def delete_project(db: Session, project: Project, user: User) -> None:
+    if user.active_project is not None and user.active_project.id == project.id:
+        raise ActiveProjectConflictError("Cannot delete the active project.")
+
     project.soft_delete(deleted_by=user.id)
 
     db.flush()

@@ -2,19 +2,19 @@
 import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
 
-/** @typedef {import("@/types/taskboard").TaskboardForm} TaskboardForm */
+/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
+/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
 
 const props = defineProps({
     modelValue: {
         type: Boolean,
         default: false,
     },
-
     projectId: {
-        type: String,
-        default: "",
+        type: Number,
+        required: true,
     },
 });
 
@@ -25,11 +25,10 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_id: props.projectId,
 });
 
 const taskboardsStore = useTaskboardsStore();
-const isLoading = ref(false); // TODO: fix this someday
+const isLoading = ref(false);
 
 const rules = {
     required: (/** @type {string} */ v) =>
@@ -44,7 +43,6 @@ function resetForm() {
     form.name = "";
     form.description = "";
     form.color = DEFAULT_COLORS[0].value;
-    form.project_id = props.projectId;
 }
 
 async function submit() {
@@ -52,7 +50,13 @@ async function submit() {
 
     isLoading.value = true;
 
-    await taskboardsStore.create(form);
+    /** @type {TaskboardPayload} */
+    const payload = {
+        ...form,
+        project_public_id: props.projectId,
+    };
+
+    await taskboardsStore.create(payload);
 
     isLoading.value = false;
 

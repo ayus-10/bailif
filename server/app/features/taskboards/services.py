@@ -1,5 +1,5 @@
 from sqlalchemy import func, select, update
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, raiseload
 
 from app.features.taskboards.exceptions import (
     InvalidTaskPositionError,
@@ -85,6 +85,10 @@ def list_taskboards(
         .outerjoin(
             Task,
             (Task.id == TaskboardTask.task_id) & Task.deleted_at.is_(None),
+        )
+        .options(
+            # suppress joined project loading in aggregate query
+            raiseload(Taskboard.project)
         )
         .where(
             Taskboard.project_id == project.id,

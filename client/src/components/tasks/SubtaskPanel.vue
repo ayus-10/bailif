@@ -12,11 +12,11 @@ import EmptyPanel from "./EmptyPanel.vue";
 
 const props = defineProps({
     taskId: {
-        type: String,
+        type: Number,
         required: true,
     },
     projectId: {
-        type: String,
+        type: Number,
         required: true,
     },
 });
@@ -75,7 +75,7 @@ function retry() {
 function openSubtask(subtask) {
     router.push({
         name: route.name,
-        params: { ...route.params, id: subtask.id },
+        params: { ...route.params, id: subtask.public_id },
     });
 }
 
@@ -89,7 +89,6 @@ async function handleCreateSubtask(task) {
 function handleNewSubtask() {
     pendingSubTask.value = {
         title: "",
-        project_id: props.projectId,
         status: "open",
     };
 }
@@ -157,7 +156,7 @@ function handleClear() {
         <TaskCard
             v-if="showSubtasks"
             v-for="subtask in subtasks"
-            :key="subtask.id"
+            :key="subtask.public_id"
             :task="subtask"
             class="subtask-list__card"
             @click="openSubtask(subtask)"

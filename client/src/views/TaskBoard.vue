@@ -1,11 +1,13 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import BoardHeader from "@/components/taskboards/BoardHeader.vue";
 import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
 import { TASK_COLUMNS } from "@/constants/tasks";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
 /** @typedef {import("@/types/task").TaskRead} TaskRead */
@@ -15,7 +17,7 @@ import { useTasksStore } from "@/stores/tasks.store";
 const route = useRoute();
 const router = useRouter();
 
-const projectId = ref(localStorage.getItem("project_id") ?? ""); // TODO: replace with session
+const { projectId } = useActiveProject();
 
 const currentBoard = computed(() => {
     const id = route.params.id;
@@ -26,7 +28,7 @@ const currentBoard = computed(() => {
 
     return {
         type: "board",
-        id: Array.isArray(id) ? id[0] : id,
+        id: Array.isArray(id) ? Number(id[0]) : Number(id),
     };
 });
 
@@ -42,26 +44,36 @@ const query = computed(() => ({
 const taskboardsStore = useTaskboardsStore();
 const tasksStore = useTasksStore();
 
-onMounted(() => {
-    if (currentBoard.value.type === "board" && currentBoard.value.id) {
-        taskboardsStore.get(currentBoard.value.id);
-    }
+watch(
+    projectId,
+    (id) => {
+        if (!id) return;
 
-    tasksStore.fetch(projectId.value, query.value);
-});
+        if (currentBoard.value.type === "board" && currentBoard.value.id) {
+            taskboardsStore.get(currentBoard.value.id);
+        }
+
+        tasksStore.fetch(id, query.value);
+    },
+    { immediate: true }
+);
 
 const taskboard = computed(() => taskboardsStore.currentTaskboard);
 
 const tasks = computed(() =>
-    tasksStore.tasksByQuery(projectId.value, query.value)
+    projectId.value ? tasksStore.tasksByQuery(projectId.value, query.value) : []
 );
 
 const status = computed(() =>
-    tasksStore.statusByQuery(projectId.value, query.value)
+    projectId.value
+        ? tasksStore.statusByQuery(projectId.value, query.value)
+        : null
 );
 
 const error = computed(() =>
-    tasksStore.errorByQuery(projectId.value, query.value)
+    projectId.value
+        ? tasksStore.errorByQuery(projectId.value, query.value)
+        : null
 );
 
 const filteredTasks = computed(() => {
@@ -104,6 +116,8 @@ function handleToolbarAction(action) {
 }
 
 function retry() {
+    if (!projectId.value) return;
+
     if (currentBoard.value.type === "board" && currentBoard.value.id) {
         taskboardsStore.get(currentBoard.value.id, {
             forceRefresh: true,
@@ -151,7 +165,7 @@ async function dropTask(targetStatus) {
     task.status = targetStatus;
 
     try {
-        await tasksStore.update(task.id, {
+        await tasksStore.update(task.public_id, {
             status: targetStatus,
         });
     } catch (err) {
@@ -164,7 +178,6 @@ async function dropTask(targetStatus) {
 
 function openNewTask() {
     pendingTask.value = {
-        project_id: projectId.value,
         title: "",
         status: "open",
     };
@@ -176,7 +189,7 @@ function handleClear() {
 </script>
 
 <template>
-    <v-container fluid class="task-board">
+    <v-container v-if="projectId" fluid class="task-board">
         <BoardHeader
             @action="handleBoardAction"
             :board-name="taskboard?.name"
@@ -204,6 +217,8 @@ function handleClear() {
             </div>
         </main>
     </v-container>
+
+    <NoActiveProject v-else />
 </template>
 
 <style scoped>

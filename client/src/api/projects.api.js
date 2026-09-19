@@ -29,12 +29,12 @@ export async function listProjects(params = {}, signal) {
 }
 
 /**
- * @param {string} id
+ * @param {number} publicId
  * @param {AbortSignal} [signal]
  * @returns {Promise<ProjectRead>}
  */
-export async function getProject(id, signal) {
-    const response = await apiFetch(`/projects/${id}`, {
+export async function getProject(publicId, signal) {
+    const response = await apiFetch(`/projects/${publicId}`, {
         signal,
     });
 
@@ -58,12 +58,12 @@ export async function createProject(payload) {
 }
 
 /**
- * @param {string} id
+ * @param {number} publicId
  * @param {ProjectUpdate} payload
  * @returns {Promise<ProjectRead>}
  */
-export async function updateProject(id, payload) {
-    const response = await apiFetch(`/projects/${id}`, {
+export async function updateProject(publicId, payload) {
+    const response = await apiFetch(`/projects/${publicId}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
@@ -75,11 +75,11 @@ export async function updateProject(id, payload) {
 }
 
 /**
- * @param {string} id
+ * @param {number} publicId
  * @returns {Promise<void>}
  */
-export async function deleteProject(id) {
-    const response = await apiFetch(`/projects/${id}`, {
+export async function deleteProject(publicId) {
+    const response = await apiFetch(`/projects/${publicId}`, {
         method: "DELETE",
     });
 

@@ -9,6 +9,4 @@ const props = defineProps({
 });
 </script>
 
-<template>
-    <!-- TODO: document list -->
-</template>
+<template></template>

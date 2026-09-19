@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, watch } from "vue";
 import Sidebar from "@/components/layout/Sidebar.vue";
 import CreateTaskBoardModel from "@/components/taskboards/CreateTaskBoardModel.vue";
-import { useTaskboardsStore } from "@/stores/taskboard.store";
+import { useActiveProject } from "@/composables/useActiveProject";
+import { useTaskboardsStore } from "@/stores/taskboards.store";
+
+const { projectId } = useActiveProject();
 
 const taskboardsStore = useTaskboardsStore();
 
 const showTaskboardModal = ref(false);
 
-const projectId = ref(localStorage.getItem("project_id") ?? undefined); // TODO: replace with session
-
-onMounted(() => {
-    if (projectId.value) taskboardsStore.fetch({ projectId: projectId.value });
-});
+watch(
+    projectId,
+    (id) => {
+        if (id) taskboardsStore.fetch({ projectPublicId: id });
+    },
+    { immediate: true }
+);
 
 function openTaskboardModal() {
     showTaskboardModal.value = true;
@@ -24,7 +29,7 @@ function closeTaskboardModal() {
 </script>
 
 <template>
-    <aside>
+    <aside v-if="projectId">
         <Sidebar
             :task-boards="taskboardsStore.items"
             @new-board="openTaskboardModal"
