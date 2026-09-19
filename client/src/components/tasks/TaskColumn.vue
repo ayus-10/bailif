@@ -10,16 +10,6 @@ import TaskCard from "./TaskCard.vue";
 /** @typedef {import("@/types/project").ProjectRead} ProjectRead */
 /** @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig */
 
-const COLUMN_CONFIG = {
-    iconSize: "1.125rem",
-    countChipSize: "x-small",
-    menuIcon: "mdi-dots-horizontal",
-    menuButtonSize: "small",
-    emptyStateIcon: "mdi-inbox-outline",
-    emptyStateIconSize: "1.25rem",
-    resizeLabel: "Resize column",
-};
-
 const props = defineProps({
     column: {
         /** @type {import("vue").PropType<TaskColumnConfig>} */
@@ -128,7 +118,7 @@ function handleCancel() {
             <div class="d-flex align-center">
                 <v-icon
                     :icon="column.icon"
-                    :size="COLUMN_CONFIG.iconSize"
+                    size="1.125rem"
                     class="task-column__header-icon mr-2"
                 />
                 <span class="task-column__label">
@@ -139,8 +129,8 @@ function handleCancel() {
                 </span>
             </div>
             <v-btn
-                :icon="COLUMN_CONFIG.menuIcon"
-                :size="COLUMN_CONFIG.menuButtonSize"
+                icon="mdi-dots-horizontal"
+                size="small"
                 variant="text"
                 class="task-column__menu-btn"
             />
@@ -178,8 +168,8 @@ function handleCancel() {
                 class="task-column__empty"
             >
                 <v-icon
-                    :icon="COLUMN_CONFIG.emptyStateIcon"
-                    :size="COLUMN_CONFIG.emptyStateIconSize"
+                    icon="mdi-inbox-outline"
+                    size="1.25rem"
                     class="task-column__empty-icon"
                 />
                 <span class="task-column__empty-label">
@@ -191,7 +181,7 @@ function handleCancel() {
         <div
             class="task-column__resize-handle"
             role="separator"
-            :aria-label="COLUMN_CONFIG.resizeLabel"
+            aria-label="Resize column"
         />
     </v-sheet>
 </template>

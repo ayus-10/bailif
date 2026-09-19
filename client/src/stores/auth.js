@@ -3,14 +3,15 @@ import { apiFetch } from "@/api/client";
 
 /**
  * @typedef {Object} User
- * @property {string} id
+ * @property {number} public_id
  * @property {string} username
+ * @property {number} active_project_public_id
  */
 
 /**
  * @typedef {Object} AuthState
  * @property {string | null} accessToken
- * @property {User | null} user
+ * @property {User | null} currentUser
  * @property {boolean} isInitializing
  */
 
@@ -18,13 +19,13 @@ export const useAuthStore = defineStore("auth", {
     /** @returns {AuthState} */
     state: () => ({
         accessToken: null,
-        user: null,
+        currentUser: null,
         isInitializing: true,
     }),
 
     getters: {
         isAuthenticated: (state) =>
-            state.accessToken !== null && state.user !== null,
+            state.accessToken !== null && state.currentUser !== null,
     },
 
     actions: {
@@ -35,7 +36,7 @@ export const useAuthStore = defineStore("auth", {
 
         clearSession() {
             this.accessToken = null;
-            this.user = null;
+            this.currentUser = null;
         },
 
         /**
@@ -68,7 +69,7 @@ export const useAuthStore = defineStore("auth", {
         async fetchCurrentUser() {
             const res = await apiFetch("/users/me");
             if (res.ok) {
-                this.user = await res.json();
+                this.currentUser = await res.json();
             } else {
                 this.clearSession();
             }

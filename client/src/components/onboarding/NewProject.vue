@@ -57,9 +57,6 @@ async function handleSubmit() {
         const project = await projectsStore.create(form);
         if (!project) throw new Error("No response from the API");
 
-        // TODO: switch to session, once auth is implemented
-        localStorage.setItem("project_id", project.id);
-
         router.push("/onboarding/taskboard");
     } catch {
         alert("Something went wrong.");

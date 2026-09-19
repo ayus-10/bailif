@@ -11,10 +11,9 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-
     projectId: {
-        type: String,
-        default: "",
+        type: Number,
+        required: true,
     },
 });
 
@@ -25,11 +24,11 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_id: props.projectId,
+    project_public_id: props.projectId,
 });
 
 const taskboardsStore = useTaskboardsStore();
-const isLoading = ref(false); // TODO: fix this someday
+const isLoading = ref(false);
 
 const rules = {
     required: (/** @type {string} */ v) =>
@@ -44,7 +43,7 @@ function resetForm() {
     form.name = "";
     form.description = "";
     form.color = DEFAULT_COLORS[0].value;
-    form.project_id = props.projectId;
+    form.project_public_id = props.projectId;
 }
 
 async function submit() {

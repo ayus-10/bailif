@@ -2,16 +2,18 @@
 import { onMounted, ref } from "vue";
 import Sidebar from "@/components/layout/Sidebar.vue";
 import CreateTaskBoardModel from "@/components/taskboards/CreateTaskBoardModel.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
+
+// TODO: implement error boundary
+const { projectId } = useActiveProject();
 
 const taskboardsStore = useTaskboardsStore();
 
 const showTaskboardModal = ref(false);
 
-const projectId = ref(localStorage.getItem("project_id") ?? undefined); // TODO: replace with session
-
 onMounted(() => {
-    if (projectId.value) taskboardsStore.fetch({ projectId: projectId.value });
+    taskboardsStore.fetch({ projectPublicId: projectId.value });
 });
 
 function openTaskboardModal() {

@@ -1,41 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
 
-const CONFIG = {
-    search: {
-        icon: "mdi-magnify",
-        hideDetails: true,
-        label: "Search tasks",
-    },
-    actions: {
-        filter: {
-            key: "filter",
-            label: "Filter",
-            icon: "mdi-filter-variant",
-        },
-        sort: {
-            key: "sort",
-            label: "Sort",
-            icon: "mdi-sort-variant",
-        },
-        view: {
-            key: "view",
-            label: "View",
-            icon: "mdi-view-grid-outline",
-        },
-    },
-    icons: {
-        chevron: "mdi-chevron-down",
-        size: "1rem",
-        chevronSize: "0.875rem",
-    },
-    createButton: {
-        icon: "mdi-plus",
-        color: "primary",
-        label: "New task",
-    },
-};
-
 const emit = defineEmits(["action", "new-task"]);
 
 const searchQuery = ref("");
@@ -58,10 +23,10 @@ function handleNewTask() {
         <div class="board-toolbar__left">
             <v-text-field
                 v-model="searchQuery"
-                :placeholder="CONFIG.search.label"
-                :prepend-inner-icon="CONFIG.search.icon"
+                placeholder="Search tasks"
+                prepend-inner-icon="mdi-magnify"
                 density="compact"
-                :hide-details="CONFIG.search.hideDetails"
+                hide-details
                 variant="outlined"
                 class="board-toolbar__search"
             >
@@ -82,13 +47,11 @@ function handleNewTask() {
                 :class="{
                     'board-toolbar__button--active': hasActiveFilters,
                 }"
-                @click="handleAction(CONFIG.actions.filter.key)"
+                @click="handleAction('filter')"
             >
-                <v-icon :size="CONFIG.icons.size">
-                    {{ CONFIG.actions.filter.icon }}
-                </v-icon>
+                <v-icon size="1rem"> mdi-filter-variant </v-icon>
 
-                <span>{{ CONFIG.actions.filter.label }}</span>
+                <span>Filter</span>
 
                 <span v-if="activeFilterCount > 0" class="board-toolbar__count">
                     {{ activeFilterCount }}
@@ -99,42 +62,36 @@ function handleNewTask() {
                 v-ripple
                 type="button"
                 class="board-toolbar__button"
-                @click="handleAction(CONFIG.actions.sort.key)"
+                @click="handleAction('sort')"
             >
-                <v-icon :size="CONFIG.icons.size">
-                    {{ CONFIG.actions.sort.icon }}
-                </v-icon>
+                <v-icon size="1rem"> mdi-sort-variant </v-icon>
 
-                <span>{{ CONFIG.actions.sort.label }}</span>
+                <span>Sort</span>
             </button>
 
             <button
                 v-ripple
                 type="button"
                 class="board-toolbar__button"
-                @click="handleAction(CONFIG.actions.view.key)"
+                @click="handleAction('view')"
             >
-                <v-icon :size="CONFIG.icons.size">
-                    {{ CONFIG.actions.view.icon }}
-                </v-icon>
+                <v-icon size="1rem"> mdi-view-grid-outline </v-icon>
 
-                <span>{{ CONFIG.actions.view.label }}</span>
+                <span>View</span>
 
-                <v-icon :size="CONFIG.icons.chevronSize">
-                    {{ CONFIG.icons.chevron }}
-                </v-icon>
+                <v-icon size="0.875rem"> mdi-chevron-down </v-icon>
             </button>
         </div>
 
         <v-btn
-            :color="CONFIG.createButton.color"
-            :prepend-icon="CONFIG.createButton.icon"
+            color="primary"
+            prepend-icon="mdi-plus"
             variant="flat"
             density="comfortable"
             class="text-none board-toolbar__new-task"
             @click="handleNewTask"
         >
-            {{ CONFIG.createButton.label }}
+            New task
         </v-btn>
     </div>
 </template>

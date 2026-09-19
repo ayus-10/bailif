@@ -2,11 +2,15 @@
 import { useRouter } from "vue-router";
 import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 
 /** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
 /** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
+
+// TODO: implement error boundary
+const { projectId } = useActiveProject();
 
 /** @type {VFormRef} */
 const formRef = ref(null);
@@ -22,7 +26,7 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_id: localStorage.getItem("project_id") || "", // TODO: replace with session
+    project_public_id: projectId,
 });
 
 const rules = {

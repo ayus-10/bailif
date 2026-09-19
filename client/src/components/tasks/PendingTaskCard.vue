@@ -8,11 +8,11 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 
 const props = defineProps({
     projectId: {
-        type: String,
+        type: Number,
         required: true,
     },
     parentId: {
-        type: String,
+        type: Number,
         default: null,
     },
     taskboardId: {
@@ -22,39 +22,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["submit", "cancel"]);
-
-const COMPOSER_CONFIG = {
-    title: {
-        label: "Task title",
-        placeholder: "What needs to be done?",
-    },
-    description: {
-        placeholder: "Add a description...",
-        toolbar: "minimal",
-    },
-    priority: {
-        label: "Priority",
-    },
-    tags: {
-        label: "Tags",
-        placeholder: "bug, frontend, urgent",
-        icon: "mdi-tag-outline",
-    },
-    startDate: {
-        label: "Start date",
-        icon: "mdi-calendar-start-outline",
-    },
-    dueDate: {
-        label: "Due date",
-        icon: "mdi-calendar-end-outline",
-    },
-    actions: {
-        saveLabel: "Save task",
-        cancelLabel: "Cancel",
-        saveIcon: "mdi-check",
-        cancelIcon: "mdi-close",
-    },
-};
 
 const priorityOptions = [
     { title: "Low", value: "low" },
@@ -82,8 +49,7 @@ function submit() {
     const task = {
         title: form.value.title.trim(),
         description: form.value.description.trim(),
-        project_id: props.projectId,
-        parent_id: props.parentId,
+        parent_public_id: props.parentId,
         priority: form.value.priority,
         tags: form.value.tags
             .split(",")
@@ -111,26 +77,23 @@ function cancel() {
 
             <div class="pending-task-card__actions">
                 <v-btn
-                    :icon="COMPOSER_CONFIG.actions.cancelIcon"
-                    :aria-label="COMPOSER_CONFIG.actions.cancelLabel"
+                    icon="mdi-close"
+                    aria-label="Cancel"
                     size="small"
                     variant="text"
                     density="comfortable"
                     @click="cancel"
                 >
-                    <v-icon
-                        :icon="COMPOSER_CONFIG.actions.cancelIcon"
-                        size="1.125rem"
-                    />
+                    <v-icon icon="mdi-close" size="1.125rem" />
 
                     <v-tooltip activator="parent" location="top">
-                        {{ COMPOSER_CONFIG.actions.cancelLabel }}
+                        Cancel
                     </v-tooltip>
                 </v-btn>
 
                 <v-btn
-                    :icon="COMPOSER_CONFIG.actions.saveIcon"
-                    :aria-label="COMPOSER_CONFIG.actions.saveLabel"
+                    icon="mdi-check"
+                    aria-label="Save task"
                     size="small"
                     variant="text"
                     color="primary"
@@ -138,13 +101,10 @@ function cancel() {
                     :disabled="!canSubmit"
                     @click="submit"
                 >
-                    <v-icon
-                        :icon="COMPOSER_CONFIG.actions.saveIcon"
-                        size="1.125rem"
-                    />
+                    <v-icon icon="mdi-check" size="1.125rem" />
 
                     <v-tooltip activator="parent" location="top">
-                        {{ COMPOSER_CONFIG.actions.saveLabel }}
+                        Save task
                     </v-tooltip>
                 </v-btn>
             </div>
@@ -153,8 +113,8 @@ function cancel() {
         <div class="pending-task-card__content">
             <v-text-field
                 v-model="form.title"
-                :label="COMPOSER_CONFIG.title.label"
-                :placeholder="COMPOSER_CONFIG.title.placeholder"
+                label="Task title"
+                placeholder="What needs to be done?"
                 variant="outlined"
                 density="comfortable"
                 hide-details
@@ -166,8 +126,8 @@ function cancel() {
                 v-model:content="form.description"
                 content-type="html"
                 theme="snow"
-                :placeholder="COMPOSER_CONFIG.description.placeholder"
-                :toolbar="COMPOSER_CONFIG.description.toolbar"
+                placeholder="Add a description..."
+                toolbar="minimal"
                 class="task-description-editor"
             />
 
@@ -175,7 +135,7 @@ function cancel() {
                 <v-select
                     v-model="form.priority"
                     :items="priorityOptions"
-                    :label="COMPOSER_CONFIG.priority.label"
+                    label="Priority"
                     variant="outlined"
                     density="compact"
                     hide-details
@@ -184,9 +144,9 @@ function cancel() {
 
                 <v-text-field
                     v-model="form.tags"
-                    :label="COMPOSER_CONFIG.tags.label"
-                    :placeholder="COMPOSER_CONFIG.tags.placeholder"
-                    :prepend-inner-icon="COMPOSER_CONFIG.tags.icon"
+                    label="Tags"
+                    placeholder="bug, frontend, urgent"
+                    prepend-inner-icon="mdi-tag-outline"
                     variant="outlined"
                     density="compact"
                     hide-details
@@ -197,8 +157,8 @@ function cancel() {
             <div class="task-dates">
                 <v-text-field
                     v-model="form.startDate"
-                    :label="COMPOSER_CONFIG.startDate.label"
-                    :prepend-inner-icon="COMPOSER_CONFIG.startDate.icon"
+                    label="Start date"
+                    prepend-inner-icon="mdi-calendar-start-outline"
                     type="date"
                     variant="outlined"
                     density="compact"
@@ -208,8 +168,8 @@ function cancel() {
 
                 <v-text-field
                     v-model="form.dueDate"
-                    :label="COMPOSER_CONFIG.dueDate.label"
-                    :prepend-inner-icon="COMPOSER_CONFIG.dueDate.icon"
+                    label="Due date"
+                    prepend-inner-icon="mdi-calendar-end-outline"
                     type="date"
                     variant="outlined"
                     density="compact"

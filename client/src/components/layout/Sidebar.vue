@@ -185,12 +185,12 @@ const navigation = {
                     <template v-if="props.taskBoards.length">
                         <v-list-item
                             v-for="board in props.taskBoards"
-                            :key="board.id"
+                            :key="board.public_id"
                             :to="{
                                 name: item.value,
-                                params: { id: board.id },
+                                params: { id: board.public_id },
                             }"
-                            :value="`board-${board.id}`"
+                            :value="`board-${board.public_id}`"
                             class="nav-item sub-item"
                         >
                             <template #prepend>
