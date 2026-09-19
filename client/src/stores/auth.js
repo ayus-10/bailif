@@ -75,6 +75,18 @@ export const useAuthStore = defineStore("auth", {
             }
         },
 
+        async refreshCurrentUser() {
+            const res = await apiFetch("/users/me");
+
+            if (res.status === 401) {
+                this.clearSession();
+                return;
+            }
+            if (!res.ok) throw new Error("Failed to refresh user");
+
+            this.currentUser = await res.json();
+        },
+
         async logout() {
             await apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
             this.clearSession();
