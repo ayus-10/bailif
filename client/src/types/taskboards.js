@@ -5,7 +5,6 @@
  * @property {string} name
  * @property {string} description
  * @property {string} color
- * @property {number} project_public_id
  */
 
 /**

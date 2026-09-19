@@ -5,6 +5,7 @@ import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 
 /** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
+/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
 
 const props = defineProps({
     modelValue: {
@@ -24,7 +25,6 @@ const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
-    project_public_id: props.projectId,
 });
 
 const taskboardsStore = useTaskboardsStore();
@@ -43,7 +43,6 @@ function resetForm() {
     form.name = "";
     form.description = "";
     form.color = DEFAULT_COLORS[0].value;
-    form.project_public_id = props.projectId;
 }
 
 async function submit() {
@@ -51,7 +50,13 @@ async function submit() {
 
     isLoading.value = true;
 
-    await taskboardsStore.create(form);
+    /** @type {TaskboardPayload} */
+    const payload = {
+        ...form,
+        project_public_id: props.projectId,
+    };
+
+    await taskboardsStore.create(payload);
 
     isLoading.value = false;
 

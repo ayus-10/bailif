@@ -1,6 +1,8 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
+import NoActiveProject from "@/components/projects/NoActiveProject.vue";
+import NoCurrentTask from "@/components/tasks/NoCurrentTask.vue";
 import SubtaskPanel from "@/components/tasks/SubtaskPanel.vue";
 import TaskBody from "@/components/tasks/TaskBody.vue";
 import TaskDetails from "@/components/tasks/TaskDetails.vue";
@@ -18,7 +20,6 @@ const currentTaskId = computed(() => {
     return Array.isArray(id) ? Number(id[0]) : Number(id);
 });
 
-// TODO: implement error boundary
 const { projectId } = useActiveProject();
 
 const tasksStore = useTasksStore();
@@ -63,7 +64,11 @@ const {
 </script>
 
 <template>
-    <div v-if="currentTask" class="task-page" @contextmenu.prevent>
+    <NoActiveProject v-if="!projectId" />
+
+    <NoCurrentTask v-else-if="!currentTask" />
+
+    <div v-else class="task-page" @contextmenu.prevent>
         <TaskPageHeader
             :task="currentTask"
             :edit-mode="editMode"

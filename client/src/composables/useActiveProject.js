@@ -2,17 +2,11 @@ import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
 export function useActiveProject() {
-    const { currentUser } = useAuthStore();
+    const auth = useAuthStore();
 
-    const projectId = computed(() => {
-        if (!currentUser?.active_project_public_id) {
-            throw new Error("Authenticated user has no active project");
-        }
+    const projectId = computed(
+        () => auth.currentUser?.active_project_public_id ?? null
+    );
 
-        return currentUser.active_project_public_id;
-    });
-
-    return {
-        projectId,
-    };
+    return { projectId };
 }
