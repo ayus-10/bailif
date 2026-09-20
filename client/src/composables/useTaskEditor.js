@@ -123,7 +123,7 @@ export function useTaskEditor(task, taskPublicId) {
         try {
             const payload = buildUpdatePayload(draft, initialDraft);
 
-            await tasksStore.update(taskPublicId, payload);
+            await tasksStore.update(taskPublicId, payload); // TODO: error handling
 
             copyDraftValues(initialDraft, draft);
 
@@ -148,6 +148,7 @@ export function useTaskEditor(task, taskPublicId) {
 
         try {
             await tasksStore.update(taskPublicId, {
+                // TODO: error handling
                 [field]: item.value,
             });
         } catch (error) {

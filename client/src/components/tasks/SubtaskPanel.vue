@@ -82,7 +82,7 @@ function openSubtask(subtask) {
 /** @param {TaskCreate} task */
 async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
-    await tasksStore.create(task);
+    await tasksStore.create(task); // TODO: error handling
     pendingSubTask.value = null;
 }
 

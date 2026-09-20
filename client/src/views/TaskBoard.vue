@@ -166,6 +166,7 @@ async function dropTask(targetStatus) {
 
     try {
         await tasksStore.update(task.public_id, {
+            // TODO: error handling
             status: targetStatus,
         });
     } catch (err) {
