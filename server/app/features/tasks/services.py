@@ -3,7 +3,7 @@ from typing import Tuple
 from uuid import UUID
 
 from sqlalchemy import and_, or_, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.agent.llm.embeddings import get_embedding
 from app.core.database import SessionLocal
@@ -76,9 +76,14 @@ def create_task(
 
     db.add(task)
     db.flush()
-    db.refresh(task)
 
-    return task
+    stmt = (
+        select(Task)
+        .where(Task.id == task.id)
+        .options(joinedload(Task.parent))
+        .execution_options(populate_existing=True)
+    )
+    return db.execute(stmt).scalar_one()
 
 
 def update_task(
@@ -129,11 +134,15 @@ def update_task(
         setattr(task, field, value)
 
     db.flush()
-    db.refresh(task)
 
-    updated_field_count = len(updates)
+    stmt = (
+        select(Task)
+        .where(Task.id == task.id)
+        .options(joinedload(Task.parent))
+        .execution_options(populate_existing=True)
+    )
 
-    return task, updated_field_count
+    return db.execute(stmt).scalar_one(), len(updates)
 
 
 def list_tasks(
@@ -153,6 +162,8 @@ def list_tasks(
             Task.project_id == user.active_project.id,
             Task.deleted_at.is_(None),
         )
+        .options(joinedload(Task.parent))
+        .execution_options(populate_existing=True)
     )
 
     if filters.taskboard_public_id is not None:
