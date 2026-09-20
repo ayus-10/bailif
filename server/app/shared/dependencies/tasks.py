@@ -1,6 +1,6 @@
 from fastapi import Depends
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
 from app.models.db import Project, Task, User
@@ -22,6 +22,8 @@ def get_owned_task(
             Project.user_id == user.id,
             Project.deleted_at.is_(None),
         )
+        .options(joinedload(Task.parent))
+        .execution_options(populate_existing=True)
     ).scalar_one_or_none()
 
     if task is None:

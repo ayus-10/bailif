@@ -97,11 +97,12 @@ function handleDragEnd() {
 
 /** @param {TaskCreate} payload */
 async function handleCreate(payload) {
-    const task = await tasksStore.create(payload);
+    const task = await tasksStore.create(payload); // TODO: error handling
 
     if (!task) return;
 
     if (props.taskboardId)
+        // TODO: error handling
         await taskboardsStore.addTask(props.taskboardId, {
             task_public_id: task.public_id,
         });

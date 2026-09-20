@@ -13,6 +13,7 @@ const routes = [
         path: "/login",
         name: "login",
         component: () => import("@/views/LoginPage.vue"),
+        meta: { guestOnly: true },
     },
 
     {
@@ -20,7 +21,7 @@ const routes = [
         name: "onboarding",
         redirect: { name: "project" },
         component: () => import("@/views/Onboarding.vue"),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, isOnboardingRoute: true },
         children: [
             {
                 path: "project",
@@ -114,9 +115,36 @@ const router = createRouter({
 router.beforeEach((to) => {
     const authStore = useAuthStore();
 
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-        return { name: "login", query: { redirect: to.fullPath } };
+    const isAuthenticated = authStore.isAuthenticated;
+    const isOnboardingComplete = authStore.isOnboardingComplete;
+
+    if (to.meta.requiresAuth && !isAuthenticated) {
+        return {
+            name: "login",
+            query: {
+                redirect: to.fullPath,
+            },
+        };
     }
+
+    if (to.meta.guestOnly && isAuthenticated) {
+        return { name: "dashboard" };
+    }
+
+    if (to.meta.isOnboardingRoute && isAuthenticated && isOnboardingComplete) {
+        return { name: "dashboard" };
+    }
+
+    if (
+        to.meta.requiresAuth &&
+        !to.meta.isOnboardingRoute &&
+        isAuthenticated &&
+        !isOnboardingComplete
+    ) {
+        return { name: "onboarding" };
+    }
+
+    return true;
 });
 
 export default router;

@@ -57,7 +57,7 @@ async function handleSubmit() {
     isLoading.value = true;
 
     try {
-        const project = await projectsStore.create(form);
+        const project = await projectsStore.create(form); // TODO: error handling
         if (!project) throw new Error("No response from the API");
 
         authStore.refreshCurrentUser();

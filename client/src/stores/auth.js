@@ -26,6 +26,8 @@ export const useAuthStore = defineStore("auth", {
     getters: {
         isAuthenticated: (state) =>
             state.accessToken !== null && state.currentUser !== null,
+        isOnboardingComplete: (state) =>
+            !!state.currentUser?.active_project_public_id,
     },
 
     actions: {

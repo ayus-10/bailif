@@ -68,7 +68,6 @@ export async function apiFetch(path, options = {}) {
             .json()
             .catch(() => null);
 
-        // TODO: ensure this remains in sync with server, or find a better way
         if (body?.error_code === "access_token_expired") {
             const newToken = await refreshAccessToken();
 

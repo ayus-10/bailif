@@ -11,6 +11,7 @@ import {
 } from "@/api/taskboards.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
+/** @typedef {import("@/api/shared.api").ApiError} ApiError */
 /** @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead */
 /** @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead */
 /** @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate */
@@ -94,7 +95,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
         /**
          * @param {TaskboardCreate} payload
          * @returns {Promise<TaskboardRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async create(payload) {
             try {
@@ -116,7 +117,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {number} boardPublicId
          * @param {TaskboardUpdate} payload
          * @returns {Promise<TaskboardRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async update(boardPublicId, payload) {
             try {
@@ -154,7 +155,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
         /**
          * @param {number} boardPublicId
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async remove(boardPublicId) {
             try {
@@ -186,7 +187,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {number} boardPublicId
          * @param {TaskAssignment} payload
          * @returns {Promise<TaskboardTaskRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async addTask(boardPublicId, payload) {
             try {
@@ -210,7 +211,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
         /**
          * @param {number} boardPublicId
          * @param {number} taskPublicId
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async removeTask(boardPublicId, taskPublicId) {
             try {
@@ -235,7 +236,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {number} boardPublicId
          * @param {number} taskPublicId
          * @param {TaskReposition} payload
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async repositionTask(boardPublicId, taskPublicId, payload) {
             try {
