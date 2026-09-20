@@ -8,6 +8,7 @@ import {
 } from "@/api/projects.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
+/** @typedef {import("@/api/shared.api").ApiError} ApiError */
 /** @typedef {import("@/types/project").ProjectRead} ProjectRead */
 /** @typedef {import("@/types/project").ProjectCreate} ProjectCreate */
 /** @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate */
@@ -114,7 +115,7 @@ export const useProjectsStore = defineStore("projects", {
         /**
          * @param {ProjectCreate} payload
          * @returns {Promise<ProjectRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async create(payload) {
             try {
@@ -134,7 +135,7 @@ export const useProjectsStore = defineStore("projects", {
          * @param {number} projectPublicId
          * @param {ProjectUpdate} payload
          * @returns {Promise<ProjectRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async update(projectPublicId, payload) {
             try {
@@ -167,7 +168,7 @@ export const useProjectsStore = defineStore("projects", {
 
         /**
          * @param {number} projectPublicId
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async remove(projectPublicId) {
             try {

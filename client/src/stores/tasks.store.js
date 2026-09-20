@@ -8,6 +8,7 @@ import {
 } from "@/api/tasks.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
+/** @typedef {import("@/api/shared.api").ApiError} ApiError */
 /** @typedef {import("@/types/task").TaskRead} TaskRead */
 /** @typedef {import("@/types/task").TaskCreate} TaskCreate */
 /** @typedef {import("@/types/task").TaskUpdate} TaskUpdate */
@@ -201,7 +202,7 @@ export const useTasksStore = defineStore("tasks", {
         /**
          * @param {TaskCreate} payload
          * @returns {Promise<TaskRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async create(payload) {
             try {
@@ -231,7 +232,7 @@ export const useTasksStore = defineStore("tasks", {
          * @param {number} taskPublicId
          * @param {TaskUpdate} payload
          * @returns {Promise<TaskRead | undefined>}
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async update(taskPublicId, payload) {
             try {
@@ -270,7 +271,7 @@ export const useTasksStore = defineStore("tasks", {
         /**
          * @param {number} taskPublicId
          * @param {number} projectPublicId
-         * @throws {Error}
+         * @throws {ApiError}
          */
         async remove(taskPublicId, projectPublicId) {
             if (projectPublicId == null) {
