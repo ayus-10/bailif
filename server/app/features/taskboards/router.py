@@ -21,7 +21,11 @@ from app.features.taskboards.schemas import (
 from app.models.db import Project, Task, Taskboard, TaskboardTask, User
 from app.shared.dependencies.auth import get_current_user
 from app.shared.dependencies.projects import get_owned_project
-from app.utils.model_to_read import taskboard_to_read, taskboard_to_read_with_tasks
+from app.utils.model_to_read import (
+    taskboard_task_to_read,
+    taskboard_to_read,
+    taskboard_to_read_with_tasks,
+)
 
 router = APIRouter(prefix="/taskboards", tags=["taskboards"])
 
@@ -97,12 +101,14 @@ def add_task_to_board(
     task: Task = Depends(get_task_on_owned_taskboard_from_payload),
     db: Session = Depends(get_db),
 ) -> TaskboardTask:
-    return services.add_task_to_board(
+    association = services.add_task_to_board(
         db=db,
         board=board,
         task=task,
         position=payload.position,
     )
+
+    return taskboard_task_to_read(association)
 
 
 @router.delete(

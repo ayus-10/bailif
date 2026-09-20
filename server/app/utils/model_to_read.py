@@ -1,7 +1,7 @@
 from app.features.task_edges.schemas import TaskEdgeRead
 from app.features.taskboards.schemas import TaskboardRead, TaskboardTaskRead
 from app.features.users.schemas import UserRead
-from app.models.db import Project, Task, Taskboard, TaskEdge, User
+from app.models.db import Project, Task, Taskboard, TaskboardTask, TaskEdge, User
 from app.shared.schemas import ProjectRead, TaskRead
 
 
@@ -89,4 +89,14 @@ def _taskboard_to_read(
         created_at=taskboard.created_at,
         updated_at=taskboard.updated_at,
         tasks=tasks,
+    )
+
+
+def taskboard_task_to_read(
+    association: TaskboardTask, task: Task | None = None
+) -> TaskboardTaskRead:
+    task = task or association.task
+    return TaskboardTaskRead(
+        position=association.position,
+        task=task_to_read(task) if task is not None else None,
     )
