@@ -3,12 +3,16 @@ import { useRouter } from "vue-router";
 import { reactive, ref } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
-/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
+/**
+ * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
+ */
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-/** @type {VFormRef} */
+/**
+ * @type {VFormRef}
+ */
 const formRef = ref(null);
 
 const form = reactive({

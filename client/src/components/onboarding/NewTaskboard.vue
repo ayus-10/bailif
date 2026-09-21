@@ -7,13 +7,21 @@ import { useActiveProject } from "@/composables/useActiveProject";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 
-/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
-/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
-/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
+/**
+ * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
+ */
 
 const { projectId } = useActiveProject();
 
-/** @type {VFormRef} */
+/**
+ * @type {VFormRef}
+ */
 const formRef = ref(null);
 
 const taskboardsStore = useTaskboardsStore();
@@ -22,7 +30,9 @@ const router = useRouter();
 
 const isLoading = ref(false);
 
-/** @type {import("vue").Reactive<TaskboardForm>} */
+/**
+ * @type {import("vue").Reactive<TaskboardForm>}
+ */
 const form = reactive({
     name: "",
     description: "",
@@ -44,7 +54,9 @@ async function handleSubmit() {
     isLoading.value = true;
 
     try {
-        /** @type {TaskboardPayload} */
+        /**
+         * @type {TaskboardPayload}
+         */
         const payload = {
             ...form,
             project_public_id: projectId.value,

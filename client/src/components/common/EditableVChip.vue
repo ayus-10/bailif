@@ -1,15 +1,21 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 
-/** @typedef {{ value: string, label: string, color: string, icon: string }} SelectOption */
+/**
+ * @typedef {{ value: string, label: string, color: string, icon: string }} SelectOption
+ */
 
 const props = defineProps({
     items: {
-        /** @type {import("vue").PropType<SelectOption[]>} */
+        /**
+         * @type {import("vue").PropType<SelectOption[]>}
+         */
         type: Array,
         required: true,
         validator: (
-            /** @type {SelectOption[]} */
+            /**
+             * @type {SelectOption[]}
+             */
             items
         ) =>
             items.every((item) =>
@@ -40,7 +46,9 @@ const props = defineProps({
         ),
         default: "tonal",
         validator: (
-            /** @type {String} */
+            /**
+             * @type {String}
+             */
             value
         ) =>
             ["tonal", "flat", "text", "elevated", "outlined", "plain"].includes(
@@ -79,7 +87,9 @@ const selected = computed(() =>
     props.items.find((i) => i.value === internalValue.value)
 );
 
-/** @param {SelectOption} item */
+/**
+ * @param {SelectOption} item
+ */
 function selectItem(item) {
     if (props.disabled) return;
     menuOpen.value = false;

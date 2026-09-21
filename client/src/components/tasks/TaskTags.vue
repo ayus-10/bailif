@@ -5,7 +5,9 @@ import EmptyPanel from "./EmptyPanel.vue";
 
 const props = defineProps({
     tags: {
-        /** @type {import("vue").PropType<string[]>} */
+        /**
+         * @type {import("vue").PropType<string[]>}
+         */
         type: Array,
         default: () => [],
     },

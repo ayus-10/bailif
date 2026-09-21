@@ -1,6 +1,8 @@
 import { apiFetch } from "./client";
 
-/** @typedef {import("@/types/gantt").Gantt} Gantt */
+/**
+ * @typedef {import("@/types/gantt").Gantt} Gantt
+ */
 
 /**
  * @param {string} projectId
@@ -14,7 +16,9 @@ export async function fetchGantt(projectId, signal) {
         throw new Error(`Failed to fetch gantt (${response.status})`);
     }
 
-    /** @type {Gantt} */
+    /**
+     * @type {Gantt}
+     */
     const data = await response.json();
 
     return data;

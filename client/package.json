@@ -7,7 +7,7 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "format": "pnpm exec prettier --write . && python format_comments.py",
+        "format": "python format_comments.py && pnpm exec prettier --write .",
         "typecheck": "pnpm exec vue-tsc --noEmit -p jsconfig.json"
     },
     "dependencies": {

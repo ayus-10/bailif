@@ -4,8 +4,12 @@ import ColorInput from "@/components/common/ColorInput.vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 
-/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
-/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
+ */
 
 const props = defineProps({
     modelValue: {
@@ -20,7 +24,9 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-/** @type {import("vue").Reactive<TaskboardForm>} */
+/**
+ * @type {import("vue").Reactive<TaskboardForm>}
+ */
 const form = reactive({
     name: "",
     description: "",
@@ -50,7 +56,9 @@ async function submit() {
 
     isLoading.value = true;
 
-    /** @type {TaskboardPayload} */
+    /**
+     * @type {TaskboardPayload}
+     */
     const payload = {
         ...form,
         project_public_id: props.projectId,

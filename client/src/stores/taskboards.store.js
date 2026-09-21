@@ -11,15 +11,33 @@ import {
 } from "@/api/taskboards.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
-/** @typedef {import("@/api/shared.api").ApiError} ApiError */
-/** @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead */
-/** @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead */
-/** @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate */
-/** @typedef {import("@/types/taskboards").TaskboardUpdate} TaskboardUpdate */
-/** @typedef {import("@/types/taskboards").TaskAssignment} TaskAssignment */
-/** @typedef {import("@/types/taskboards").TaskReposition} TaskReposition */
-/** @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead */
-/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
+/**
+ * @typedef {import("@/api/shared.api").ApiError} ApiError
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardUpdate} TaskboardUpdate
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskAssignment} TaskAssignment
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskReposition} TaskReposition
+ */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead
+ */
+/**
+ * @typedef {import("@/types/shared").FetchStatus} FetchStatus
+ */
 
 /**
  * @typedef {Object} TaskboardsState
@@ -30,7 +48,9 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  */
 
 export const useTaskboardsStore = defineStore("taskboards", {
-    /** @returns {TaskboardsState} */
+    /**
+     * @returns {TaskboardsState}
+     */
     state: () => ({
         items: [],
         currentTaskboard: null,

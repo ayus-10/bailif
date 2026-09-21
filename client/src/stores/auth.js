@@ -16,7 +16,9 @@ import { apiFetch } from "@/api/client";
  */
 
 export const useAuthStore = defineStore("auth", {
-    /** @returns {AuthState} */
+    /**
+     * @returns {AuthState}
+     */
     state: () => ({
         accessToken: null,
         currentUser: null,
@@ -31,7 +33,9 @@ export const useAuthStore = defineStore("auth", {
     },
 
     actions: {
-        /** @param {string} token */
+        /**
+         * @param {string} token
+         */
         setAccessToken(token) {
             this.accessToken = token;
         },

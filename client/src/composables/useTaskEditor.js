@@ -34,10 +34,14 @@ export function useTaskEditor(task, taskPublicId) {
         () => JSON.stringify(draft) !== JSON.stringify(initialDraft)
     );
 
-    /** @type {import("vue").Ref<TaskRead["status"] | null>} */
+    /**
+     * @type {import("vue").Ref<TaskRead["status"] | null>}
+     */
     const selectedStatus = ref(task.value?.status ?? null);
 
-    /** @type {import("vue").Ref<TaskRead["priority"] | null>} */
+    /**
+     * @type {import("vue").Ref<TaskRead["priority"] | null>}
+     */
     const selectedPriority = ref(task.value?.priority ?? null);
 
     const isEditingTitle = computed(() => editMode.value === "title");
@@ -78,7 +82,9 @@ export function useTaskEditor(task, taskPublicId) {
 
     watch(task, setSelectedTaskData, { immediate: true });
 
-    /** @param {TaskRead | null} newTask */
+    /**
+     * @param {TaskRead | null} newTask
+     */
     function setSelectedTaskData(newTask) {
         if (!newTask) return;
 
@@ -97,7 +103,9 @@ export function useTaskEditor(task, taskPublicId) {
         copyDraftValues(initialDraft, values);
     }
 
-    /** @param {EditMode} mode */
+    /**
+     * @param {EditMode} mode
+     */
     function beginEdit(mode) {
         if (editMode.value === "none") {
             syncDraftFromTask();
@@ -159,12 +167,16 @@ export function useTaskEditor(task, taskPublicId) {
         }
     }
 
-    /** @param {{ value: string }} item */
+    /**
+     * @param {{ value: string }} item
+     */
     function onStatusChange(item) {
         return updateTaskField("status", item, selectedStatus, isSavingStatus);
     }
 
-    /** @param {{ value: string }} item */
+    /**
+     * @param {{ value: string }} item
+     */
     function onPriorityChange(item) {
         return updateTaskField(
             "priority",
@@ -207,7 +219,9 @@ export function useTaskEditor(task, taskPublicId) {
     };
 }
 
-/** @param {String | null} value */
+/**
+ * @param {String | null} value
+ */
 function toDateInput(value) {
     return value ? new Date(value).toISOString().slice(0, 10) : "";
 }
@@ -242,7 +256,9 @@ function copyDraftValues(target, source) {
  * @returns {Partial<TaskCreate>}
  */
 function buildUpdatePayload(draft, initialDraft) {
-    /** @type {Partial<TaskCreate>} */
+    /**
+     * @type {Partial<TaskCreate>}
+     */
     const payload = {};
 
     for (const field of Object.keys(draft)) {

@@ -1,6 +1,8 @@
 import { apiFetch } from "./client";
 
-/** @typedef {import("@/types/settings").Settings} Settings */
+/**
+ * @typedef {import("@/types/settings").Settings} Settings
+ */
 
 /**
  * @param {string} scopeId
@@ -14,7 +16,9 @@ export async function fetchSettings(scopeId, signal) {
         throw new Error(`Failed to fetch settings (${response.status})`);
     }
 
-    /** @type {Settings} */
+    /**
+     * @type {Settings}
+     */
     const data = await response.json();
 
     return data;

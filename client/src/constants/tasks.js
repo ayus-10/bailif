@@ -1,5 +1,9 @@
-/** @typedef {import("@/types/task").TaskPriority} TaskPriority */
-/** @typedef {import("@/types/task").TaskStatus} TaskStatus */
+/**
+ * @typedef {import("@/types/task").TaskPriority} TaskPriority
+ */
+/**
+ * @typedef {import("@/types/task").TaskStatus} TaskStatus
+ */
 
 /**
  * @typedef {Object} TaskColumnConfig
@@ -16,7 +20,9 @@
  * @property {string} value
  */
 
-/** @type {TaskColumnConfig[]} */
+/**
+ * @type {TaskColumnConfig[]}
+ */
 export const TASK_COLUMNS = [
     {
         status: "open",
@@ -80,21 +86,27 @@ export const TASK_COLUMNS = [
     },
 ];
 
-/** @type {Record<TaskPriority, string>} */
+/**
+ * @type {Record<TaskPriority, string>}
+ */
 export const PRIORITY_COLORS = {
     low: "success",
     medium: "warning",
     high: "error",
 };
 
-/** @type {Record<TaskPriority, string>} */
+/**
+ * @type {Record<TaskPriority, string>}
+ */
 export const PRIORITY_ICONS = {
     low: "mdi-circle-outline",
     medium: "mdi-circle-half-full",
     high: "mdi-circle",
 };
 
-/** @type {Record<TaskPriority, string>} */
+/**
+ * @type {Record<TaskPriority, string>}
+ */
 export const PRIORITY_LABELS = {
     low: "Low",
     medium: "Medium",

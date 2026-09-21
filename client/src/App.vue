@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
 
-/** @param {MouseEvent} event */
+/**
+ * @param {MouseEvent} event
+ */
 function preventContextMenu(event) {
     event.preventDefault();
 }

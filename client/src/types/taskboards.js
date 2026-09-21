@@ -1,10 +1,16 @@
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ */
 
 /**
  * @typedef {Object} TaskboardForm
  * @property {string} name
  * @property {string} description
  * @property {string} color
+ */
+
+/**
+ * @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload
  */
 
 /**

@@ -1,4 +1,6 @@
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ */
 
 /**
  * @param {string | null | undefined} iso

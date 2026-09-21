@@ -1,4 +1,6 @@
-/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
+/**
+ * @typedef {import("@/types/shared").FetchStatus} FetchStatus
+ */
 
 /**
  * @typedef {"open" | "in_progress" | "in_review" | "done" | "blocked" | "cancelled"} TaskStatus
@@ -36,6 +38,10 @@
  * @property {string} created_at ISO datetime
  * @property {string} updated_at ISO datetime
  * @property {ProjectRead | null} [project]
+ */
+
+/**
+ * @typedef {TaskRead & {position: number}} TaskWithPosition
  */
 
 /**

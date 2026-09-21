@@ -1,6 +1,8 @@
 import { apiFetch } from "./client";
 
-/** @typedef {import("@/types/notification").Notification} Notification */
+/**
+ * @typedef {import("@/types/notification").Notification} Notification
+ */
 
 /**
  * @param {string} scopeId
@@ -16,7 +18,9 @@ export async function fetchNotifications(scopeId, signal) {
         throw new Error(`Failed to fetch notifications (${response.status})`);
     }
 
-    /** @type {Notification[]} */
+    /**
+     * @type {Notification[]}
+     */
     const data = await response.json();
 
     return data;

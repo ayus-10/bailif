@@ -1,11 +1,21 @@
-/** @typedef {import("@/types/task").TaskType} TaskType */
-/** @typedef {import("@/types/task").TaskPriority} TaskPriority */
-/** @typedef {import("@/types/task").TaskStatus} TaskStatus */
+/**
+ * @typedef {import("@/types/task").TaskType} TaskType
+ */
+/**
+ * @typedef {import("@/types/task").TaskPriority} TaskPriority
+ */
+/**
+ * @typedef {import("@/types/task").TaskStatus} TaskStatus
+ */
 
-/** @type {TaskPriority[]} */
+/**
+ * @type {TaskPriority[]}
+ */
 export const TASK_PRIORITIES = ["low", "medium", "high"];
 
-/** @type {Record<TaskStatus, { color: string; icon: string; label: string }>} */
+/**
+ * @type {Record<TaskStatus, { color: string; icon: string; label: string }>}
+ */
 export const STATUS_META = {
     open: {
         color: "grey",

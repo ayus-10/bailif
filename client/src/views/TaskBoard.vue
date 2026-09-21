@@ -10,9 +10,15 @@ import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode */
+/**
+ * @typedef {import("@/types/task").TaskWithPosition} TaskWithPosition
+ */
+/**
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ */
+/**
+ * @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode
+ */
 
 const route = useRoute();
 const router = useRouter();
@@ -32,7 +38,9 @@ const currentBoard = computed(() => {
     };
 });
 
-/** @type {import("vue").Ref<TaskQueryMode>} */
+/**
+ * @type {import("vue").Ref<TaskQueryMode>}
+ */
 const preferredQueryMode = ref("root-tasks");
 
 const query = computed(() => ({
@@ -91,26 +99,34 @@ const filteredTasks = computed(() => {
 });
 
 const tasksByStatus = computed(() => {
-    return filteredTasks.value.reduce((acc, task) => {
+    return filteredTasks.value.reduce((acc, task, idx) => {
         if (!acc[task.status]) {
             acc[task.status] = [];
         }
 
-        acc[task.status].push(task);
+        acc[task.status].push({ ...task, position: idx });
 
         return acc;
-    }, /** @type {Record<string, TaskRead[]>} */ ({}));
+    }, /** @type {Record<string, TaskWithPosition[]>} */ ({}));
 });
 
-const draggedTask = ref(/** @type {TaskRead | null} */ (null));
+const draggedTask = ref(/** @type {TaskWithPosition | null} */ (null));
 
-/** @type {import("vue").Ref<TaskCreate | null>} */
+/**
+ * @type {import("vue").Ref<TaskCreate | null>}
+ */
 const pendingTask = ref(null);
-/** @param {String} action */
+
+/**
+ * @param {String} action
+ */
 function handleBoardAction(action) {
     console.log(action);
 }
-/** @param {String} action */
+
+/**
+ * @param {String} action
+ */
 function handleToolbarAction(action) {
     console.log(action);
 }
@@ -130,7 +146,9 @@ function retry() {
     });
 }
 
-/** @param {string} key */
+/**
+ * @param {string} key
+ */
 function clearFilter(key) {
     const nextQuery = { ...route.query };
 
@@ -142,12 +160,16 @@ function clearFilter(key) {
     });
 }
 
-/** @param {TaskRead} task */
+/**
+ * @param {TaskWithPosition} task
+ */
 function startDrag(task) {
     draggedTask.value = task;
 }
 
-/** @param {TaskRead["status"]} targetStatus */
+/**
+ * @param {TaskWithPosition["status"]} targetStatus
+ */
 async function dropTask(targetStatus) {
     if (!draggedTask.value) {
         return;

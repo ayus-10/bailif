@@ -1,11 +1,15 @@
 <script setup>
 import { onUnmounted, ref } from "vue";
 
-/** @typedef {import("@/stores/taskboards.store").TaskboardListRead} TaskboardListRead */
+/**
+ * @typedef {import("@/stores/taskboards.store").TaskboardListRead} TaskboardListRead
+ */
 
 const props = defineProps({
     taskBoards: {
-        /** @type {import("vue").PropType<TaskboardListRead[]>} */
+        /**
+         * @type {import("vue").PropType<TaskboardListRead[]>}
+         */
         type: Array,
         default: () => [],
     },
@@ -23,7 +27,9 @@ const minWidth = 180;
 const maxWidth = 450;
 const isResizing = ref(false);
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function startResize(e) {
     isResizing.value = true;
     document.addEventListener("mousemove", handleResize);
@@ -32,7 +38,9 @@ function startResize(e) {
     document.body.style.userSelect = "none";
 }
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function handleResize(e) {
     if (!isResizing.value) return;
     if (e.clientX >= minWidth && e.clientX <= maxWidth) {

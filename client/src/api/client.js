@@ -2,10 +2,14 @@ import { useAuthStore } from "@/stores/auth";
 
 const BASE_URL = "/api/v1";
 
-/** @type {Promise<string | null> | null} */
+/**
+ * @type {Promise<string | null> | null}
+ */
 let refreshPromise = null;
 
-/** @returns {Promise<string | null>} */
+/**
+ * @returns {Promise<string | null>}
+ */
 async function performRefresh() {
     const authStore = useAuthStore();
 
@@ -24,7 +28,9 @@ async function performRefresh() {
     return data.token;
 }
 
-/** @returns {Promise<string | null>} */
+/**
+ * @returns {Promise<string | null>}
+ */
 function refreshAccessToken() {
     if (!refreshPromise) {
         refreshPromise = performRefresh().finally(() => {

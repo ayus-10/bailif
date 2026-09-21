@@ -7,20 +7,30 @@ import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects.store";
 
-/** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
-/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
-/** @typedef {ProjectCreate & { color?: string }} ProjectCreateForm */
+/**
+ * @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate
+ */
+/**
+ * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
+ */
+/**
+ * @typedef {ProjectCreate & { color?: string }} ProjectCreateForm
+ */
 
 const authStore = useAuthStore();
 
-/** @type {VFormRef} */
+/**
+ * @type {VFormRef}
+ */
 const formRef = ref(null);
 
 const projectsStore = useProjectsStore();
 
 const router = useRouter();
 
-/** @type {import("vue").Reactive<ProjectCreateForm>} */
+/**
+ * @type {import("vue").Reactive<ProjectCreateForm>}
+ */
 const form = reactive({
     name: "",
     description: "",

@@ -2,7 +2,9 @@
 import { computed } from "vue";
 import { DEFAULT_COLORS } from "@/constants/globals";
 
-/** @typedef {import("@/constants/globals").ColorOption} ColorOption */
+/**
+ * @typedef {import("@/constants/globals").ColorOption} ColorOption
+ */
 
 const props = defineProps({
     modelValue: {
@@ -10,7 +12,9 @@ const props = defineProps({
         default: "",
     },
     colors: {
-        /** @type {import("vue").PropType<ColorOption[]>} */
+        /**
+         * @type {import("vue").PropType<ColorOption[]>}
+         */
         type: Array,
         default: () => DEFAULT_COLORS,
     },
@@ -33,18 +37,24 @@ const selectedColor = computed(() => {
     );
 });
 
-/** @param {string} color */
+/**
+ * @param {string} color
+ */
 function selectColor(color) {
     if (props.disabled) return;
     emit("update:modelValue", color);
 }
 
-/** @param {ColorOption} color */
+/**
+ * @param {ColorOption} color
+ */
 function getColorValue(color) {
     return typeof color === "string" ? color : color.value;
 }
 
-/** @param {ColorOption} color */
+/**
+ * @param {ColorOption} color
+ */
 function getColorLabel(color) {
     return typeof color === "string" ? color : color.label || color.value;
 }

@@ -5,11 +5,15 @@ import { PRIORITY_COLORS } from "@/constants/tasks";
 import { htmlPreview } from "@/utils/htmlFormatters";
 import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ */
 
 const props = defineProps({
     task: {
-        /** @type {import("vue").PropType<TaskRead>} */
+        /**
+         * @type {import("vue").PropType<TaskRead>}
+         */
         type: Object,
         required: true,
     },
@@ -44,14 +48,18 @@ const isExpanded = ref(false);
 const isHovering = ref(false);
 const contextMenuOpen = ref(false);
 
-/** @type {import("vue").Ref<[number, number]>} */
+/**
+ * @type {import("vue").Ref<[number, number]>}
+ */
 const contextMenuTarget = ref([0, 0]);
 
 function toggleDescription() {
     isExpanded.value = !isExpanded.value;
 }
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function openContextMenu(e) {
     contextMenuTarget.value = [e.clientX, e.clientY];
     contextMenuOpen.value = true;
@@ -61,25 +69,33 @@ function goToTask() {
     router.push(`/dashboard/tasks/${props.task.public_id}`);
 }
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function handleComplete(e) {
     e.stopPropagation();
     emit("complete", props.task);
 }
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function handleSnooze(e) {
     e.stopPropagation();
     emit("snooze", props.task);
 }
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function handleDelete(e) {
     e.stopPropagation();
     emit("delete", props.task);
 }
 
-/** @param {MouseEvent} e */
+/**
+ * @param {MouseEvent} e
+ */
 function handleDuplicate(e) {
     e.stopPropagation();
     emit("duplicate", props.task);

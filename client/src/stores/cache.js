@@ -47,7 +47,9 @@ export function cachedRequest(
     return promise;
 }
 
-/** @param {String} prefix */
+/**
+ * @param {String} prefix
+ */
 export function invalidateRequestCache(prefix) {
     for (const key of requestCache.keys()) {
         if (key.startsWith(prefix)) requestCache.delete(key);

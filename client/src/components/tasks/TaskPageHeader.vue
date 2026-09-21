@@ -8,13 +8,21 @@ import {
 } from "@/constants/tasks";
 import TaskBreadcrumbs from "./TaskBreadcrumbs.vue";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskDraft} TaskDraft */
-/** @typedef {import("@/types/shared").EditMode} EditMode */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ */
+/**
+ * @typedef {import("@/types/task").TaskDraft} TaskDraft
+ */
+/**
+ * @typedef {import("@/types/shared").EditMode} EditMode
+ */
 
 const props = defineProps({
     task: {
-        /** @type {import("vue").PropType<TaskRead>} */
+        /**
+         * @type {import("vue").PropType<TaskRead>}
+         */
         type: Object,
         required: true,
     },
@@ -23,7 +31,9 @@ const props = defineProps({
         required: true,
     },
     draft: {
-        /** @type {import("vue").PropType<TaskDraft>} */
+        /**
+         * @type {import("vue").PropType<TaskDraft>}
+         */
         type: Object,
         required: true,
     },

@@ -6,9 +6,15 @@ import TaskCard from "@/components/tasks/TaskCard.vue";
 import { useTasksStore } from "@/stores/tasks.store";
 import EmptyPanel from "./EmptyPanel.vue";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ */
+/**
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ */
+/**
+ * @typedef {import("@/types/shared").FetchStatus} FetchStatus
+ */
 
 const props = defineProps({
     taskId: {
@@ -42,7 +48,9 @@ const isLoading = computed(
     () => fetchStatus === "loading" || fetchStatus === "loading-more"
 );
 
-/** @type {import("vue").Ref<TaskCreate | null>} */
+/**
+ * @type {import("vue").Ref<TaskCreate | null>}
+ */
 const pendingSubTask = ref(null);
 
 const showSubtasks = computed(
@@ -71,7 +79,9 @@ function retry() {
     });
 }
 
-/** @param {TaskRead} subtask */
+/**
+ * @param {TaskRead} subtask
+ */
 function openSubtask(subtask) {
     router.push({
         name: route.name,
@@ -79,7 +89,9 @@ function openSubtask(subtask) {
     });
 }
 
-/** @param {TaskCreate} task */
+/**
+ * @param {TaskCreate} task
+ */
 async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
     await tasksStore.create(task); // TODO: error handling

@@ -1,6 +1,8 @@
 import { apiFetch } from "./client";
 
-/** @typedef {import("@/types/calendar").Calendar} Calendar */
+/**
+ * @typedef {import("@/types/calendar").Calendar} Calendar
+ */
 
 /**
  * @param {string} monthKey
@@ -12,7 +14,10 @@ export async function fetchCalendar(monthKey, signal) {
     if (!response.ok) {
         throw new Error(`Failed to fetch calendar (${response.status})`);
     }
-    /** @type {Calendar} */
+
+    /**
+     * @type {Calendar}
+     */
     const data = await response.json();
     return data;
 }

@@ -1,5 +1,7 @@
 <script setup>
-/** @typedef {import("@/types/calendar").CalendarEvent} CalendarEvent */
+/**
+ * @typedef {import("@/types/calendar").CalendarEvent} CalendarEvent
+ */
 
 const props = defineProps({
     events: {
