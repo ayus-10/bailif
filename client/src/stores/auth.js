@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { apiFetch } from "@/api/client";
+import { ApiError } from "@/api/shared.api";
 
 /**
  * @typedef {Object} User
@@ -47,6 +48,7 @@ export const useAuthStore = defineStore("auth", {
 
         /**
          * @param {{ username: string, password: string }} params
+         * @throws {ApiError}
          */
         async login({ username, password }) {
             const form = new URLSearchParams();
@@ -63,7 +65,7 @@ export const useAuthStore = defineStore("auth", {
             });
 
             if (!res.ok) {
-                throw new Error("Invalid credentials");
+                throw new ApiError("Invalid credentials", { status: 401 });
             }
 
             const data = await res.json();
@@ -81,6 +83,9 @@ export const useAuthStore = defineStore("auth", {
             }
         },
 
+        /**
+         * @throws {ApiError}
+         */
         async refreshCurrentUser() {
             const res = await apiFetch("/users/me");
 
@@ -88,7 +93,12 @@ export const useAuthStore = defineStore("auth", {
                 this.clearSession();
                 return;
             }
-            if (!res.ok) throw new Error("Failed to refresh user");
+
+            if (!res.ok) {
+                throw new ApiError("Failed to refresh user", {
+                    status: res.status,
+                });
+            }
 
             this.currentUser = await res.json();
         },

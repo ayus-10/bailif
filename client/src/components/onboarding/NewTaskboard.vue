@@ -4,6 +4,7 @@ import { reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
+import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { showApiError } from "@/utils/errorHandlers";
@@ -15,6 +16,8 @@ import { showApiError } from "@/utils/errorHandlers";
  */
 
 const { projectId } = useActiveProject();
+
+const toast = useToast();
 
 /**
  * @type {VFormRef}
@@ -63,7 +66,7 @@ async function handleSubmit() {
 
         router.push("/dashboard");
     } catch (err) {
-        showApiError(err);
+        showApiError(err, toast);
     } finally {
         isLoading.value = false;
     }

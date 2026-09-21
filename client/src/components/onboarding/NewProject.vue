@@ -3,6 +3,7 @@ import { useRouter } from "vue-router";
 import { onMounted, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import IconInput from "@/components/common/IconInput.vue";
+import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects.store";
@@ -15,6 +16,8 @@ import { showApiError } from "@/utils/errorHandlers";
  */
 
 const authStore = useAuthStore();
+
+const toast = useToast();
 
 /**
  * @type {VFormRef}
@@ -70,7 +73,7 @@ async function handleSubmit() {
 
         router.push("/onboarding/taskboard");
     } catch (err) {
-        showApiError(err);
+        showApiError(err, toast);
     } finally {
         isLoading.value = false;
     }
