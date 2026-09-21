@@ -16,11 +16,29 @@ import { useTasksStore } from "@/stores/tasks.store";
  * @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode
  */
 
+/**
+ * @typedef {Object} AllBoardSelection
+ * @property {"all"} type
+ */
+
+/**
+ * @typedef {Object} SingleBoardSelection
+ * @property {"single"} type
+ * @property {number} id
+ */
+
+/**
+ * @typedef {AllBoardSelection | SingleBoardSelection} BoardSelection
+ */
+
 const route = useRoute();
 const router = useRouter();
 
 const { projectId } = useActiveProject();
 
+/**
+ * @type {import("vue").ComputedRef<BoardSelection>}
+ */
 const currentBoard = computed(() => {
     const id = route.params.id;
 
@@ -29,7 +47,7 @@ const currentBoard = computed(() => {
     }
 
     return {
-        type: "board",
+        type: "single",
         id: Array.isArray(id) ? Number(id[0]) : Number(id),
     };
 });
@@ -42,25 +60,23 @@ const preferredQueryMode = ref("root-tasks");
 const query = computed(() => ({
     queryMode: preferredQueryMode.value,
     taskboardId:
-        currentBoard.value.type === "board" ? currentBoard.value.id : null,
+        currentBoard.value.type === "single" ? currentBoard.value.id : null,
 }));
 
 const taskboardsStore = useTaskboardsStore();
 const tasksStore = useTasksStore();
 
 watch(
-    projectId,
-    (id) => {
+    [projectId, query],
+    ([id, currentQuery]) => {
         if (!id) return;
 
-        if (currentBoard.value.type === "board" && currentBoard.value.id) {
-            taskboardsStore.get(currentBoard.value.id);
-        }
-
-        tasksStore.fetch(id, query.value);
+        tasksStore.fetch(id, currentQuery);
     },
     { immediate: true }
 );
+
+watch(currentBoard, fetchCurrentBoard, { immediate: true });
 
 const taskboard = computed(() => taskboardsStore.currentTaskboard);
 
@@ -127,10 +143,21 @@ function handleToolbarAction(action) {
     console.log(action);
 }
 
+/**
+ * @param {BoardSelection} board
+ */
+function fetchCurrentBoard(board) {
+    if (board.type === "single") {
+        taskboardsStore.get(board.id);
+        return;
+    }
+    taskboardsStore.currentTaskboard = null;
+}
+
 function retry() {
     if (!projectId.value) return;
 
-    if (currentBoard.value.type === "board" && currentBoard.value.id) {
+    if (currentBoard.value.type === "single" && currentBoard.value.id) {
         taskboardsStore.get(currentBoard.value.id, {
             forceRefresh: true,
         });
