@@ -131,7 +131,7 @@ export function useTaskEditor(task, taskPublicId) {
         try {
             const payload = buildUpdatePayload(draft, initialDraft);
 
-            await tasksStore.update(taskPublicId, payload); // TODO: error handling
+            await tasksStore.update(taskPublicId, payload); // TODO: error handling here and in RELATED FETCH CALLS
 
             copyDraftValues(initialDraft, draft);
 
@@ -156,7 +156,7 @@ export function useTaskEditor(task, taskPublicId) {
 
         try {
             await tasksStore.update(taskPublicId, {
-                // TODO: error handling
+                // TODO: error handling here and in RELATED FETCH CALLS
                 [field]: item.value,
             });
         } catch (error) {

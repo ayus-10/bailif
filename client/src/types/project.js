@@ -1,4 +1,8 @@
 /**
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ */
+
+/**
  * @typedef {"active" | "on_hold" | "completed" | "archived"} ProjectStatus
  */
 
@@ -67,6 +71,16 @@
 /**
  * @typedef {Object} ProjectListResponse
  * @property {ProjectRead[]} items
+ */
+
+/**
+ * @typedef {Object} ProjectsState
+ * @property {ProjectRead[]} items
+ * @property {ProjectRead | null} currentProject
+ * @property {Record<string, RequestStatus>} fetchStatus
+ * @property {Record<string, any>} fetchErrors
+ * @property {Record<string, RequestStatus>} mutationStatus
+ * @property {Record<string, any>} mutationErrors
  */
 
 export {};

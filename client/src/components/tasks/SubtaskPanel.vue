@@ -9,7 +9,7 @@ import EmptyPanel from "./EmptyPanel.vue";
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
- * @typedef {import("@/types/shared").FetchStatus} FetchStatus
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
  */
 
 const props = defineProps({
@@ -40,9 +40,7 @@ const fetchError = tasksStore.errorByQuery(props.projectId, {
 
 const hasSubtasks = computed(() => subtasks.length > 0);
 
-const isLoading = computed(
-    () => fetchStatus === "loading" || fetchStatus === "loading-more"
-);
+const isLoading = computed(() => fetchStatus === "loading");
 
 /**
  * @type {import("vue").Ref<TaskCreate | null>}
@@ -90,7 +88,7 @@ function openSubtask(subtask) {
  */
 async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
-    await tasksStore.create(task); // TODO: error handling
+    await tasksStore.create(task); // TODO: error handling here and in RELATED FETCH CALLS
     pendingSubTask.value = null;
 }
 

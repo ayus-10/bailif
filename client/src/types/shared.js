@@ -1,5 +1,8 @@
 /**
- * @typedef {"idle" | "loading" | "loading-more" | "success" | "error"} FetchStatus
+ * @typedef {"idle" | "loading" | "success" | "error"} RequestStatus
+ */
+
+/**
  * @typedef {"title" | "body" | "details" | "tags" | "none"} EditMode
  */
 

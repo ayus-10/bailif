@@ -211,7 +211,7 @@ async function dropTask(targetStatus) {
 
     try {
         await tasksStore.update(task.public_id, {
-            // TODO: error handling
+            // TODO: error handling here and in RELATED FETCH CALLS
             status: targetStatus,
         });
     } catch (err) {
@@ -254,7 +254,7 @@ function handleClear() {
                     :pending-task="pendingTask"
                     :project-id="projectId"
                     :taskboard-id="
-                        currentBoard.type === 'board' ? currentBoard.id : null
+                        currentBoard.type === 'single' ? currentBoard.id : null
                     "
                     @drag-start="startDrag"
                     @drop="dropTask"

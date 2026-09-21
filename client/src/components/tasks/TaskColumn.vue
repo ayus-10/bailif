@@ -113,12 +113,12 @@ function handleDragEnd() {
  * @param {TaskCreate} payload
  */
 async function handleCreate(payload) {
-    const task = await tasksStore.create(payload); // TODO: error handling
+    const task = await tasksStore.create(payload); // TODO: error handling here and in RELATED FETCH CALLS
 
     if (!task) return;
 
     if (props.taskboardId)
-        // TODO: error handling
+        // TODO: error handling here and in RELATED FETCH CALLS
         await taskboardsStore.addTask(props.taskboardId, {
             task_public_id: task.public_id,
         });

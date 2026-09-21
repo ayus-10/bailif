@@ -58,7 +58,7 @@ async function handleSubmit() {
             project_public_id: projectId.value,
         };
 
-        const taskboard = await taskboardsStore.create(payload); // TODO: error handling
+        const taskboard = await taskboardsStore.create(payload); // TODO: error handling here and in RELATED FETCH CALLS
         if (!taskboard) throw new Error("No response from the API");
 
         router.push("/dashboard");

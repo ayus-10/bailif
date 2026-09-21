@@ -62,7 +62,7 @@ async function submit() {
         project_public_id: props.projectId,
     };
 
-    await taskboardsStore.create(payload); // TODO: error handling
+    await taskboardsStore.create(payload); // TODO: error handling here and in RELATED FETCH CALLS
 
     isLoading.value = false;
 

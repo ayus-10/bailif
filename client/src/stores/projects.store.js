@@ -14,15 +14,8 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  * @typedef {import("@/types/project").ProjectCreate} ProjectCreate
  * @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate
  * @typedef {import("@/types/project").ProjectFilterParams} ProjectFilterParams
- * @typedef {import("@/types/shared").FetchStatus} FetchStatus
- */
-
-/**
- * @typedef {Object} ProjectsState
- * @property {ProjectRead[]} items
- * @property {ProjectRead | null} currentProject
- * @property {FetchStatus} status
- * @property {any} error
+ * @typedef {import("@/types/project").ProjectsState} ProjectsState
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
  */
 
 /**
@@ -49,6 +42,15 @@ function createFilterKey(params = {}) {
     ].join(":");
 }
 
+/**
+ * @param {string} operation
+ * @param {number} projectPublicId
+ * @returns {string}
+ */
+function mutationKey(operation, projectPublicId) {
+    return [operation, projectPublicId].join(":");
+}
+
 export const useProjectsStore = defineStore("projects", {
     /**
      * @returns {ProjectsState}
@@ -56,8 +58,10 @@ export const useProjectsStore = defineStore("projects", {
     state: () => ({
         items: [],
         currentProject: null,
-        status: "idle",
-        error: null,
+        fetchStatus: {},
+        fetchErrors: {},
+        mutationStatus: {},
+        mutationErrors: {},
     }),
 
     actions: {
@@ -65,14 +69,18 @@ export const useProjectsStore = defineStore("projects", {
          * @param {Object} [options]
          * @param {ProjectFilterParams} [options.params]
          * @param {boolean} [options.forceRefresh=false]
+         * @throws {ApiError}
          */
         async fetch({ params = {}, forceRefresh = false } = {}) {
-            if (this.status === "loading" && !forceRefresh) return;
-
-            this.status = "loading";
-            this.error = null;
-
             const filterKey = createFilterKey(params);
+            const key = `list:${filterKey}`;
+
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
+                return;
+            }
+
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
 
             const cacheKey = `projects:all${filterKey ? `:${filterKey}` : ""}`;
 
@@ -84,12 +92,13 @@ export const useProjectsStore = defineStore("projects", {
                 );
 
                 this.items = data.items;
-                this.status = "success";
+                this.fetchStatus[key] = "success";
 
                 return data;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
             }
         },
 
@@ -98,21 +107,33 @@ export const useProjectsStore = defineStore("projects", {
          * @param {Object} [options]
          * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<ProjectRead | undefined>}
+         * @throws {ApiError}
          */
         async get(projectPublicId, { forceRefresh = false } = {}) {
+            const key = `project:${projectPublicId}`;
+
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
+                return;
+            }
+
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
+
             try {
                 const project = await cachedRequest(
-                    `project:${projectPublicId}`,
+                    key,
                     () => getProject(projectPublicId),
                     { forceRefresh }
                 );
 
                 this.currentProject = project;
+                this.fetchStatus[key] = "success";
 
                 return project;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
             }
         },
 
@@ -122,6 +143,11 @@ export const useProjectsStore = defineStore("projects", {
          * @throws {ApiError}
          */
         async create(payload) {
+            const key = "create";
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const project = await createProject(payload);
 
@@ -129,8 +155,12 @@ export const useProjectsStore = defineStore("projects", {
 
                 invalidateRequestCache(`projects:all`);
 
+                this.mutationStatus[key] = "success";
+
                 return project;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -142,6 +172,11 @@ export const useProjectsStore = defineStore("projects", {
          * @throws {ApiError}
          */
         async update(projectPublicId, payload) {
+            const key = mutationKey("update", projectPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const project = await updateProject(projectPublicId, payload);
 
@@ -164,8 +199,12 @@ export const useProjectsStore = defineStore("projects", {
                 invalidateRequestCache(`projects:all`);
                 invalidateRequestCache(`project:${projectPublicId}`);
 
+                this.mutationStatus[key] = "success";
+
                 return project;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -175,6 +214,11 @@ export const useProjectsStore = defineStore("projects", {
          * @throws {ApiError}
          */
         async remove(projectPublicId) {
+            const key = mutationKey("delete", projectPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 await deleteProject(projectPublicId);
 
@@ -188,9 +232,75 @@ export const useProjectsStore = defineStore("projects", {
 
                 invalidateRequestCache(`projects:all`);
                 invalidateRequestCache(`project:${projectPublicId}`);
+
+                this.mutationStatus[key] = "success";
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
+    },
+
+    getters: {
+        /**
+         * @param {ProjectsState} state
+         * @returns {(params?: ProjectFilterParams) => RequestStatus | null}
+         */
+        fetchStatusByFilter:
+            (state) =>
+            (params = {}) => {
+                const key = `list:${createFilterKey(params)}`;
+
+                return state.fetchStatus[key] ?? null;
+            },
+
+        /**
+         * @param {ProjectsState} state
+         * @returns {(params?: ProjectFilterParams) => unknown}
+         */
+        fetchErrorByFilter:
+            (state) =>
+            (params = {}) => {
+                const key = `list:${createFilterKey(params)}`;
+
+                return state.fetchErrors[key] ?? null;
+            },
+
+        /**
+         * @param {ProjectsState} state
+         * @returns {(projectPublicId: number) => RequestStatus | null}
+         */
+        fetchStatusByProject: (state) => (projectPublicId) => {
+            return state.fetchStatus[`project:${projectPublicId}`] ?? null;
+        },
+
+        /**
+         * @param {ProjectsState} state
+         * @returns {(projectPublicId: number) => unknown}
+         */
+        fetchErrorByProject: (state) => (projectPublicId) => {
+            return state.fetchErrors[`project:${projectPublicId}`] ?? null;
+        },
+
+        /**
+         * @param {ProjectsState} state
+         * @returns {(operation: string, id: number) => RequestStatus | null}
+         */
+        mutationStatusByKey: (state) => (operation, id) => {
+            return state.mutationStatus[mutationKey(operation, id)] ?? null;
+        },
+
+        /**
+         * @param {ProjectsState} state
+         * @returns {(operation: string, id: number) => unknown}
+         */
+        mutationErrorByKey:
+            (state) =>
+            (operation, ...ids) => {
+                return (
+                    state.mutationErrors[mutationKey(operation, ...ids)] ?? null
+                );
+            },
     },
 });

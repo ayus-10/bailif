@@ -1,5 +1,5 @@
 /**
- * @typedef {import("@/types/shared").FetchStatus} FetchStatus
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
  */
 
 /**
@@ -124,8 +124,10 @@
  * @property {Record<string, string | null>} nextCursor
  * @property {Record<string, TaskFetchOptions>} queries
  * @property {TaskRead | null} currentTask
- * @property {Record<string, FetchStatus>} status
- * @property {Record<string, any>} errors
+ * @property {Record<string, RequestStatus>} fetchStatus
+ * @property {Record<string, any>} fetchErrors
+ * @property {Record<string, RequestStatus>} mutationStatus
+ * @property {Record<string, any>} mutationErrors
  */
 
 export {};

@@ -63,7 +63,7 @@ async function handleSubmit() {
     isLoading.value = true;
 
     try {
-        const project = await projectsStore.create(form); // TODO: error handling
+        const project = await projectsStore.create(form); // TODO: error handling here and in RELATED FETCH CALLS
         if (!project) throw new Error("No response from the API");
 
         authStore.refreshCurrentUser();
