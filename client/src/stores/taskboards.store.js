@@ -120,7 +120,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
         /**
          * @param {TaskboardCreate} payload
-         * @returns {Promise<TaskboardRead | undefined>}
+         * @returns {Promise<TaskboardRead>}
          * @throws {ApiError}
          */
         async create(payload) {
@@ -246,7 +246,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
         /**
          * @param {number} boardPublicId
          * @param {TaskAssignment} payload
-         * @returns {Promise<TaskboardTaskRead | undefined>}
+         * @returns {Promise<TaskboardTaskRead>}
          * @throws {ApiError}
          */
         async addTask(boardPublicId, payload) {

@@ -6,6 +6,7 @@ import IconInput from "@/components/common/IconInput.vue";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects.store";
+import { showApiError } from "@/utils/errorHandlers";
 
 /**
  * @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate
@@ -63,14 +64,13 @@ async function handleSubmit() {
     isLoading.value = true;
 
     try {
-        const project = await projectsStore.create(form); // TODO: error handling here and in RELATED FETCH CALLS
-        if (!project) throw new Error("No response from the API");
+        await projectsStore.create(form);
 
         authStore.refreshCurrentUser();
 
         router.push("/onboarding/taskboard");
-    } catch {
-        alert("Something went wrong.");
+    } catch (err) {
+        showApiError(err);
     } finally {
         isLoading.value = false;
     }

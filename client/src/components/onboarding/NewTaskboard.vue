@@ -6,6 +6,7 @@ import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
+import { showApiError } from "@/utils/errorHandlers";
 
 /**
  * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
@@ -58,13 +59,11 @@ async function handleSubmit() {
             project_public_id: projectId.value,
         };
 
-        const taskboard = await taskboardsStore.create(payload); // TODO: error handling here and in RELATED FETCH CALLS
-        if (!taskboard) throw new Error("No response from the API");
+        await taskboardsStore.create(payload);
 
         router.push("/dashboard");
-    } catch (e) {
-        console.error(e);
-        alert("Something went wrong.");
+    } catch (err) {
+        showApiError(err);
     } finally {
         isLoading.value = false;
     }

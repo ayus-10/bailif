@@ -139,7 +139,7 @@ export const useProjectsStore = defineStore("projects", {
 
         /**
          * @param {ProjectCreate} payload
-         * @returns {Promise<ProjectRead | undefined>}
+         * @returns {Promise<ProjectRead>}
          * @throws {ApiError}
          */
         async create(payload) {
@@ -168,7 +168,7 @@ export const useProjectsStore = defineStore("projects", {
         /**
          * @param {number} projectPublicId
          * @param {ProjectUpdate} payload
-         * @returns {Promise<ProjectRead | undefined>}
+         * @returns {Promise<ProjectRead>}
          * @throws {ApiError}
          */
         async update(projectPublicId, payload) {
