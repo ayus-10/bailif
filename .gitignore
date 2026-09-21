@@ -49,3 +49,8 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Temp
+foo
+bar
+diff
