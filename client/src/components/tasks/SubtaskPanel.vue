@@ -8,11 +8,7 @@ import EmptyPanel from "./EmptyPanel.vue";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
- */
-/**
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
- */
-/**
  * @typedef {import("@/types/shared").FetchStatus} FetchStatus
  */
 

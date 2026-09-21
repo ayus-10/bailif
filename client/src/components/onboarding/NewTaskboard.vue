@@ -9,11 +9,7 @@ import { useTaskboardsStore } from "@/stores/taskboards.store";
 
 /**
  * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
  */
 

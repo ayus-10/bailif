@@ -5,8 +5,6 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css";
 
 /**
  * @typedef {import("@/types/task").TaskPriority} TaskPriority
- */
-/**
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
  */
 

@@ -1,7 +1,5 @@
 /**
  * @typedef {import("@/types/task").TaskPriority} TaskPriority
- */
-/**
  * @typedef {import("@/types/task").TaskStatus} TaskStatus
  */
 

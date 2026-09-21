@@ -10,20 +10,10 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
 
 /**
  * @typedef {import("@/api/shared.api").ApiError} ApiError
- */
-/**
  * @typedef {import("@/types/project").ProjectRead} ProjectRead
- */
-/**
  * @typedef {import("@/types/project").ProjectCreate} ProjectCreate
- */
-/**
  * @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate
- */
-/**
  * @typedef {import("@/types/project").ProjectFilterParams} ProjectFilterParams
- */
-/**
  * @typedef {import("@/types/shared").FetchStatus} FetchStatus
  */
 

@@ -8,8 +8,6 @@ import EmptyPanel from "./EmptyPanel.vue";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
- */
-/**
  * @typedef {import("@/types/task").TaskDraft} TaskDraft
  */
 

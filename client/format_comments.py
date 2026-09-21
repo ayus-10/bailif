@@ -57,6 +57,10 @@ def ensure_space_between_comment_and_code_snippet(
     return line, False
 
 
+def is_redundant_comment_pair(line: str, prev_line: str | None) -> bool:
+    return prev_line is not None and line.strip() == "/**" and prev_line.strip() == "*/"
+
+
 def process_file(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines(keepends=True)
@@ -67,6 +71,13 @@ def process_file(path: Path) -> None:
     previous_line = None
 
     for line in lines:
+        if is_redundant_comment_pair(line, previous_line):
+            new_lines.pop()
+
+            changed = True
+            previous_line = None
+            continue
+
         processed, line_changed = single_line_to_multi(line)
         processed, quote_changed = single_quote_to_double(processed)
 

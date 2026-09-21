@@ -7,14 +7,8 @@ import TaskCard from "./TaskCard.vue";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
- */
-/**
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
- */
-/**
  * @typedef {import("@/types/project").ProjectRead} ProjectRead
- */
-/**
  * @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig
  */
 

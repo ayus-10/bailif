@@ -12,11 +12,7 @@ import { useTasksStore } from "@/stores/tasks.store";
 
 /**
  * @typedef {import("@/types/task").TaskWithPosition} TaskWithPosition
- */
-/**
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
- */
-/**
  * @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode
  */
 

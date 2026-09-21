@@ -3,17 +3,9 @@ import { parseJson } from "./shared.api";
 
 /**
  * @typedef {import("@/types/project").ProjectRead} ProjectRead
- */
-/**
  * @typedef {import("@/types/project").ProjectCreate} ProjectCreate
- */
-/**
  * @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate
- */
-/**
  * @typedef {import("@/types/project").ProjectFilterParams} ProjectFilterParams
- */
-/**
  * @typedef {import("@/types/project").ProjectListResponse} ProjectListResponse
  */
 

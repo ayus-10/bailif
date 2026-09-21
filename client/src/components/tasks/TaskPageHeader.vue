@@ -10,11 +10,7 @@ import TaskBreadcrumbs from "./TaskBreadcrumbs.vue";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
- */
-/**
  * @typedef {import("@/types/task").TaskDraft} TaskDraft
- */
-/**
  * @typedef {import("@/types/shared").EditMode} EditMode
  */
 

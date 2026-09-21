@@ -13,29 +13,13 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
 
 /**
  * @typedef {import("@/api/shared.api").ApiError} ApiError
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardUpdate} TaskboardUpdate
- */
-/**
  * @typedef {import("@/types/taskboards").TaskAssignment} TaskAssignment
- */
-/**
  * @typedef {import("@/types/taskboards").TaskReposition} TaskReposition
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead
- */
-/**
  * @typedef {import("@/types/shared").FetchStatus} FetchStatus
  */
 

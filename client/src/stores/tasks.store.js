@@ -10,26 +10,12 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
 
 /**
  * @typedef {import("@/api/shared.api").ApiError} ApiError
- */
-/**
  * @typedef {import("@/types/task").TaskRead} TaskRead
- */
-/**
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
- */
-/**
  * @typedef {import("@/types/task").TaskUpdate} TaskUpdate
- */
-/**
  * @typedef {import("@/types/task").TaskListParams} TaskListParams
- */
-/**
  * @typedef {import("@/types/task").TaskFetchOptions} TaskFetchOptions
- */
-/**
  * @typedef {import("@/types/task").TasksState} TasksState
- */
-/**
  * @typedef {import("@/types/shared").FetchStatus} FetchStatus
  */
 

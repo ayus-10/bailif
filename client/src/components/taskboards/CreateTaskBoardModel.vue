@@ -6,8 +6,6 @@ import { useTaskboardsStore } from "@/stores/taskboards.store";
 
 /**
  * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
- */
-/**
  * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
  */
 
