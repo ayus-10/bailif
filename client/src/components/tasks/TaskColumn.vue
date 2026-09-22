@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
+import { useToast } from "@/composables/useToast";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 import TaskCard from "./TaskCard.vue";
 
 /**
@@ -43,6 +45,8 @@ const props = defineProps({
         default: null,
     },
 });
+
+const toast = useToast();
 
 const tasksStore = useTasksStore();
 const taskboardsStore = useTaskboardsStore();
@@ -113,17 +117,18 @@ function handleDragEnd() {
  * @param {TaskCreate} payload
  */
 async function handleCreate(payload) {
-    const task = await tasksStore.create(payload); // TODO: error handling here and in RELATED FETCH CALLS
+    try {
+        const task = await tasksStore.create(payload);
 
-    if (!task) return;
+        if (props.taskboardId)
+            await taskboardsStore.addTask(props.taskboardId, {
+                task_public_id: task.public_id,
+            });
 
-    if (props.taskboardId)
-        // TODO: error handling here and in RELATED FETCH CALLS
-        await taskboardsStore.addTask(props.taskboardId, {
-            task_public_id: task.public_id,
-        });
-
-    emit("clear-pending-task");
+        emit("clear-pending-task");
+    } catch (err) {
+        showApiError(err, toast);
+    }
 }
 
 function handleCancel() {

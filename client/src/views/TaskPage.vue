@@ -56,10 +56,10 @@ const {
 
     beginEdit,
     cancelChanges,
-    saveChanges,
+    saveChanges, // TODO: handle errors
 
-    onStatusChange,
-    onPriorityChange,
+    onStatusChange, // TODO: handle errors
+    onPriorityChange, // TODO: handle errors
 } = useTaskEditor(currentTask, currentTaskId.value);
 </script>
 

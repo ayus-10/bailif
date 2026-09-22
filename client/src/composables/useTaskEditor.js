@@ -1,4 +1,5 @@
 import { computed, reactive, ref, watch } from "vue";
+import { ApiError } from "@/api/shared.api";
 import { useTasksStore } from "@/stores/tasks.store";
 import {
     isTaskOverdue,
@@ -120,6 +121,9 @@ export function useTaskEditor(task, taskPublicId) {
         editMode.value = "none";
     }
 
+    /**
+     * @throws {ApiError}
+     */
     async function saveChanges() {
         if (!task.value || !hasPendingChanges.value) {
             editMode.value = "none";
@@ -131,11 +135,13 @@ export function useTaskEditor(task, taskPublicId) {
         try {
             const payload = buildUpdatePayload(draft, initialDraft);
 
-            await tasksStore.update(taskPublicId, payload); // TODO: error handling here and in RELATED FETCH CALLS
+            await tasksStore.update(taskPublicId, payload);
 
             copyDraftValues(initialDraft, draft);
 
             editMode.value = "none";
+        } catch (err) {
+            throw err;
         } finally {
             isSaving.value = false;
         }
@@ -146,6 +152,7 @@ export function useTaskEditor(task, taskPublicId) {
      * @param {{ value: string }} item
      * @param {import("vue").Ref<string | null>} localRef
      * @param {import("vue").Ref<boolean>} savingRef
+     * @throws {ApiError}
      */
     async function updateTaskField(field, item, localRef, savingRef) {
         if (!task.value) return;
@@ -156,12 +163,11 @@ export function useTaskEditor(task, taskPublicId) {
 
         try {
             await tasksStore.update(taskPublicId, {
-                // TODO: error handling here and in RELATED FETCH CALLS
                 [field]: item.value,
             });
-        } catch (error) {
+        } catch (err) {
             localRef.value = previousValue;
-            throw error;
+            throw err;
         } finally {
             savingRef.value = false;
         }
@@ -169,6 +175,7 @@ export function useTaskEditor(task, taskPublicId) {
 
     /**
      * @param {{ value: string }} item
+     * @throws {ApiError}
      */
     function onStatusChange(item) {
         return updateTaskField("status", item, selectedStatus, isSavingStatus);
@@ -176,6 +183,7 @@ export function useTaskEditor(task, taskPublicId) {
 
     /**
      * @param {{ value: string }} item
+     * @throws {ApiError}
      */
     function onPriorityChange(item) {
         return updateTaskField(

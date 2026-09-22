@@ -137,7 +137,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
             try {
                 const board = await createTaskboard(payload);
 
-                this.items = [...this.items, { ...board, task_count: 0 }]; // TODO: figure out if this is safe
+                this.items = [...this.items, { ...board, task_count: 0 }];
 
                 invalidateRequestCache(
                     `taskboards:project:${board.project_public_id}`
@@ -181,7 +181,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     ...this.items.slice(0, index),
                     {
                         ...board,
-                        task_count: this.items[index].task_count, // TODO: figure out if this is safe
+                        task_count: this.items[index].task_count,
                     },
                     ...this.items.slice(index + 1),
                 ];

@@ -54,9 +54,6 @@ const isLoading = computed(
 );
 
 onMounted(() => {
-    // TODO: figure out what to do here
-    // const today = new Date().toUTCString();
-    // form.start_date = today;
     form.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 });
 

@@ -232,7 +232,7 @@ export const useTasksStore = defineStore("tasks", {
 
         /**
          * @param {TaskCreate} payload
-         * @returns {Promise<TaskRead | undefined>}
+         * @returns {Promise<TaskRead>}
          * @throws {ApiError}
          */
         async create(payload) {
@@ -271,7 +271,7 @@ export const useTasksStore = defineStore("tasks", {
         /**
          * @param {number} taskPublicId
          * @param {TaskUpdate} payload
-         * @returns {Promise<TaskRead | undefined>}
+         * @returns {Promise<TaskRead>}
          * @throws {ApiError}
          */
         async update(taskPublicId, payload) {
