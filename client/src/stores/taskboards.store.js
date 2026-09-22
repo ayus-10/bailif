@@ -22,15 +22,20 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  * @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead
  * @typedef {import("@/types/taskboards").TaskboardsState} TaskboardsState
  * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/shared").MutationOperation} MutationOperation
  */
 
 /**
- * @param {string} operation
+ * @typedef {MutationOperation | "add-task" | "remove-task" | "reposition-task"} TaskboardMutationOperation
+ */
+
+/**
+ * @param {TaskboardMutationOperation} operation
  * @param {...(number)} ids
  * @returns {string}
  */
 function mutationKey(operation, ...ids) {
-    return [operation, ...ids].join(":");
+    return ids.length ? [operation, ...ids].join(":") : `${operation}:new`;
 }
 
 export const useTaskboardsStore = defineStore("taskboards", {
@@ -124,7 +129,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @throws {ApiError}
          */
         async create(payload) {
-            const key = "create";
+            const key = mutationKey("create");
 
             this.mutationStatus[key] = "loading";
             this.mutationErrors[key] = null;
@@ -317,7 +322,11 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @throws {ApiError}
          */
         async repositionTask(boardPublicId, taskPublicId, payload) {
-            const key = mutationKey("reposition", boardPublicId, taskPublicId);
+            const key = mutationKey(
+                "reposition-task",
+                boardPublicId,
+                taskPublicId
+            );
 
             this.mutationStatus[key] = "loading";
             this.mutationErrors[key] = null;
@@ -363,7 +372,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {TaskboardsState} state
          * @returns {(projectPublicId: number) => RequestStatus | null}
          */
-        fetchStatusByProject: (state) => (projectPublicId) => {
+        fetchProjectStatus: (state) => (projectPublicId) => {
             return state.fetchStatus[`project:${projectPublicId}`] ?? null;
         },
 
@@ -371,7 +380,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {TaskboardsState} state
          * @returns {(projectPublicId: number) => unknown}
          */
-        fetchErrorByProject: (state) => (projectPublicId) => {
+        fetchProjectError: (state) => (projectPublicId) => {
             return state.fetchErrors[`project:${projectPublicId}`] ?? null;
         },
 
@@ -379,7 +388,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {TaskboardsState} state
          * @returns {(boardPublicId: number) => RequestStatus | null}
          */
-        fetchStatusByBoard: (state) => (boardPublicId) => {
+        fetchBoardStatus: (state) => (boardPublicId) => {
             return state.fetchStatus[`taskboard:${boardPublicId}`] ?? null;
         },
 
@@ -387,15 +396,15 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {TaskboardsState} state
          * @returns {(boardPublicId: number) => unknown}
          */
-        fetchErrorByBoard: (state) => (boardPublicId) => {
+        fetchBoardError: (state) => (boardPublicId) => {
             return state.fetchErrors[`taskboard:${boardPublicId}`] ?? null;
         },
 
         /**
          * @param {TaskboardsState} state
-         * @returns {(operation: string, ...ids: (number)[]) => RequestStatus | null}
+         * @returns {(operation: TaskboardMutationOperation, ...ids: number[]) => RequestStatus | null}
          */
-        mutationStatusByKey:
+        taskboardMutationStatus:
             (state) =>
             (operation, ...ids) => {
                 return (
@@ -405,9 +414,9 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
         /**
          * @param {TaskboardsState} state
-         * @returns {(operation: string, ...ids: (number)[]) => unknown}
+         * @returns {(operation: TaskboardMutationOperation, ...ids: number[]) => unknown}
          */
-        mutationErrorByKey:
+        taskboardMutationError:
             (state) =>
             (operation, ...ids) => {
                 return (
