@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
@@ -28,7 +28,9 @@ const taskboardsStore = useTaskboardsStore();
 
 const router = useRouter();
 
-const isLoading = ref(false);
+const isLoading = computed(
+    () => taskboardsStore.taskboardMutationStatus("create") === "loading"
+);
 
 /**
  * @type {import("vue").Reactive<TaskboardForm>}
@@ -51,8 +53,6 @@ async function handleSubmit() {
     const { valid } = await formRef.value.validate();
     if (!valid) return;
 
-    isLoading.value = true;
-
     try {
         /**
          * @type {TaskboardPayload}
@@ -67,8 +67,6 @@ async function handleSubmit() {
         router.push("/dashboard");
     } catch (err) {
         showApiError(err, toast);
-    } finally {
-        isLoading.value = false;
     }
 }
 </script>

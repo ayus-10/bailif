@@ -3,7 +3,9 @@ import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
+import { useToast } from "@/composables/useToast";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 import EmptyPanel from "./EmptyPanel.vue";
 
 /**
@@ -23,6 +25,8 @@ const props = defineProps({
     },
 });
 
+const toast = useToast();
+
 const route = useRoute();
 const router = useRouter();
 
@@ -31,10 +35,10 @@ const tasksStore = useTasksStore();
 const subtasks = tasksStore.tasksByQuery(props.projectId, {
     parentId: props.taskId,
 });
-const fetchStatus = tasksStore.statusByQuery(props.projectId, {
+const fetchStatus = tasksStore.fetchListStatus(props.projectId, {
     parentId: props.taskId,
 });
-const fetchError = tasksStore.errorByQuery(props.projectId, {
+const fetchError = tasksStore.fetchListError(props.projectId, {
     parentId: props.taskId,
 });
 
@@ -88,8 +92,13 @@ function openSubtask(subtask) {
  */
 async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
-    await tasksStore.create(task); // TODO: error handling here and in RELATED FETCH CALLS
-    pendingSubTask.value = null;
+
+    try {
+        await tasksStore.create(task);
+        pendingSubTask.value = null;
+    } catch (err) {
+        showApiError(err, toast);
+    }
 }
 
 function handleNewSubtask() {

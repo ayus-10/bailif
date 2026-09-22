@@ -203,10 +203,7 @@ const navigation = {
                         >
                             <template #prepend>
                                 <v-icon
-                                    :icon="
-                                        // TODO: this would be a good idea: board.icon
-                                        sidebar.boards.fallbackIcon
-                                    "
+                                    :icon="sidebar.boards.fallbackIcon"
                                     size="1rem"
                                     :style="{
                                         color:

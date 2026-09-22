@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import IconInput from "@/components/common/IconInput.vue";
 import { useToast } from "@/composables/useToast";
@@ -49,7 +49,9 @@ const rules = {
         !!v?.trim() || "Project name is required",
 };
 
-const isLoading = ref(false);
+const isLoading = computed(
+    () => projectsStore.projectMutationStatus("create") === "loading"
+);
 
 onMounted(() => {
     // TODO: figure out what to do here
@@ -64,8 +66,6 @@ async function handleSubmit() {
     const { valid } = await formRef.value.validate();
     if (!valid) return;
 
-    isLoading.value = true;
-
     try {
         await projectsStore.create(form);
 
@@ -74,8 +74,6 @@ async function handleSubmit() {
         router.push("/onboarding/taskboard");
     } catch (err) {
         showApiError(err, toast);
-    } finally {
-        isLoading.value = false;
     }
 }
 </script>

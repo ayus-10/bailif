@@ -6,9 +6,11 @@ import BoardHeader from "@/components/taskboards/BoardHeader.vue";
 import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
+import { useToast } from "@/composables/useToast";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 
 /**
  * @typedef {import("@/types/task").TaskWithPosition} TaskWithPosition
@@ -30,6 +32,8 @@ import { useTasksStore } from "@/stores/tasks.store";
 /**
  * @typedef {AllBoardSelection | SingleBoardSelection} BoardSelection
  */
+
+const toast = useToast();
 
 const route = useRoute();
 const router = useRouter();
@@ -82,18 +86,6 @@ const taskboard = computed(() => taskboardsStore.currentTaskboard);
 
 const tasks = computed(() =>
     projectId.value ? tasksStore.tasksByQuery(projectId.value, query.value) : []
-);
-
-const status = computed(() =>
-    projectId.value
-        ? tasksStore.statusByQuery(projectId.value, query.value)
-        : null
-);
-
-const error = computed(() =>
-    projectId.value
-        ? tasksStore.errorByQuery(projectId.value, query.value)
-        : null
 );
 
 const filteredTasks = computed(() => {
@@ -211,12 +203,11 @@ async function dropTask(targetStatus) {
 
     try {
         await tasksStore.update(task.public_id, {
-            // TODO: error handling here and in RELATED FETCH CALLS
             status: targetStatus,
         });
     } catch (err) {
         task.status = oldStatus;
-        console.error(err);
+        showApiError(err, toast);
     } finally {
         draggedTask.value = null;
     }
