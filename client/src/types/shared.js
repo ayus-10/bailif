@@ -6,4 +6,8 @@
  * @typedef {"title" | "body" | "details" | "tags" | "none"} EditMode
  */
 
+/**
+ * @typedef {"create" | "update" | "delete"} MutationOperation
+ */
+
 export {};

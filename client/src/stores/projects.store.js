@@ -16,6 +16,7 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  * @typedef {import("@/types/project").ProjectFilterParams} ProjectFilterParams
  * @typedef {import("@/types/project").ProjectsState} ProjectsState
  * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/shared").MutationOperation} ProjectMutationOperation
  */
 
 /**
@@ -43,12 +44,12 @@ function createFilterKey(params = {}) {
 }
 
 /**
- * @param {string} operation
- * @param {number} projectPublicId
+ * @param {ProjectMutationOperation} operation
+ * @param {number} [projectPublicId]
  * @returns {string}
  */
 function mutationKey(operation, projectPublicId) {
-    return [operation, projectPublicId].join(":");
+    return `${operation}:${projectPublicId ?? "new"}`;
 }
 
 export const useProjectsStore = defineStore("projects", {
@@ -143,7 +144,7 @@ export const useProjectsStore = defineStore("projects", {
          * @throws {ApiError}
          */
         async create(payload) {
-            const key = "create";
+            const key = mutationKey("create");
 
             this.mutationStatus[key] = "loading";
             this.mutationErrors[key] = null;
@@ -247,7 +248,7 @@ export const useProjectsStore = defineStore("projects", {
          * @param {ProjectsState} state
          * @returns {(params?: ProjectFilterParams) => RequestStatus | null}
          */
-        fetchStatusByFilter:
+        fetchListStatus:
             (state) =>
             (params = {}) => {
                 const key = `list:${createFilterKey(params)}`;
@@ -259,7 +260,7 @@ export const useProjectsStore = defineStore("projects", {
          * @param {ProjectsState} state
          * @returns {(params?: ProjectFilterParams) => unknown}
          */
-        fetchErrorByFilter:
+        fetchListError:
             (state) =>
             (params = {}) => {
                 const key = `list:${createFilterKey(params)}`;
@@ -271,7 +272,7 @@ export const useProjectsStore = defineStore("projects", {
          * @param {ProjectsState} state
          * @returns {(projectPublicId: number) => RequestStatus | null}
          */
-        fetchStatusByProject: (state) => (projectPublicId) => {
+        fetchProjectStatus: (state) => (projectPublicId) => {
             return state.fetchStatus[`project:${projectPublicId}`] ?? null;
         },
 
@@ -279,28 +280,30 @@ export const useProjectsStore = defineStore("projects", {
          * @param {ProjectsState} state
          * @returns {(projectPublicId: number) => unknown}
          */
-        fetchErrorByProject: (state) => (projectPublicId) => {
+        fetchProjectError: (state) => (projectPublicId) => {
             return state.fetchErrors[`project:${projectPublicId}`] ?? null;
         },
 
         /**
          * @param {ProjectsState} state
-         * @returns {(operation: string, id: number) => RequestStatus | null}
+         * @returns {(operation: ProjectMutationOperation, projectPublicId?: number) => RequestStatus | null}
          */
-        mutationStatusByKey: (state) => (operation, id) => {
-            return state.mutationStatus[mutationKey(operation, id)] ?? null;
+        projectMutationStatus: (state) => (operation, projectPublicId) => {
+            return (
+                state.mutationStatus[mutationKey(operation, projectPublicId)] ??
+                null
+            );
         },
 
         /**
          * @param {ProjectsState} state
-         * @returns {(operation: string, id: number) => unknown}
+         * @returns {(operation: ProjectMutationOperation, projectPublicId?: number) => unknown}
          */
-        mutationErrorByKey:
-            (state) =>
-            (operation, ...ids) => {
-                return (
-                    state.mutationErrors[mutationKey(operation, ...ids)] ?? null
-                );
-            },
+        projectMutationError: (state) => (operation, projectPublicId) => {
+            return (
+                state.mutationErrors[mutationKey(operation, projectPublicId)] ??
+                null
+            );
+        },
     },
 });

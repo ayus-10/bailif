@@ -17,6 +17,7 @@ import { cachedRequest, invalidateRequestCache } from "./cache";
  * @typedef {import("@/types/task").TaskFetchOptions} TaskFetchOptions
  * @typedef {import("@/types/task").TasksState} TasksState
  * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/shared").MutationOperation} TaskMutationOperation
  */
 
 /**
@@ -53,12 +54,12 @@ function collectionKey(projectPublicId, options = {}) {
 }
 
 /**
- * @param {string} operation
- * @param {number} taskPublicId
+ * @param {TaskMutationOperation} operation
+ * @param {number} [taskPublicId]
  * @returns {string}
  */
 function mutationKey(operation, taskPublicId) {
-    return `${operation}:${taskPublicId}`;
+    return `${operation}:${taskPublicId ?? "new"}`;
 }
 
 export const useTasksStore = defineStore("tasks", {
@@ -235,7 +236,7 @@ export const useTasksStore = defineStore("tasks", {
          * @throws {ApiError}
          */
         async create(payload) {
-            const key = "create";
+            const key = mutationKey("create");
 
             this.mutationStatus[key] = "loading";
             this.mutationErrors[key] = null;
@@ -373,7 +374,7 @@ export const useTasksStore = defineStore("tasks", {
          * @param {TasksState} state
          * @returns {(projectPublicId: number, options?: TaskFetchOptions) => RequestStatus | null}
          */
-        fetchStatusByQuery:
+        fetchListStatus:
             (state) =>
             (projectPublicId, options = {}) => {
                 const key = collectionKey(projectPublicId, options);
@@ -385,7 +386,7 @@ export const useTasksStore = defineStore("tasks", {
          * @param {TasksState} state
          * @returns {(projectPublicId: number, options?: TaskFetchOptions) => unknown}
          */
-        fetchErrorByQuery:
+        fetchListError:
             (state) =>
             (projectPublicId, options = {}) => {
                 const key = collectionKey(projectPublicId, options);
@@ -395,24 +396,22 @@ export const useTasksStore = defineStore("tasks", {
 
         /**
          * @param {TasksState} state
-         * @returns {(taskPublicId: number) => RequestStatus | null}
+         * @returns {(operation: TaskMutationOperation, taskPublicId?: number) => RequestStatus | null}
          */
-        mutationStatusByTask: (state) => (taskPublicId) => {
+        taskMutationStatus: (state) => (operation, taskPublicId) => {
             return (
-                state.mutationStatus[mutationKey("update", taskPublicId)] ??
-                state.mutationStatus[mutationKey("delete", taskPublicId)] ??
+                state.mutationStatus[mutationKey(operation, taskPublicId)] ??
                 null
             );
         },
 
         /**
          * @param {TasksState} state
-         * @returns {(taskPublicId: number) => unknown}
+         * @returns {(operation: TaskMutationOperation, taskPublicId?: number) => unknown}
          */
-        mutationErrorByTask: (state) => (taskPublicId) => {
+        taskMutationError: (state) => (operation, taskPublicId) => {
             return (
-                state.mutationErrors[mutationKey("update", taskPublicId)] ??
-                state.mutationErrors[mutationKey("delete", taskPublicId)] ??
+                state.mutationErrors[mutationKey(operation, taskPublicId)] ??
                 null
             );
         },
