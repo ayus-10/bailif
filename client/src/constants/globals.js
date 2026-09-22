@@ -10,7 +10,9 @@
  * @property {string} value
  */
 
-/** @type {ColorOption[]} */
+/**
+ * @type {ColorOption[]}
+ */
 export const DEFAULT_COLORS = [
     { label: "Iris", value: "#6366F1" },
     { label: "Violet", value: "#8B5CF6" },
@@ -24,7 +26,9 @@ export const DEFAULT_COLORS = [
     { label: "Cobalt", value: "#3B82F6" },
 ];
 
-/** @type {IconOption[]} */
+/**
+ * @type {IconOption[]}
+ */
 export const DEFAULT_ICONS = [
     { label: "Home", value: "mdi-home" },
     { label: "Folder", value: "mdi-folder" },

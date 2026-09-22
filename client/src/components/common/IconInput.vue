@@ -2,7 +2,9 @@
 import { computed } from "vue";
 import { DEFAULT_ICONS } from "@/constants/globals";
 
-/** @typedef {import("@/constants/globals").IconOption} IconOption */
+/**
+ * @typedef {import("@/constants/globals").IconOption} IconOption
+ */
 
 const props = defineProps({
     modelValue: {
@@ -10,7 +12,9 @@ const props = defineProps({
         default: "",
     },
     icons: {
-        /** @type {import("vue").PropType<IconOption[]>} */
+        /**
+         * @type {import("vue").PropType<IconOption[]>}
+         */
         type: Array,
         default: () => DEFAULT_ICONS,
     },
@@ -34,7 +38,9 @@ const selectedIcon = computed(() =>
     props.icons.find((icon) => icon.value === props.modelValue)
 );
 
-/** @param {string} icon */
+/**
+ * @param {string} icon
+ */
 function selectIcon(icon) {
     if (props.disabled) return;
 

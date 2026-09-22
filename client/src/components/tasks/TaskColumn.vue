@@ -1,18 +1,24 @@
 <script setup>
 import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
+import { useToast } from "@/composables/useToast";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 import TaskCard from "./TaskCard.vue";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/project").ProjectRead} ProjectRead */
-/** @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ * @typedef {import("@/types/project").ProjectRead} ProjectRead
+ * @typedef {import("@/constants/tasks").TaskColumnConfig} TaskColumnConfig
+ */
 
 const props = defineProps({
     column: {
-        /** @type {import("vue").PropType<TaskColumnConfig>} */
+        /**
+         * @type {import("vue").PropType<TaskColumnConfig>}
+         */
         type: Object,
         required: true,
     },
@@ -25,16 +31,22 @@ const props = defineProps({
         default: null,
     },
     tasks: {
-        /** @type {import("vue").PropType<TaskRead[]>} */
+        /**
+         * @type {import("vue").PropType<TaskRead[]>}
+         */
         type: Array,
         required: true,
     },
     pendingTask: {
-        /** @type {import("vue").PropType<TaskCreate | null>} */
+        /**
+         * @type {import("vue").PropType<TaskCreate | null>}
+         */
         type: Object,
         default: null,
     },
 });
+
+const toast = useToast();
 
 const tasksStore = useTasksStore();
 const taskboardsStore = useTaskboardsStore();
@@ -43,7 +55,9 @@ const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
 
 const isDragOver = ref(false);
 
-/** @param {DragEvent} event */
+/**
+ * @param {DragEvent} event
+ */
 function handleDragOver(event) {
     const sourceStatus = event.dataTransfer?.getData("task-status");
 
@@ -55,7 +69,9 @@ function handleDragOver(event) {
     isDragOver.value = true;
 }
 
-/** @param {DragEvent} event */
+/**
+ * @param {DragEvent} event
+ */
 function handleDragLeave(event) {
     const target = event.currentTarget;
 
@@ -69,7 +85,9 @@ function handleDragLeave(event) {
     }
 }
 
-/** @param {DragEvent} event */
+/**
+ * @param {DragEvent} event
+ */
 function handleDrop(event) {
     isDragOver.value = false;
 
@@ -95,19 +113,22 @@ function handleDragEnd() {
     isDragOver.value = false;
 }
 
-/** @param {TaskCreate} payload */
+/**
+ * @param {TaskCreate} payload
+ */
 async function handleCreate(payload) {
-    const task = await tasksStore.create(payload); // TODO: error handling
+    try {
+        const task = await tasksStore.create(payload);
 
-    if (!task) return;
+        if (props.taskboardId)
+            await taskboardsStore.addTask(props.taskboardId, {
+                task_public_id: task.public_id,
+            });
 
-    if (props.taskboardId)
-        // TODO: error handling
-        await taskboardsStore.addTask(props.taskboardId, {
-            task_public_id: task.public_id,
-        });
-
-    emit("clear-pending-task");
+        emit("clear-pending-task");
+    } catch (err) {
+        showApiError(err, toast);
+    }
 }
 
 function handleCancel() {

@@ -1,26 +1,36 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import IconInput from "@/components/common/IconInput.vue";
+import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects.store";
+import { showApiError } from "@/utils/errorHandlers";
 
-/** @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate */
-/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
-/** @typedef {ProjectCreate & { color?: string }} ProjectCreateForm */
+/**
+ * @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate
+ * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
+ * @typedef {ProjectCreate & { color?: string }} ProjectCreateForm
+ */
 
 const authStore = useAuthStore();
 
-/** @type {VFormRef} */
+const toast = useToast();
+
+/**
+ * @type {VFormRef}
+ */
 const formRef = ref(null);
 
 const projectsStore = useProjectsStore();
 
 const router = useRouter();
 
-/** @type {import("vue").Reactive<ProjectCreateForm>} */
+/**
+ * @type {import("vue").Reactive<ProjectCreateForm>}
+ */
 const form = reactive({
     name: "",
     description: "",
@@ -39,12 +49,11 @@ const rules = {
         !!v?.trim() || "Project name is required",
 };
 
-const isLoading = ref(false);
+const isLoading = computed(
+    () => projectsStore.projectMutationStatus("create") === "loading"
+);
 
 onMounted(() => {
-    // TODO: figure out what to do here
-    // const today = new Date().toUTCString();
-    // form.start_date = today;
     form.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 });
 
@@ -54,19 +63,14 @@ async function handleSubmit() {
     const { valid } = await formRef.value.validate();
     if (!valid) return;
 
-    isLoading.value = true;
-
     try {
-        const project = await projectsStore.create(form); // TODO: error handling
-        if (!project) throw new Error("No response from the API");
+        await projectsStore.create(form);
 
         authStore.refreshCurrentUser();
 
         router.push("/onboarding/taskboard");
-    } catch {
-        alert("Something went wrong.");
-    } finally {
-        isLoading.value = false;
+    } catch (err) {
+        showApiError(err, toast);
     }
 }
 </script>

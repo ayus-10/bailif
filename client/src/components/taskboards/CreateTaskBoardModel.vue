@@ -1,11 +1,15 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
+import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
+import { showApiError } from "@/utils/errorHandlers";
 
-/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
-/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
+/**
+ * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
+ * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
+ */
 
 const props = defineProps({
     modelValue: {
@@ -20,15 +24,22 @@ const props = defineProps({
 
 const emit = defineEmits(["close"]);
 
-/** @type {import("vue").Reactive<TaskboardForm>} */
+/**
+ * @type {import("vue").Reactive<TaskboardForm>}
+ */
 const form = reactive({
     name: "",
     description: "",
     color: DEFAULT_COLORS[0].value,
 });
 
+const toast = useToast();
+
 const taskboardsStore = useTaskboardsStore();
-const isLoading = ref(false);
+
+const isLoading = computed(
+    () => taskboardsStore.taskboardMutationStatus("create") === "loading"
+);
 
 const rules = {
     required: (/** @type {string} */ v) =>
@@ -48,20 +59,22 @@ function resetForm() {
 async function submit() {
     if (!form.name.trim()) return;
 
-    isLoading.value = true;
-
-    /** @type {TaskboardPayload} */
+    /**
+     * @type {TaskboardPayload}
+     */
     const payload = {
         ...form,
         project_public_id: props.projectId,
     };
 
-    await taskboardsStore.create(payload); // TODO: error handling
+    try {
+        await taskboardsStore.create(payload);
 
-    isLoading.value = false;
-
-    resetForm();
-    close();
+        resetForm();
+        close();
+    } catch (err) {
+        showApiError(err, toast);
+    }
 }
 </script>
 

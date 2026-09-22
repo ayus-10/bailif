@@ -1,9 +1,13 @@
 const ELEMENTS_TO_STRIP = ["script", "style", "template", "noscript"];
 
-/** @type {HTMLDivElement | null} */
+/**
+ * @type {HTMLDivElement | null}
+ */
 let sharedContainer = null;
 
-/** @returns {HTMLDivElement | null} */
+/**
+ * @returns {HTMLDivElement | null}
+ */
 function getContainer() {
     if (typeof document === "undefined") return null;
     if (!sharedContainer) {

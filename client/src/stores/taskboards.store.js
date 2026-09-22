@@ -11,31 +11,44 @@ import {
 } from "@/api/taskboards.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
-/** @typedef {import("@/api/shared.api").ApiError} ApiError */
-/** @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead */
-/** @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead */
-/** @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate */
-/** @typedef {import("@/types/taskboards").TaskboardUpdate} TaskboardUpdate */
-/** @typedef {import("@/types/taskboards").TaskAssignment} TaskAssignment */
-/** @typedef {import("@/types/taskboards").TaskReposition} TaskReposition */
-/** @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead */
-/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
-
 /**
- * @typedef {Object} TaskboardsState
- * @property {TaskboardListRead[]} items
- * @property {TaskboardRead | null} currentTaskboard
- * @property {FetchStatus} status
- * @property {any} error
+ * @typedef {import("@/api/shared.api").ApiError} ApiError
+ * @typedef {import("@/types/taskboards").TaskboardRead} TaskboardRead
+ * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
+ * @typedef {import("@/types/taskboards").TaskboardCreate} TaskboardCreate
+ * @typedef {import("@/types/taskboards").TaskboardUpdate} TaskboardUpdate
+ * @typedef {import("@/types/taskboards").TaskAssignment} TaskAssignment
+ * @typedef {import("@/types/taskboards").TaskReposition} TaskReposition
+ * @typedef {import("@/types/taskboards").TaskboardTaskRead} TaskboardTaskRead
+ * @typedef {import("@/types/taskboards").TaskboardsState} TaskboardsState
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/shared").MutationOperation} MutationOperation
  */
 
+/**
+ * @typedef {MutationOperation | "add-task" | "remove-task" | "reposition-task"} TaskboardMutationOperation
+ */
+
+/**
+ * @param {TaskboardMutationOperation} operation
+ * @param {...(number)} ids
+ * @returns {string}
+ */
+function mutationKey(operation, ...ids) {
+    return ids.length ? [operation, ...ids].join(":") : `${operation}:new`;
+}
+
 export const useTaskboardsStore = defineStore("taskboards", {
-    /** @returns {TaskboardsState} */
+    /**
+     * @returns {TaskboardsState}
+     */
     state: () => ({
         items: [],
         currentTaskboard: null,
-        status: "idle",
-        error: null,
+        fetchStatus: {},
+        fetchErrors: {},
+        mutationStatus: {},
+        mutationErrors: {},
     }),
 
     actions: {
@@ -43,12 +56,17 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {Object} options
          * @param {number} options.projectPublicId
          * @param {boolean} [options.forceRefresh=false]
+         * @throws {ApiError}
          */
         async fetch({ projectPublicId, forceRefresh = false }) {
-            if (this.status === "loading" && !forceRefresh) return;
+            const key = `project:${projectPublicId}`;
 
-            this.status = "loading";
-            this.error = null;
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
+                return;
+            }
+
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
 
             const cacheKey = `taskboards:project:${projectPublicId}`;
 
@@ -60,12 +78,13 @@ export const useTaskboardsStore = defineStore("taskboards", {
                 );
 
                 this.items = data.items;
-                this.status = "success";
+                this.fetchStatus[key] = "success";
 
                 return data;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
             }
         },
 
@@ -74,41 +93,62 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @param {Object} [options]
          * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<TaskboardRead | undefined>}
+         * @throws {ApiError}
          */
         async get(boardPublicId, { forceRefresh = false } = {}) {
+            const key = `taskboard:${boardPublicId}`;
+
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
+                return;
+            }
+
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
+
             try {
                 const board = await cachedRequest(
-                    `taskboard:${boardPublicId}`,
+                    key,
                     () => getTaskboard(boardPublicId),
                     { forceRefresh }
                 );
 
                 this.currentTaskboard = board;
+                this.fetchStatus[key] = "success";
 
                 return board;
             } catch (err) {
-                this.error = err;
-                this.status = "error";
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
             }
         },
 
         /**
          * @param {TaskboardCreate} payload
-         * @returns {Promise<TaskboardRead | undefined>}
+         * @returns {Promise<TaskboardRead>}
          * @throws {ApiError}
          */
         async create(payload) {
+            const key = mutationKey("create");
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const board = await createTaskboard(payload);
 
-                this.items = [...this.items, { ...board, task_count: 0 }]; // TODO: figure out if this is safe
+                this.items = [...this.items, { ...board, task_count: 0 }];
 
                 invalidateRequestCache(
                     `taskboards:project:${board.project_public_id}`
                 );
 
+                this.mutationStatus[key] = "success";
+
                 return board;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -120,12 +160,20 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @throws {ApiError}
          */
         async update(boardPublicId, payload) {
+            const key = mutationKey("update", boardPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const index = this.items.findIndex(
                     (item) => item.public_id === boardPublicId
                 );
 
-                if (index === -1) return;
+                if (index === -1) {
+                    this.mutationStatus[key] = "success";
+                    return;
+                }
 
                 const board = await updateTaskboard(boardPublicId, payload);
 
@@ -134,7 +182,7 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     {
                         ...board,
                         task_count: this.items[index].task_count,
-                    }, // TODO: figure out if this is safe
+                    },
                     ...this.items.slice(index + 1),
                 ];
 
@@ -147,8 +195,12 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     `taskboards:project:${board.project_public_id}`
                 );
 
+                this.mutationStatus[key] = "success";
+
                 return board;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -158,11 +210,20 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @throws {ApiError}
          */
         async remove(boardPublicId) {
+            const key = mutationKey("delete", boardPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const board = this.items.find(
                     (item) => item.public_id === boardPublicId
                 );
-                if (!board) return;
+
+                if (!board) {
+                    this.mutationStatus[key] = "success";
+                    return;
+                }
 
                 await deleteTaskboard(boardPublicId);
 
@@ -178,7 +239,11 @@ export const useTaskboardsStore = defineStore("taskboards", {
                 invalidateRequestCache(
                     `taskboards:project:${board.project_public_id}`
                 );
+
+                this.mutationStatus[key] = "success";
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -186,10 +251,15 @@ export const useTaskboardsStore = defineStore("taskboards", {
         /**
          * @param {number} boardPublicId
          * @param {TaskAssignment} payload
-         * @returns {Promise<TaskboardTaskRead | undefined>}
+         * @returns {Promise<TaskboardTaskRead>}
          * @throws {ApiError}
          */
         async addTask(boardPublicId, payload) {
+            const key = mutationKey("add-task", boardPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const task = await addTaskToBoard(boardPublicId, payload);
 
@@ -202,8 +272,12 @@ export const useTaskboardsStore = defineStore("taskboards", {
 
                 invalidateRequestCache(`taskboard:${boardPublicId}`);
 
+                this.mutationStatus[key] = "success";
+
                 return task;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -214,6 +288,11 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @throws {ApiError}
          */
         async removeTask(boardPublicId, taskPublicId) {
+            const key = mutationKey("remove-task", boardPublicId, taskPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 await removeTaskFromBoard(boardPublicId, taskPublicId);
 
@@ -221,13 +300,17 @@ export const useTaskboardsStore = defineStore("taskboards", {
                     this.currentTaskboard = {
                         ...this.currentTaskboard,
                         tasks: (this.currentTaskboard.tasks ?? []).filter(
-                            (t) => t.task?.public_id !== taskPublicId
+                            (task) => task.task?.public_id !== taskPublicId
                         ),
                     };
                 }
 
                 invalidateRequestCache(`taskboard:${boardPublicId}`);
+
+                this.mutationStatus[key] = "success";
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -239,6 +322,15 @@ export const useTaskboardsStore = defineStore("taskboards", {
          * @throws {ApiError}
          */
         async repositionTask(boardPublicId, taskPublicId, payload) {
+            const key = mutationKey(
+                "reposition-task",
+                boardPublicId,
+                taskPublicId
+            );
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 await repositionTask(boardPublicId, taskPublicId, payload);
 
@@ -265,9 +357,71 @@ export const useTaskboardsStore = defineStore("taskboards", {
                 }
 
                 invalidateRequestCache(`taskboard:${boardPublicId}`);
+
+                this.mutationStatus[key] = "success";
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
+    },
+
+    getters: {
+        /**
+         * @param {TaskboardsState} state
+         * @returns {(projectPublicId: number) => RequestStatus | null}
+         */
+        fetchProjectStatus: (state) => (projectPublicId) => {
+            return state.fetchStatus[`project:${projectPublicId}`] ?? null;
+        },
+
+        /**
+         * @param {TaskboardsState} state
+         * @returns {(projectPublicId: number) => unknown}
+         */
+        fetchProjectError: (state) => (projectPublicId) => {
+            return state.fetchErrors[`project:${projectPublicId}`] ?? null;
+        },
+
+        /**
+         * @param {TaskboardsState} state
+         * @returns {(boardPublicId: number) => RequestStatus | null}
+         */
+        fetchBoardStatus: (state) => (boardPublicId) => {
+            return state.fetchStatus[`taskboard:${boardPublicId}`] ?? null;
+        },
+
+        /**
+         * @param {TaskboardsState} state
+         * @returns {(boardPublicId: number) => unknown}
+         */
+        fetchBoardError: (state) => (boardPublicId) => {
+            return state.fetchErrors[`taskboard:${boardPublicId}`] ?? null;
+        },
+
+        /**
+         * @param {TaskboardsState} state
+         * @returns {(operation: TaskboardMutationOperation, ...ids: number[]) => RequestStatus | null}
+         */
+        taskboardMutationStatus:
+            (state) =>
+            (operation, ...ids) => {
+                return (
+                    state.mutationStatus[mutationKey(operation, ...ids)] ?? null
+                );
+            },
+
+        /**
+         * @param {TaskboardsState} state
+         * @returns {(operation: TaskboardMutationOperation, ...ids: number[]) => unknown}
+         */
+        taskboardMutationError:
+            (state) =>
+            (operation, ...ids) => {
+                return (
+                    state.mutationErrors[mutationKey(operation, ...ids)] ?? null
+                );
+            },
     },
 });

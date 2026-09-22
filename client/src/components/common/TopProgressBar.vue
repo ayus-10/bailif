@@ -26,7 +26,9 @@ const steps = computed(() =>
     Array.from({ length: props.totalSteps }, (_, index) => index + 1)
 );
 
-/** @param {number} step */
+/**
+ * @param {number} step
+ */
 function getStepState(step) {
     if (step < props.currentStep) return "completed";
     if (step === props.currentStep) return "current";

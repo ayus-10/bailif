@@ -7,7 +7,9 @@
  * @property {string} [visibility]
  */
 
-/** @type {BoardHeaderProps} */
+/**
+ * @type {BoardHeaderProps}
+ */
 const props = defineProps({
     boardName: {
         type: String,
@@ -29,7 +31,9 @@ const props = defineProps({
 
 const emit = defineEmits(["action"]);
 
-/** @param {string} action */
+/**
+ * @param {string} action
+ */
 function handleAction(action) {
     emit("action", action);
 }

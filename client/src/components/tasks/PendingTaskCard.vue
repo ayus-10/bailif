@@ -3,8 +3,10 @@ import { QuillEditor } from "@vueup/vue-quill";
 import { computed, ref } from "vue";
 import "@vueup/vue-quill/dist/vue-quill.snow.css";
 
-/** @typedef {import("@/types/task").TaskPriority} TaskPriority */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
+/**
+ * @typedef {import("@/types/task").TaskPriority} TaskPriority
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ */
 
 const props = defineProps({
     projectId: {
@@ -45,7 +47,9 @@ const canSubmit = computed(() => form.value.title.trim().length > 0);
 function submit() {
     if (!canSubmit.value) return;
 
-    /** @type {TaskCreate} */
+    /**
+     * @type {TaskCreate}
+     */
     const task = {
         title: form.value.title.trim(),
         description: form.value.description.trim(),

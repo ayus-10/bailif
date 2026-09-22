@@ -1,9 +1,13 @@
 <script setup>
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ */
 
 defineProps({
     task: {
-        /** @type {import("vue").PropType<TaskRead>} */
+        /**
+         * @type {import("vue").PropType<TaskRead>}
+         */
         type: Object,
         required: true,
     },

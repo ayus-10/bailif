@@ -1,6 +1,8 @@
 import { apiFetch } from "./client";
 
-/** @typedef {import("@/types/document").Document} Document */
+/**
+ * @typedef {import("@/types/document").Document} Document
+ */
 
 /**
  * @param {string} scopeId
@@ -14,7 +16,9 @@ export async function fetchDocuments(scopeId, signal) {
         throw new Error(`Failed to fetch documents (${response.status})`);
     }
 
-    /** @type {Document[]} */
+    /**
+     * @type {Document[]}
+     */
     const data = await response.json();
 
     return data;

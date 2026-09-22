@@ -2,19 +2,29 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { chat } from "@/api/ai-actions.api";
 
-/** @type {import("vue").Ref<boolean>} */
+/**
+ * @type {import("vue").Ref<boolean>}
+ */
 const open = ref(false);
 
-/** @type {import("vue").Ref<string>} */
+/**
+ * @type {import("vue").Ref<string>}
+ */
 const prompt = ref("");
 
-/** @type {import("vue").Ref<boolean>} */
+/**
+ * @type {import("vue").Ref<boolean>}
+ */
 const loading = ref(false);
 
-/** @type {import("vue").Ref<unknown>} */
+/**
+ * @type {import("vue").Ref<unknown>}
+ */
 const response = ref(null);
 
-/** @type {import("vue").Ref<string|null>} */
+/**
+ * @type {import("vue").Ref<string|null>}
+ */
 const error = ref(null);
 
 /**

@@ -1,11 +1,13 @@
 import { apiFetch } from "./client";
 import { parseJson } from "./shared.api";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskListResponse} TaskListResponse */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/task").TaskUpdate} TaskUpdate */
-/** @typedef {import("@/types/task").TaskListParams} TaskListParams */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskListResponse} TaskListResponse
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ * @typedef {import("@/types/task").TaskUpdate} TaskUpdate
+ * @typedef {import("@/types/task").TaskListParams} TaskListParams
+ */
 
 /**
  * @param {TaskListParams} [params]

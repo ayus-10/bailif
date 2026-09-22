@@ -1,14 +1,21 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { reactive, ref } from "vue";
+import { useToast } from "@/composables/useToast";
 import { useAuthStore } from "@/stores/auth";
+import { showApiError } from "@/utils/errorHandlers";
 
-/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
+/**
+ * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
+ */
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 
-/** @type {VFormRef} */
+/**
+ * @type {VFormRef}
+ */
 const formRef = ref(null);
 
 const form = reactive({
@@ -16,7 +23,6 @@ const form = reactive({
     password: "",
     showPassword: false,
     isLoading: false,
-    errorMessage: "",
 });
 
 const rules = {
@@ -32,8 +38,6 @@ const rules = {
 async function handleSubmit() {
     if (!formRef.value) return;
 
-    form.errorMessage = "";
-
     const { valid } = await formRef.value.validate();
     if (!valid) return;
 
@@ -46,12 +50,8 @@ async function handleSubmit() {
         });
 
         router.push("/");
-    } catch (error) {
-        if (error instanceof Error && error.message === "Invalid credentials") {
-            form.errorMessage = "Invalid username or password.";
-        } else {
-            form.errorMessage = "Something went wrong.";
-        }
+    } catch (err) {
+        showApiError(err, toast);
     } finally {
         form.isLoading = false;
     }
@@ -73,16 +73,6 @@ async function handleSubmit() {
 
             <v-card-text class="pa-5">
                 <v-form ref="formRef" @submit.prevent="handleSubmit">
-                    <v-alert
-                        v-if="form.errorMessage"
-                        type="error"
-                        variant="tonal"
-                        density="compact"
-                        class="mb-4"
-                    >
-                        {{ form.errorMessage }}
-                    </v-alert>
-
                     <div class="form-group mb-4">
                         <label class="field-label">
                             Username

@@ -1,6 +1,8 @@
 import { apiFetch } from "./client";
 
-/** @typedef {import("@/types/dashboard").Dashboard} Dashboard */
+/**
+ * @typedef {import("@/types/dashboard").Dashboard} Dashboard
+ */
 
 /**
  * @param {string} scopeId
@@ -14,7 +16,9 @@ export async function fetchDashboard(scopeId, signal) {
         throw new Error(`Failed to fetch dashboard (${response.status})`);
     }
 
-    /** @type {Dashboard} */
+    /**
+     * @type {Dashboard}
+     */
     const data = await response.json();
 
     return data;

@@ -8,14 +8,17 @@ import {
 } from "@/api/tasks.api";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
-/** @typedef {import("@/api/shared.api").ApiError} ApiError */
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/task").TaskUpdate} TaskUpdate */
-/** @typedef {import("@/types/task").TaskListParams} TaskListParams */
-/** @typedef {import("@/types/task").TaskFetchOptions} TaskFetchOptions */
-/** @typedef {import("@/types/task").TasksState} TasksState */
-/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
+/**
+ * @typedef {import("@/api/shared.api").ApiError} ApiError
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ * @typedef {import("@/types/task").TaskUpdate} TaskUpdate
+ * @typedef {import("@/types/task").TaskListParams} TaskListParams
+ * @typedef {import("@/types/task").TaskFetchOptions} TaskFetchOptions
+ * @typedef {import("@/types/task").TasksState} TasksState
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/shared").MutationOperation} TaskMutationOperation
+ */
 
 /**
  * @param {number} projectPublicId
@@ -50,21 +53,35 @@ function collectionKey(projectPublicId, options = {}) {
     ].join(":");
 }
 
+/**
+ * @param {TaskMutationOperation} operation
+ * @param {number} [taskPublicId]
+ * @returns {string}
+ */
+function mutationKey(operation, taskPublicId) {
+    return `${operation}:${taskPublicId ?? "new"}`;
+}
+
 export const useTasksStore = defineStore("tasks", {
-    /** @returns {TasksState} */
+    /**
+     * @returns {TasksState}
+     */
     state: () => ({
         items: {},
         nextCursor: {},
         queries: {},
         currentTask: null,
-        status: {},
-        errors: {},
+        fetchStatus: {},
+        fetchErrors: {},
+        mutationStatus: {},
+        mutationErrors: {},
     }),
 
     actions: {
         /**
          * @param {number} projectPublicId
          * @param {TaskFetchOptions} [options]
+         * @throws {ApiError}
          */
         async fetch(
             projectPublicId,
@@ -110,12 +127,12 @@ export const useTasksStore = defineStore("tasks", {
 
             const key = collectionKey(projectPublicId, query);
 
-            if (this.status[key] === "loading" && !forceRefresh) {
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
                 return;
             }
 
-            this.status[key] = append ? "loading-more" : "loading";
-            this.errors[key] = null;
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
 
             const params = {
                 cursor,
@@ -148,18 +165,20 @@ export const useTasksStore = defineStore("tasks", {
 
                 this.nextCursor[key] = data.next_cursor ?? null;
                 this.queries[key] = query;
-                this.status[key] = "success";
+                this.fetchStatus[key] = "success";
 
                 return data;
             } catch (err) {
-                this.errors[key] = err;
-                this.status[key] = "error";
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
             }
         },
 
         /**
          * @param {number} projectPublicId
          * @param {TaskFetchOptions} [options]
+         * @throws {ApiError}
          */
         async loadMore(projectPublicId, options = {}) {
             const key = collectionKey(projectPublicId, options);
@@ -169,7 +188,7 @@ export const useTasksStore = defineStore("tasks", {
                 return;
             }
 
-            return this.fetch(projectPublicId, {
+            await this.fetch(projectPublicId, {
                 ...options,
                 cursor,
                 append: true,
@@ -181,30 +200,47 @@ export const useTasksStore = defineStore("tasks", {
          * @param {Object} [options]
          * @param {boolean} [options.forceRefresh=false]
          * @returns {Promise<TaskRead | undefined>}
+         * @throws {ApiError}
          */
         async get(taskPublicId, { forceRefresh = false } = {}) {
+            const key = `task:${taskPublicId}`;
+
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
+                return;
+            }
+
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
+
             try {
                 const task = await cachedRequest(
-                    `task:${taskPublicId}`,
+                    key,
                     () => getTask(taskPublicId),
                     { forceRefresh }
                 );
 
                 this.currentTask = task;
+                this.fetchStatus[key] = "success";
 
                 return task;
             } catch (err) {
-                this.errors.task = err;
-                this.status.task = "error";
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
             }
         },
 
         /**
          * @param {TaskCreate} payload
-         * @returns {Promise<TaskRead | undefined>}
+         * @returns {Promise<TaskRead>}
          * @throws {ApiError}
          */
         async create(payload) {
+            const key = mutationKey("create");
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const task = await createTask(payload);
                 const projectPublicId = task.project_public_id;
@@ -222,8 +258,12 @@ export const useTasksStore = defineStore("tasks", {
                     this.items[rootKey] = [...this.items[rootKey], task];
                 }
 
+                this.mutationStatus[key] = "success";
+
                 return task;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -231,10 +271,15 @@ export const useTasksStore = defineStore("tasks", {
         /**
          * @param {number} taskPublicId
          * @param {TaskUpdate} payload
-         * @returns {Promise<TaskRead | undefined>}
+         * @returns {Promise<TaskRead>}
          * @throws {ApiError}
          */
         async update(taskPublicId, payload) {
+            const key = mutationKey("update", taskPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
+
             try {
                 const task = await updateTask(taskPublicId, payload);
 
@@ -262,8 +307,12 @@ export const useTasksStore = defineStore("tasks", {
                 invalidateRequestCache(`task:${taskPublicId}`);
                 invalidateRequestCache(`tasks:${task.project_public_id}:`);
 
+                this.mutationStatus[key] = "success";
+
                 return task;
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -277,6 +326,11 @@ export const useTasksStore = defineStore("tasks", {
             if (projectPublicId == null) {
                 throw new Error("projectPublicId is required");
             }
+
+            const key = mutationKey("delete", taskPublicId);
+
+            this.mutationStatus[key] = "loading";
+            this.mutationErrors[key] = null;
 
             try {
                 await deleteTask(taskPublicId);
@@ -293,7 +347,11 @@ export const useTasksStore = defineStore("tasks", {
 
                 invalidateRequestCache(`task:${taskPublicId}`);
                 invalidateRequestCache(`tasks:${projectPublicId}:`);
+
+                this.mutationStatus[key] = "success";
             } catch (err) {
+                this.mutationStatus[key] = "error";
+                this.mutationErrors[key] = err;
                 throw err;
             }
         },
@@ -314,26 +372,48 @@ export const useTasksStore = defineStore("tasks", {
 
         /**
          * @param {TasksState} state
-         * @returns {(projectPublicId: number, options?: TaskFetchOptions) => FetchStatus | null}
+         * @returns {(projectPublicId: number, options?: TaskFetchOptions) => RequestStatus | null}
          */
-        statusByQuery:
+        fetchListStatus:
             (state) =>
             (projectPublicId, options = {}) => {
                 const key = collectionKey(projectPublicId, options);
 
-                return state.status[key] ?? null;
+                return state.fetchStatus[key] ?? null;
             },
 
         /**
          * @param {TasksState} state
          * @returns {(projectPublicId: number, options?: TaskFetchOptions) => unknown}
          */
-        errorByQuery:
+        fetchListError:
             (state) =>
             (projectPublicId, options = {}) => {
                 const key = collectionKey(projectPublicId, options);
 
-                return state.errors[key] ?? null;
+                return state.fetchErrors[key] ?? null;
             },
+
+        /**
+         * @param {TasksState} state
+         * @returns {(operation: TaskMutationOperation, taskPublicId?: number) => RequestStatus | null}
+         */
+        taskMutationStatus: (state) => (operation, taskPublicId) => {
+            return (
+                state.mutationStatus[mutationKey(operation, taskPublicId)] ??
+                null
+            );
+        },
+
+        /**
+         * @param {TasksState} state
+         * @returns {(operation: TaskMutationOperation, taskPublicId?: number) => unknown}
+         */
+        taskMutationError: (state) => (operation, taskPublicId) => {
+            return (
+                state.mutationErrors[mutationKey(operation, taskPublicId)] ??
+                null
+            );
+        },
     },
 });

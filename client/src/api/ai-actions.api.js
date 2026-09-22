@@ -1,10 +1,12 @@
 import { apiFetch } from "./client";
 import { parseJson } from "./shared.api";
 
-/** @typedef {import("@/types/ai-actions").ChatRequest} ChatRequest */
-/** @typedef {import("@/types/ai-actions").ChatResponse} ChatResponse */
-/** @typedef {import("@/types/ai-actions").ChatMode} ChatMode */
-/** @typedef {import("@/types/ai-actions").AcceptActionResponse} AcceptActionResponse */
+/**
+ * @typedef {import("@/types/ai-actions").ChatRequest} ChatRequest
+ * @typedef {import("@/types/ai-actions").ChatResponse} ChatResponse
+ * @typedef {import("@/types/ai-actions").ChatMode} ChatMode
+ * @typedef {import("@/types/ai-actions").AcceptActionResponse} AcceptActionResponse
+ */
 
 /**
  * @param {ChatRequest} payload

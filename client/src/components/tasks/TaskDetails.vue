@@ -1,17 +1,23 @@
 <script setup>
 import { formatDate } from "@/utils/taskFormatters";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskDraft} TaskDraft */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskDraft} TaskDraft
+ */
 
 defineProps({
     task: {
-        /** @type {import("vue").PropType<TaskRead>} */
+        /**
+         * @type {import("vue").PropType<TaskRead>}
+         */
         type: Object,
         required: true,
     },
     draft: {
-        /** @type {import("vue").PropType<TaskDraft>} */
+        /**
+         * @type {import("vue").PropType<TaskDraft>}
+         */
         type: Object,
         required: true,
     },

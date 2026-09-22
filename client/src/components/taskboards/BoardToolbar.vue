@@ -8,7 +8,9 @@ const activeFilterCount = ref(0);
 
 const hasActiveFilters = computed(() => activeFilterCount.value > 0);
 
-/** @param {String} action */
+/**
+ * @param {String} action
+ */
 function handleAction(action) {
     emit("action", action);
 }

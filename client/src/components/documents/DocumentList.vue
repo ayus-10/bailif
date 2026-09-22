@@ -1,5 +1,7 @@
 <script setup>
-/** @typedef {import("@/types/document").Document} Document */
+/**
+ * @typedef {import("@/types/document").Document} Document
+ */
 
 const props = defineProps({
     documents: {

@@ -6,19 +6,43 @@ import BoardHeader from "@/components/taskboards/BoardHeader.vue";
 import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
+import { useToast } from "@/composables/useToast";
 import { TASK_COLUMNS } from "@/constants/tasks";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode */
+/**
+ * @typedef {import("@/types/task").TaskWithPosition} TaskWithPosition
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ * @typedef {import("@/types/task").TaskQueryMode} TaskQueryMode
+ */
+
+/**
+ * @typedef {Object} AllBoardSelection
+ * @property {"all"} type
+ */
+
+/**
+ * @typedef {Object} SingleBoardSelection
+ * @property {"single"} type
+ * @property {number} id
+ */
+
+/**
+ * @typedef {AllBoardSelection | SingleBoardSelection} BoardSelection
+ */
+
+const toast = useToast();
 
 const route = useRoute();
 const router = useRouter();
 
 const { projectId } = useActiveProject();
 
+/**
+ * @type {import("vue").ComputedRef<BoardSelection>}
+ */
 const currentBoard = computed(() => {
     const id = route.params.id;
 
@@ -27,53 +51,41 @@ const currentBoard = computed(() => {
     }
 
     return {
-        type: "board",
+        type: "single",
         id: Array.isArray(id) ? Number(id[0]) : Number(id),
     };
 });
 
-/** @type {import("vue").Ref<TaskQueryMode>} */
+/**
+ * @type {import("vue").Ref<TaskQueryMode>}
+ */
 const preferredQueryMode = ref("root-tasks");
 
 const query = computed(() => ({
     queryMode: preferredQueryMode.value,
     taskboardId:
-        currentBoard.value.type === "board" ? currentBoard.value.id : null,
+        currentBoard.value.type === "single" ? currentBoard.value.id : null,
 }));
 
 const taskboardsStore = useTaskboardsStore();
 const tasksStore = useTasksStore();
 
 watch(
-    projectId,
-    (id) => {
+    [projectId, query],
+    ([id, currentQuery]) => {
         if (!id) return;
 
-        if (currentBoard.value.type === "board" && currentBoard.value.id) {
-            taskboardsStore.get(currentBoard.value.id);
-        }
-
-        tasksStore.fetch(id, query.value);
+        tasksStore.fetch(id, currentQuery);
     },
     { immediate: true }
 );
+
+watch(currentBoard, fetchCurrentBoard, { immediate: true });
 
 const taskboard = computed(() => taskboardsStore.currentTaskboard);
 
 const tasks = computed(() =>
     projectId.value ? tasksStore.tasksByQuery(projectId.value, query.value) : []
-);
-
-const status = computed(() =>
-    projectId.value
-        ? tasksStore.statusByQuery(projectId.value, query.value)
-        : null
-);
-
-const error = computed(() =>
-    projectId.value
-        ? tasksStore.errorByQuery(projectId.value, query.value)
-        : null
 );
 
 const filteredTasks = computed(() => {
@@ -91,34 +103,53 @@ const filteredTasks = computed(() => {
 });
 
 const tasksByStatus = computed(() => {
-    return filteredTasks.value.reduce((acc, task) => {
+    return filteredTasks.value.reduce((acc, task, idx) => {
         if (!acc[task.status]) {
             acc[task.status] = [];
         }
 
-        acc[task.status].push(task);
+        acc[task.status].push({ ...task, position: idx });
 
         return acc;
-    }, /** @type {Record<string, TaskRead[]>} */ ({}));
+    }, /** @type {Record<string, TaskWithPosition[]>} */ ({}));
 });
 
-const draggedTask = ref(/** @type {TaskRead | null} */ (null));
+const draggedTask = ref(/** @type {TaskWithPosition | null} */ (null));
 
-/** @type {import("vue").Ref<TaskCreate | null>} */
+/**
+ * @type {import("vue").Ref<TaskCreate | null>}
+ */
 const pendingTask = ref(null);
-/** @param {String} action */
+
+/**
+ * @param {String} action
+ */
 function handleBoardAction(action) {
     console.log(action);
 }
-/** @param {String} action */
+
+/**
+ * @param {String} action
+ */
 function handleToolbarAction(action) {
     console.log(action);
+}
+
+/**
+ * @param {BoardSelection} board
+ */
+function fetchCurrentBoard(board) {
+    if (board.type === "single") {
+        taskboardsStore.get(board.id);
+        return;
+    }
+    taskboardsStore.currentTaskboard = null;
 }
 
 function retry() {
     if (!projectId.value) return;
 
-    if (currentBoard.value.type === "board" && currentBoard.value.id) {
+    if (currentBoard.value.type === "single" && currentBoard.value.id) {
         taskboardsStore.get(currentBoard.value.id, {
             forceRefresh: true,
         });
@@ -130,7 +161,9 @@ function retry() {
     });
 }
 
-/** @param {string} key */
+/**
+ * @param {string} key
+ */
 function clearFilter(key) {
     const nextQuery = { ...route.query };
 
@@ -142,12 +175,16 @@ function clearFilter(key) {
     });
 }
 
-/** @param {TaskRead} task */
+/**
+ * @param {TaskWithPosition} task
+ */
 function startDrag(task) {
     draggedTask.value = task;
 }
 
-/** @param {TaskRead["status"]} targetStatus */
+/**
+ * @param {TaskWithPosition["status"]} targetStatus
+ */
 async function dropTask(targetStatus) {
     if (!draggedTask.value) {
         return;
@@ -166,12 +203,11 @@ async function dropTask(targetStatus) {
 
     try {
         await tasksStore.update(task.public_id, {
-            // TODO: error handling
             status: targetStatus,
         });
     } catch (err) {
         task.status = oldStatus;
-        console.error(err);
+        showApiError(err, toast);
     } finally {
         draggedTask.value = null;
     }
@@ -209,7 +245,7 @@ function handleClear() {
                     :pending-task="pendingTask"
                     :project-id="projectId"
                     :taskboard-id="
-                        currentBoard.type === 'board' ? currentBoard.id : null
+                        currentBoard.type === 'single' ? currentBoard.id : null
                     "
                     @drag-start="startDrag"
                     @drop="dropTask"

@@ -1,28 +1,40 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
+import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS } from "@/constants/globals";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
+import { showApiError } from "@/utils/errorHandlers";
 
-/** @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef */
-/** @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm */
-/** @typedef {TaskboardForm & { project_public_id: number }} TaskboardPayload */
+/**
+ * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
+ * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
+ * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
+ */
 
 const { projectId } = useActiveProject();
 
-/** @type {VFormRef} */
+const toast = useToast();
+
+/**
+ * @type {VFormRef}
+ */
 const formRef = ref(null);
 
 const taskboardsStore = useTaskboardsStore();
 
 const router = useRouter();
 
-const isLoading = ref(false);
+const isLoading = computed(
+    () => taskboardsStore.taskboardMutationStatus("create") === "loading"
+);
 
-/** @type {import("vue").Reactive<TaskboardForm>} */
+/**
+ * @type {import("vue").Reactive<TaskboardForm>}
+ */
 const form = reactive({
     name: "",
     description: "",
@@ -41,24 +53,20 @@ async function handleSubmit() {
     const { valid } = await formRef.value.validate();
     if (!valid) return;
 
-    isLoading.value = true;
-
     try {
-        /** @type {TaskboardPayload} */
+        /**
+         * @type {TaskboardPayload}
+         */
         const payload = {
             ...form,
             project_public_id: projectId.value,
         };
 
-        const taskboard = await taskboardsStore.create(payload); // TODO: error handling
-        if (!taskboard) throw new Error("No response from the API");
+        await taskboardsStore.create(payload);
 
         router.push("/dashboard");
-    } catch (e) {
-        console.error(e);
-        alert("Something went wrong.");
-    } finally {
-        isLoading.value = false;
+    } catch (err) {
+        showApiError(err, toast);
     }
 }
 </script>

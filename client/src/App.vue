@@ -1,7 +1,10 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
+import ToastContainer from "./components/layout/ToastContainer.vue";
 
-/** @param {MouseEvent} event */
+/**
+ * @param {MouseEvent} event
+ */
 function preventContextMenu(event) {
     event.preventDefault();
 }
@@ -19,6 +22,7 @@ onUnmounted(() => {
     <v-app>
         <v-main>
             <router-view />
+            <ToastContainer />
         </v-main>
     </v-app>
 </template>

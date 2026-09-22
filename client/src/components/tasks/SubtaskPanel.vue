@@ -3,12 +3,16 @@ import { useRoute, useRouter } from "vue-router";
 import { computed, onMounted, ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
+import { useToast } from "@/composables/useToast";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 import EmptyPanel from "./EmptyPanel.vue";
 
-/** @typedef {import("@/types/task").TaskRead} TaskRead */
-/** @typedef {import("@/types/task").TaskCreate} TaskCreate */
-/** @typedef {import("@/types/shared").FetchStatus} FetchStatus */
+/**
+ * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskCreate} TaskCreate
+ * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ */
 
 const props = defineProps({
     taskId: {
@@ -21,6 +25,8 @@ const props = defineProps({
     },
 });
 
+const toast = useToast();
+
 const route = useRoute();
 const router = useRouter();
 
@@ -29,20 +35,20 @@ const tasksStore = useTasksStore();
 const subtasks = tasksStore.tasksByQuery(props.projectId, {
     parentId: props.taskId,
 });
-const fetchStatus = tasksStore.statusByQuery(props.projectId, {
+const fetchStatus = tasksStore.fetchListStatus(props.projectId, {
     parentId: props.taskId,
 });
-const fetchError = tasksStore.errorByQuery(props.projectId, {
+const fetchError = tasksStore.fetchListError(props.projectId, {
     parentId: props.taskId,
 });
 
 const hasSubtasks = computed(() => subtasks.length > 0);
 
-const isLoading = computed(
-    () => fetchStatus === "loading" || fetchStatus === "loading-more"
-);
+const isLoading = computed(() => fetchStatus === "loading");
 
-/** @type {import("vue").Ref<TaskCreate | null>} */
+/**
+ * @type {import("vue").Ref<TaskCreate | null>}
+ */
 const pendingSubTask = ref(null);
 
 const showSubtasks = computed(
@@ -71,7 +77,9 @@ function retry() {
     });
 }
 
-/** @param {TaskRead} subtask */
+/**
+ * @param {TaskRead} subtask
+ */
 function openSubtask(subtask) {
     router.push({
         name: route.name,
@@ -79,11 +87,18 @@ function openSubtask(subtask) {
     });
 }
 
-/** @param {TaskCreate} task */
+/**
+ * @param {TaskCreate} task
+ */
 async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
-    await tasksStore.create(task); // TODO: error handling
-    pendingSubTask.value = null;
+
+    try {
+        await tasksStore.create(task);
+        pendingSubTask.value = null;
+    } catch (err) {
+        showApiError(err, toast);
+    }
 }
 
 function handleNewSubtask() {
