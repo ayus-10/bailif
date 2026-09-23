@@ -45,7 +45,7 @@ theme: {
                 warning: "#fb8c00",
                 background: "#ffffff",
                 surface: "#ffffff",
-                "surface-variant": "#424242",
+                "surface-variant": "#f8f9fa",
                 "on-background": "#1a1f2c",
                 "on-surface": "#1a1f2c",
                 outline: "#e1e4e8",

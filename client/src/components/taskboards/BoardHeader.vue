@@ -42,12 +42,6 @@ function handleAction(action) {
 <template>
     <header class="board-header">
         <div class="board-header__identity">
-            <div class="board-header__icon">
-                <v-icon size="1.125rem">
-                    {{ props.icon }}
-                </v-icon>
-            </div>
-
             <div class="board-header__identity-content">
                 <div class="board-header__title-row">
                     <h1 class="board-header__title">

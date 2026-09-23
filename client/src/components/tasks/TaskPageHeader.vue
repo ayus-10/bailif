@@ -1,15 +1,11 @@
 <script setup>
 import EditableVChip from "@/components/common/EditableVChip.vue";
-import { STATUS_META, TASK_PRIORITIES } from "@/constants/taskMeta";
-import {
-    PRIORITY_COLORS,
-    PRIORITY_ICONS,
-    PRIORITY_LABELS,
-} from "@/constants/tasks";
+import { PRIORITY_META, STATUS_META } from "@/constants/tasks";
 import TaskBreadcrumbs from "./TaskBreadcrumbs.vue";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
+ * @typedef {import("@/types/task").TaskPriority} TaskPriority
  * @typedef {import("@/types/task").TaskDraft} TaskDraft
  * @typedef {import("@/types/shared").EditMode} EditMode
  */
@@ -184,10 +180,10 @@ const emit = defineEmits([
             <EditableVChip
                 :model-value="selectedStatus ?? undefined"
                 :items="
-                    Object.entries(STATUS_META).map(([value, meta]) => ({
-                        value,
+                    STATUS_META.map((meta) => ({
+                        value: meta.status,
                         label: meta.label,
-                        color: meta.color,
+                        color: meta.color.value,
                         icon: meta.icon,
                     }))
                 "
@@ -206,11 +202,11 @@ const emit = defineEmits([
             <EditableVChip
                 :model-value="selectedPriority ?? undefined"
                 :items="
-                    TASK_PRIORITIES.map((value) => ({
+                    /** @type {TaskPriority[]} */ (
+                        Object.keys(PRIORITY_META)
+                    ).map((value) => ({
                         value,
-                        label: PRIORITY_LABELS[value],
-                        color: PRIORITY_COLORS[value],
-                        icon: PRIORITY_ICONS[value],
+                        ...PRIORITY_META[value],
                     }))
                 "
                 :disabled="isSavingPriority"

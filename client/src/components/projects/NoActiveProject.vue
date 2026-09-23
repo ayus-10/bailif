@@ -17,7 +17,7 @@
             </p>
 
             <v-btn
-                to="/dashboard/projects"
+                :to="{ name: 'project-list' }"
                 color="primary"
                 variant="flat"
                 density="comfortable"

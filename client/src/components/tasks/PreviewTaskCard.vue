@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { PRIORITY_COLORS } from "@/constants/tasks";
+import { PRIORITY_META } from "@/constants/tasks";
 import { htmlPreview } from "@/utils/htmlFormatters";
 import { formatDate, parseTags } from "@/utils/taskFormatters";
 
@@ -42,7 +42,7 @@ const tagCount = computed(() => parseTags(props.task.tags).length);
                 size="x-small"
                 variant="tonal"
                 class="preview-task-card__priority"
-                :color="PRIORITY_COLORS[task.priority]"
+                :color="PRIORITY_META[task.priority].color"
             >
                 {{ task.priority.toUpperCase() }}
             </v-chip>

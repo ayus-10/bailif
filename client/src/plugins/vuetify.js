@@ -18,7 +18,7 @@ const lightColors = {
     surface: "#ffffff",
     "surface-bright": "#ffffff",
     "surface-light": "#eeeeee",
-    "surface-variant": "#424242",
+    "surface-variant": "#f8f9fa",
     "on-surface-variant": "#eeeeee",
 
     "on-background": "#1a1f2c",
