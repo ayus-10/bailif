@@ -228,10 +228,9 @@ const emit = defineEmits([
 .task-page__topbar,
 .task-page__header {
     --tp-ink: rgb(var(--v-theme-on-surface));
-    --tp-ink-muted: #6b6960;
-    --tp-line: #dad7ce;
-    --tp-rust: #c1440e;
-    --tp-teal: #205072;
+    --tp-ink-muted: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    --tp-line: rgb(var(--v-theme-outline-variant, 234, 236, 240));
+    --tp-rust: rgb(var(--v-theme-error));
 }
 
 .task-page__topbar {
@@ -289,6 +288,7 @@ const emit = defineEmits([
 .editable-field--title {
     min-width: 0;
     max-width: 40rem;
+    flex: 1;
 }
 
 .editable-field__display {
@@ -310,38 +310,44 @@ const emit = defineEmits([
     white-space: nowrap;
 }
 
-.editable-field--title {
-    min-width: 0;
-    flex: 1;
-}
-
 :deep(.editable-field--title .v-field) {
     --v-field-border-opacity: 1;
     min-height: 2.75rem;
     border-radius: 0.625rem;
     background: rgb(var(--v-theme-surface));
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        box-shadow 0.15s ease;
+}
+
+:deep(.editable-field--title .v-field__outline) {
+    color: rgb(var(--v-theme-outline, 225, 228, 232));
+    opacity: 1;
 }
 
 :deep(.editable-field--title .v-field:hover .v-field__outline) {
-    color: rgb(var(--v-theme-primary));
-    opacity: 0.55;
+    color: rgb(var(--v-theme-outline-variant, 165, 172, 182));
+    opacity: 1;
 }
 
 :deep(.editable-field--title .v-field:hover) {
-    box-shadow: 0 0 0 0.125rem rgba(var(--v-theme-primary), 0.06);
-}
-
-:deep(.editable-field--title .v-field--focused) {
-    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.12);
+    box-shadow: 0 0 0 0.0625rem
+        rgba(var(--v-theme-outline-variant, 165, 172, 182), 0.5);
 }
 
 :deep(.editable-field--title .v-field--focused .v-field__outline) {
     color: rgb(var(--v-theme-primary));
     opacity: 1;
+}
+
+:deep(.editable-field--title .v-field--focused) {
+    box-shadow: 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.15);
+}
+
+:deep(.editable-field--title .v-field--focused:hover .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
+}
+
+:deep(.editable-field--title .v-field--focused:hover) {
+    box-shadow: 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.15);
 }
 
 .task-page__badges {

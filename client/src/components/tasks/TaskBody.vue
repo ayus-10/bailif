@@ -184,7 +184,7 @@ function onEditorReady(quillInstance) {
 }
 
 .panel__edit-btn:hover:deep(.v-icon) {
-    color: #1976d2;
+    color: rgb(var(--v-theme-primary));
 }
 
 .prose {
@@ -215,7 +215,7 @@ function onEditorReady(quillInstance) {
 }
 
 .prose:deep(a) {
-    color: #1976d2;
+    color: rgb(var(--v-theme-primary));
     text-decoration: underline;
     text-underline-offset: 0.125rem;
 }
@@ -264,7 +264,7 @@ function onEditorReady(quillInstance) {
 }
 
 .description-editor:deep(.ql-toolbar.ql-snow button.ql-active) {
-    background: rgba(25, 118, 210, 0.1);
+    background: rgba(var(--v-theme-primary), 0.1);
 }
 
 .description-editor:deep(.ql-toolbar.ql-snow .ql-stroke) {
@@ -277,12 +277,12 @@ function onEditorReady(quillInstance) {
 
 .description-editor:deep(.ql-toolbar.ql-snow button:hover .ql-stroke),
 .description-editor:deep(.ql-toolbar.ql-snow button.ql-active .ql-stroke) {
-    stroke: #1976d2;
+    stroke: rgb(var(--v-theme-primary));
 }
 
 .description-editor:deep(.ql-toolbar.ql-snow button:hover .ql-fill),
 .description-editor:deep(.ql-toolbar.ql-snow button.ql-active .ql-fill) {
-    fill: #1976d2;
+    fill: rgb(var(--v-theme-primary));
 }
 
 .description-editor:deep(.ql-container.ql-snow) {

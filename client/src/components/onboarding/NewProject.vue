@@ -192,7 +192,7 @@ async function handleSubmit() {
     width: 100%;
     max-width: 32.5rem;
     background-color: #fff;
-    border: 1px solid #e1e4e8;
+    border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
     border-radius: 0.5rem;
     box-shadow: none;
 }
@@ -202,7 +202,7 @@ async function handleSubmit() {
 }
 
 .card-title {
-    color: #1a1f2c;
+    color: rgb(var(--v-theme-on-surface));
     line-height: 1.2;
     letter-spacing: -0.01em;
 }
@@ -225,8 +225,8 @@ async function handleSubmit() {
 
 .settings-box {
     padding: 0.875rem 1rem;
-    background-color: #f8f9fa;
-    border: 1px solid #eaecf0;
+    background-color: rgb(var(--v-theme-surface-variant, 248, 249, 250));
+    border: 1px solid rgb(var(--v-theme-outline-variant, 234, 236, 240));
     border-radius: 0.375rem;
 }
 

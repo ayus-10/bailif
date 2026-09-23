@@ -43,7 +43,7 @@ const emit = defineEmits(["click"]);
 }
 
 .panel__empty:hover {
-    border-color: rgba(25, 118, 210, 0.35);
-    color: #1976d2;
+    border-color: rgba(var(--v-theme-primary), 0.35);
+    color: rgb(var(--v-theme-primary));
 }
 </style>

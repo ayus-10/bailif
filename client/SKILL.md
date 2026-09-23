@@ -26,14 +26,50 @@ Role: an expert Vue 3 and Vuetify 3 frontend developer specializing in clean, mo
 
 Never hardcode raw hex where a theme token exists. Vuetify theme variables are RGB channel triplets, not hex strings — wrap them: `rgb(var(--v-theme-[name], r, g, b))`, or they silently fail and you're just seeing the fallback.
 
-| Purpose                                                   | Token                                                                                                                                                                                              |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Backgrounds                                               | `rgb(var(--v-theme-surface))` / `rgb(var(--v-theme-surface-variant, 248, 249, 250))`                                                                                                               |
-| Borders                                                   | `rgb(var(--v-theme-outline, 225, 228, 232))` / `rgb(var(--v-theme-outline-variant, 234, 236, 240))`                                                                                                |
-| Primary action / active-selected state                    | Vuetify default blue `#1976d2` (or `rgb(var(--v-theme-primary))`) — used sparingly: active filters, selected states, badges, the one primary CTA. Never a default hover color on neutral controls. |
-| Text (primary)                                            | `rgb(var(--v-theme-on-surface))`                                                                                                                                                                   |
-| Text (secondary/labels/descriptions)                      | `rgb(var(--v-theme-text-secondary, 71, 84, 103))` — not `on-surface-variant`, which renders too light                                                                                              |
-| Text (quiet/decorative icons, placeholder-weight content) | `rgb(var(--v-theme-text-disabled, 148, 157, 173))`                                                                                                                                                 |
+**The fallback is a safety net, not a substitute for defining the token.** A `rgb(var(--v-theme-outline, 225, 228, 232))` fallback only fires when the variable is genuinely unset — if the project's `createVuetify({ theme: ... })` config never declares `outline`/`outline-variant`/etc. in its `colors` object, _every single usage app-wide_ silently falls back or, worse, resolves to an unrelated default (e.g. Vuetify's own internal hover styling using `on-surface`, which defaults to near-black and can look like a bug in one component when the real cause is a missing token app-wide). Before debugging a "wrong color" in a single component, check `createVuetify`'s theme config first — a component-local CSS fix is the wrong layer if the token itself was never defined.
+
+Minimum token set a project's theme config should declare explicitly, not leave to Vuetify defaults:
+
+```javascript
+theme: {
+    defaultTheme: "light",
+    themes: {
+        light: {
+            dark: false,
+            colors: {
+                primary: "#1976d2",
+                secondary: "#48a9a6",
+                error: "#b00020",
+                info: "#2196f3",
+                success: "#4caf50",
+                warning: "#fb8c00",
+                background: "#ffffff",
+                surface: "#ffffff",
+                "surface-variant": "#424242",
+                "on-background": "#1a1f2c",
+                "on-surface": "#1a1f2c",
+                outline: "#e1e4e8",
+                "outline-variant": "#a5acb6",
+            },
+        },
+        // dark theme mirrors the same key set with inverted values —
+        // don't ship light without it, or a theme switch reintroduces
+        // this exact class of missing-token bug
+    },
+},
+```
+
+Treat this as a one-time project setup check, not something to redo per-component.
+
+| Purpose                                                                | Token                                                                                                                                                                                              |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Backgrounds                                                            | `rgb(var(--v-theme-surface))` / `rgb(var(--v-theme-surface-variant, 248, 249, 250))`                                                                                                               |
+| Borders (resting)                                                      | `rgb(var(--v-theme-outline, 225, 228, 232))`                                                                                                                                                       |
+| Borders (hover — one step darker than resting, never black/on-surface) | `rgb(var(--v-theme-outline-variant, 165, 172, 182))`                                                                                                                                               |
+| Primary action / active-selected state                                 | Vuetify default blue `#1976d2` (or `rgb(var(--v-theme-primary))`) — used sparingly: active filters, selected states, badges, the one primary CTA. Never a default hover color on neutral controls. |
+| Text (primary)                                                         | `rgb(var(--v-theme-on-surface))`                                                                                                                                                                   |
+| Text (secondary/labels/descriptions)                                   | `rgb(var(--v-theme-text-secondary, 71, 84, 103))` — not `on-surface-variant`, which renders too light                                                                                              |
+| Text (quiet/decorative icons, placeholder-weight content)              | `rgb(var(--v-theme-text-disabled, 148, 157, 173))`                                                                                                                                                 |
 
 Don't introduce a second accent color (e.g. purple). One accent used narrowly beats two competing accents.
 
@@ -55,15 +91,15 @@ Don't introduce a second accent color (e.g. purple). One accent used narrowly be
 
 ## Interaction states
 
-- **Hover:** subtle only. A neutral icon/text shifting to the accent color on hover is enough — avoid stacking a background fill _and_ a color change _and_ a border change on the same element at once.
-- **Focus:** must be visible for accessibility, but never a glowing halo. For buttons/icon-buttons, a quiet low-opacity ring is fine: `box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15)`. For text inputs, prefer shifting the border color/weight itself (muted grey → `on-surface`) over any shadow — reads as sharpening, not lighting up.
+- **Hover:** subtle only. A neutral icon/text shifting to the accent color on hover is enough — avoid stacking a background fill _and_ a color change _and_ a border change on the same element at once. For outlined text inputs specifically, a hover state one step darker than resting (`outline` → `outline-variant`) paired with a matching low-opacity `box-shadow` ring is the standard pairing — see Focus below, hover should read as a quieter version of focus, not a different mechanism.
+- **Focus:** must be visible for accessibility, but never a glowing halo. For buttons/icon-buttons, a quiet low-opacity ring is fine: `box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15)`. For outlined text inputs, pair a border color shift (muted grey → `primary`) with a thin low-opacity `box-shadow` ring at the same radius (`0 0 0 0.0625rem rgba(primary, 0.15)`) — the ring is what gives focus its "bolder" weight versus resting, not a wider border. Hover should mirror this same ring mechanism in grey (`outline-variant`, ~0.5 opacity) rather than only changing border color, or hover will read visually thinner than focus even when both are "correct" colors.
 - **Ripple:** use `v-ripple` on both `v-btn` and any native `<button>` acting as a button — it works on any element, no reason to skip it on custom buttons.
 - **Text selection:** any button or button-like control (including static badges inside a control row) gets `user-select: none; -webkit-user-select: none;`.
 - **Drag-and-drop / other functional states:** always show feedback — an unstyled drop zone is a bug, not restraint. Keep it to a faint tint + thin inset border, never a colored glow.
 
 ## Vuetify component defaults
 
-**Inputs** (`v-text-field`, `v-select`, `v-textarea`): `variant="outlined"`, `density="compact"`, `hide-details` or `hide-details="auto"`. Target the actual internal parts with `:deep()` — `.v-field__outline`, `.v-field__outline__start`, `.v-field__outline__end`, `.v-field__outline__notch::before`/`::after` — not just the parent `.v-field`, or overrides on the notch/label gap won't apply.
+**Inputs** (`v-text-field`, `v-select`, `v-textarea`): `variant="outlined"`, `density="compact"`, `hide-details` or `hide-details="auto"`. Target the actual internal parts with `:deep()` — `.v-field__outline`, `.v-field__outline__start`, `.v-field__outline__end`, `.v-field__outline__notch::before`/`::after` — not just the parent `.v-field`, or overrides on the notch/label gap won't apply. Note that Vuetify's outlined variant carries its own default hover styling with real specificity; a plain `:hover .v-field__outline { color: ... }` override can lose to it silently, and `!important` here is one of the accepted last-resort cases from the CSS rules above — confirm via computed styles in DevTools before reaching for it, not as a first move.
 
 **Buttons** (`v-btn`):
 

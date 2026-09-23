@@ -169,7 +169,7 @@ function handleSave() {
 }
 
 .panel__edit-btn:hover:deep(.v-icon) {
-    color: #1976d2;
+    color: rgb(var(--v-theme-primary));
 }
 
 .tag-list {
@@ -197,10 +197,10 @@ function handleSave() {
 .tag-chip:hover {
     background: color-mix(
         in srgb,
-        #1976d2 10%,
+        rgb(var(--v-theme-primary)) 10%,
         rgb(var(--v-theme-grey-lighten-4, 245, 246, 248))
     ) !important;
-    color: #1976d2 !important;
+    color: rgb(var(--v-theme-primary)) !important;
 }
 
 .tag-editor {
@@ -214,36 +214,41 @@ function handleSave() {
     min-height: 2.75rem;
     border-radius: 0.625rem;
     background: rgb(var(--v-theme-surface));
-    outline: none !important;
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        box-shadow 0.15s ease;
+    outline: none;
 }
 
 .tag-editor :deep(.v-field__outline) {
-    color: rgb(var(--v-theme-outline-variant, 234, 236, 240));
-    transition:
-        color 0.15s ease,
-        opacity 0.15s ease;
+    color: rgb(var(--v-theme-outline, 225, 228, 232));
+    opacity: 1;
+    transition: color 0.15s ease;
 }
 
 .tag-editor :deep(.v-field:hover .v-field__outline) {
-    color: rgb(var(--v-theme-primary));
-    opacity: 0.55;
+    color: rgb(var(--v-theme-outline-variant, 165, 172, 182));
+    opacity: 1;
 }
 
 .tag-editor :deep(.v-field:hover) {
-    box-shadow: 0 0 0 0.125rem rgba(var(--v-theme-primary), 0.06);
-}
-
-.tag-editor :deep(.v-field--focused) {
-    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.12);
+    box-shadow: 0 0 0 0.0625rem
+        rgba(var(--v-theme-outline-variant, 165, 172, 182), 0.5);
 }
 
 .tag-editor :deep(.v-field--focused .v-field__outline) {
     color: rgb(var(--v-theme-primary));
     opacity: 1;
+}
+
+.tag-editor :deep(.v-field--focused) {
+    box-shadow: 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.15);
+}
+
+.tag-editor :deep(.v-field--focused:hover .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
+}
+
+.tag-editor :deep(.v-field--focused:hover) {
+    box-shadow: 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.15);
 }
 
 .tag-editor :deep(.v-field__outline__start),

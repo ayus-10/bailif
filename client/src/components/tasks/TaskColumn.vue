@@ -281,7 +281,7 @@ function handleCancel() {
 }
 
 .task-column__menu-btn:hover {
-    color: #1976d2;
+    color: rgb(var(--v-theme-primary));
 }
 
 .task-column__body {
@@ -303,8 +303,8 @@ function handleCancel() {
 }
 
 .task-column__body--drag-over {
-    background: rgba(25, 118, 210, 0.04);
-    box-shadow: inset 0 0 0 0.0625rem rgba(25, 118, 210, 0.3);
+    background: rgba(var(--v-theme-primary), 0.04);
+    box-shadow: inset 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.3);
 }
 
 .task-column__empty {
