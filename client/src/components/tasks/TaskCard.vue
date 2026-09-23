@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { computed, ref } from "vue";
-import { PRIORITY_COLORS } from "@/constants/tasks";
+import { PRIORITY_META } from "@/constants/tasks";
 import { htmlPreview } from "@/utils/htmlFormatters";
 import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 
@@ -177,7 +177,7 @@ function handleDuplicate(e) {
                 size="x-small"
                 variant="tonal"
                 class="task-card__priority"
-                :color="PRIORITY_COLORS[task.priority] ?? 'default'"
+                :color="PRIORITY_META[task.priority].color ?? 'default'"
             >
                 {{ task.priority.toUpperCase() }}
             </v-chip>

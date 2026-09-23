@@ -7,7 +7,7 @@ import BoardToolbar from "@/components/taskboards/BoardToolbar.vue";
 import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
-import { TASK_COLUMNS } from "@/constants/tasks";
+import { STATUS_META } from "@/constants/tasks";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
 import { useTasksStore } from "@/stores/tasks.store";
 import { showApiError } from "@/utils/errorHandlers";
@@ -238,7 +238,7 @@ function handleClear() {
         <main class="task-board__content">
             <div class="task-board__columns">
                 <TaskColumn
-                    v-for="column in TASK_COLUMNS"
+                    v-for="column in STATUS_META"
                     :key="column.status"
                     :column="column"
                     :tasks="tasksByStatus[column.status] ?? []"

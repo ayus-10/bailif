@@ -42,12 +42,6 @@ function handleAction(action) {
 <template>
     <header class="board-header">
         <div class="board-header__identity">
-            <div class="board-header__icon">
-                <v-icon size="1.125rem">
-                    {{ props.icon }}
-                </v-icon>
-            </div>
-
             <div class="board-header__identity-content">
                 <div class="board-header__title-row">
                     <h1 class="board-header__title">
@@ -207,12 +201,12 @@ function handleAction(action) {
 }
 
 .board-header__icon-button:hover {
-    color: #1976d2;
+    color: rgb(var(--v-theme-primary));
 }
 
 .board-header__icon-button:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15);
+    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
 }
 
 .board-toolbar__invite {

@@ -39,11 +39,18 @@ const emit = defineEmits(["click"]);
     -webkit-user-select: none;
     transition:
         border-color 0.12s ease,
-        color 0.12s ease;
+        color 0.12s ease,
+        box-shadow 0.12s ease;
 }
 
 .panel__empty:hover {
-    border-color: rgba(25, 118, 210, 0.35);
-    color: #1976d2;
+    border-color: rgba(var(--v-theme-primary), 0.35);
+    color: rgb(var(--v-theme-primary));
+}
+
+.panel__empty:focus-visible {
+    outline: none;
+    border-color: rgb(var(--v-theme-primary));
+    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
 }
 </style>

@@ -95,25 +95,37 @@ const emit = defineEmits([
         </dl>
 
         <div v-else class="detail-editor">
-            <v-text-field
-                :model-value="startDate"
-                @update:model-value="$emit('update:startDate', $event)"
-                label="Start"
-                type="date"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-            />
+            <div class="detail-editor__field">
+                <label
+                    class="detail-editor__field-label"
+                    for="detail-start-date"
+                    >Start</label
+                >
+                <v-text-field
+                    id="detail-start-date"
+                    :model-value="startDate"
+                    @update:model-value="$emit('update:startDate', $event)"
+                    type="date"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details
+                />
+            </div>
 
-            <v-text-field
-                :model-value="dueDate"
-                @update:model-value="$emit('update:dueDate', $event)"
-                label="Due"
-                type="date"
-                variant="outlined"
-                density="comfortable"
-                hide-details
-            />
+            <div class="detail-editor__field">
+                <label class="detail-editor__field-label" for="detail-due-date"
+                    >Due</label
+                >
+                <v-text-field
+                    id="detail-due-date"
+                    :model-value="dueDate"
+                    @update:model-value="$emit('update:dueDate', $event)"
+                    type="date"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details
+                />
+            </div>
         </div>
     </section>
 </template>
@@ -176,7 +188,7 @@ const emit = defineEmits([
 }
 
 .panel__edit-btn:hover:deep(.v-icon) {
-    color: #1976d2;
+    color: rgb(var(--v-theme-primary));
 }
 
 .detail-list {
@@ -220,37 +232,40 @@ const emit = defineEmits([
     gap: 0.75rem;
 }
 
+.detail-editor__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.detail-editor__field-label {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
 .detail-editor :deep(.v-field) {
     --v-field-border-opacity: 1;
     min-height: 2.75rem;
     border-radius: 0.625rem;
     background: rgb(var(--v-theme-surface));
-    outline: none !important;
-    transition:
-        background-color 0.15s ease,
-        border-color 0.15s ease,
-        box-shadow 0.15s ease,
-        transform 0.12s ease;
+    outline: none;
 }
 
 .detail-editor :deep(.v-field__outline) {
-    color: rgb(var(--v-theme-outline-variant, 234, 236, 240));
-    transition:
-        color 0.15s ease,
-        opacity 0.15s ease;
+    color: rgb(var(--v-theme-outline, 225, 228, 232));
+    opacity: 1;
+    transition: color 0.15s ease;
 }
 
 .detail-editor :deep(.v-field:hover .v-field__outline) {
-    color: rgb(var(--v-theme-primary));
-    opacity: 0.55;
+    color: rgb(var(--v-theme-outline-variant, 165, 172, 182));
+    opacity: 1;
 }
 
 .detail-editor :deep(.v-field:hover) {
-    box-shadow: 0 0 0 0.125rem rgba(var(--v-theme-primary), 0.06);
-}
-
-.detail-editor :deep(.v-field--focused) {
-    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.12);
+    box-shadow: 0 0 0 0.0625rem
+        rgba(var(--v-theme-outline-variant, 165, 172, 182), 0.5);
 }
 
 .detail-editor :deep(.v-field--focused .v-field__outline) {
@@ -258,15 +273,17 @@ const emit = defineEmits([
     opacity: 1;
 }
 
-.detail-editor :deep(.v-field__label) {
-    padding-inline: 0.25rem;
-    background: #fff;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    color: rgb(var(--v-theme-on-surface));
-    opacity: 0.5;
-    transition: opacity 0.15s ease;
+.detail-editor :deep(.v-field--focused) {
+    box-shadow: 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.15);
+}
+
+.detail-editor :deep(.v-field--focused:hover .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
+}
+
+.detail-editor :deep(.v-field--focused:hover) {
+    box-shadow: 0 0 0 0.0625rem rgba(var(--v-theme-primary), 0.15);
 }
 
 .detail-editor :deep(.v-field__outline__start),

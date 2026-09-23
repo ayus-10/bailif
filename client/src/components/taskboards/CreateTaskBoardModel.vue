@@ -166,7 +166,7 @@ async function submit() {
 <style scoped>
 .taskboard-dialog {
     background-color: #fff;
-    border: 1px solid #e1e4e8;
+    border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
     border-radius: 0.5rem;
     box-shadow: none;
 }
@@ -176,7 +176,7 @@ async function submit() {
 }
 
 .card-title {
-    color: #1a1f2c;
+    color: rgb(var(--v-theme-on-surface));
     line-height: 1.2;
     letter-spacing: -0.01em;
 }

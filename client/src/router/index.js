@@ -43,6 +43,7 @@ const routes = [
         name: "dashboard",
         component: () => import("@/views/Dashboard.vue"),
         meta: { requiresAuth: true },
+
         children: [
             {
                 path: "overview",
@@ -50,12 +51,30 @@ const routes = [
                 component: () => import("@/views/OverviewPage.vue"),
                 props: true,
             },
+
             {
-                path: "projects",
-                name: "projects",
-                component: () => import("@/views/ProjectDetail.vue"),
+                path: "project",
+                name: "project-list",
+                component: () => import("@/views/ProjectList.vue"),
+            },
+            {
+                path: "project/new",
+                name: "project-new",
+                component: () => import("@/views/CreateProject.vue"),
+            },
+            {
+                path: "project/:projectId",
+                name: "project-overview",
+                component: () => import("@/views/ProjectOverview.vue"),
                 props: true,
             },
+            {
+                path: "project/:projectId/settings",
+                name: "project-settings",
+                component: () => import("@/views/ProjectSettings.vue"),
+                props: true,
+            },
+
             {
                 path: "taskboards/all",
                 name: "taskboards-all",

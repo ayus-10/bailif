@@ -228,7 +228,7 @@ function onToastClick(t) {
 }
 
 .toast__close:focus-visible {
-    box-shadow: 0 0 0 0.1875rem rgba(25, 118, 210, 0.15);
+    box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
 }
 
 .toast__progress {

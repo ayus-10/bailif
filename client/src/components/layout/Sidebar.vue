@@ -62,7 +62,7 @@ onUnmounted(() => {
 
 const sidebar = {
     brand: {
-        title: "App",
+        title: "Bailif",
         icon: "mdi-layers-triple",
     },
 
@@ -98,14 +98,14 @@ const navigation = {
         },
         {
             title: "Projects",
-            value: "projects",
-            routeName: "projects",
+            value: "project",
+            routeName: "project-list",
             icon: "mdi-folder-outline",
         },
         {
             title: "Taskboards",
             value: "taskboards",
-            icon: "mdi-checkbox-marked-circle-outline",
+            icon: "mdi-grid-large",
             type: "boards",
         },
     ],
