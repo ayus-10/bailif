@@ -56,13 +56,26 @@ function switchProject() {}
 
 .project-page__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0.75rem 0;
     width: 100%;
 }
 
 .project-page__empty {
     flex: 1;
     min-height: 0;
+}
+
+@media (min-width: 960px) {
+    .project-page__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    .project-page__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 </style>

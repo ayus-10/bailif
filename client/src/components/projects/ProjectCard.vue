@@ -33,12 +33,6 @@ const overviewRoute = computed(() => ({
     },
 }));
 
-const projectAccent = computed(() => props.project.color || "#6366F1");
-
-const projectStyle = computed(() => ({
-    "--project-accent": projectAccent.value,
-}));
-
 const formattedUpdatedDate = computed(() => {
     if (!props.project.updated_at) {
         return "";
@@ -64,18 +58,27 @@ function handleClick() {
 }
 
 /**
- * @type {import("vue").Ref<[number, number]>}
+ * @type {import("vue").Ref<[number, number] | HTMLElement>}
  */
 const contextMenuTarget = ref([0, 0]);
-
 const contextMenuOpen = ref(false);
 
 /**
  * @param {MouseEvent} event
  */
-function openContextMenu(event) {
+function openContextMenuAtCursor(event) {
     event.preventDefault();
     contextMenuTarget.value = [event.clientX, event.clientY];
+    contextMenuOpen.value = true;
+}
+
+/**
+ * @param {MouseEvent} event
+ */
+function openContextMenuFromButton(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    contextMenuTarget.value = /** @type {HTMLElement} */ (event.currentTarget);
     contextMenuOpen.value = true;
 }
 
@@ -107,7 +110,6 @@ function handleDelete() {
         rounded="lg"
         class="project-card"
         :class="{ 'project-card--active': isActive }"
-        :style="projectStyle"
         v-ripple
         :aria-label="
             isActive
@@ -116,7 +118,7 @@ function handleDelete() {
         "
         :aria-current="isActive ? 'page' : undefined"
         @click="handleClick"
-        @contextmenu.prevent="openContextMenu"
+        @contextmenu="openContextMenuAtCursor"
     >
         <div class="project-card__header">
             <div class="project-card__identity">
@@ -132,9 +134,21 @@ function handleDelete() {
                 </h3>
             </div>
 
-            <span v-if="isActive" class="project-card__active-badge">
-                Active
-            </span>
+            <div class="project-card__actions">
+                <span v-if="isActive" class="project-card__active-badge">
+                    Active
+                </span>
+
+                <button
+                    type="button"
+                    class="project-card__icon-btn"
+                    v-ripple
+                    aria-label="Project actions"
+                    @click="openContextMenuFromButton"
+                >
+                    <v-icon icon="mdi-dots-horizontal" size="14" />
+                </button>
+            </div>
         </div>
 
         <p v-if="project.description" class="project-card__description">
@@ -216,7 +230,7 @@ function handleDelete() {
 
 <style scoped>
 .project-card {
-    --project-accent: #6366f1;
+    --project-accent: rgb(var(--v-theme-primary));
 
     position: relative;
     display: block;
@@ -226,21 +240,27 @@ function handleDelete() {
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
-    border: 0.0625rem solid transparent;
+    border: 0.0625rem solid rgb(var(--v-theme-outline-variant, 234, 236, 240));
     border-radius: 0.75rem;
     background: rgb(var(--v-theme-surface));
     box-shadow: none;
     text-decoration: none;
-    transition: border-color 0.12s ease;
+    transition:
+        border-color 0.12s ease,
+        background-color 0.12s ease;
 }
 
 .project-card:hover {
-    border-color: rgb(var(--v-theme-outline-variant, 234, 236, 240));
-}
-
-.project-card--active,
-.project-card--active:hover {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: color-mix(
+        in srgb,
+        var(--project-accent) 22%,
+        rgb(var(--v-theme-outline-variant, 234, 236, 240))
+    );
+    background-color: color-mix(
+        in srgb,
+        var(--project-accent) 3%,
+        rgb(var(--v-theme-surface))
+    );
 }
 
 .project-card:focus {
@@ -295,10 +315,17 @@ function handleDelete() {
     white-space: nowrap;
 }
 
+.project-card__actions {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+}
+
 .project-card__active-badge {
     flex: 0 0 auto;
     padding: 0.1875rem 0.5rem;
-    border-radius: 999px;
+    border-radius: 0.125rem;
     background: rgba(var(--v-theme-primary), 0.08);
     color: rgb(var(--v-theme-primary));
     font-size: 0.6875rem;
@@ -306,6 +333,34 @@ function handleDelete() {
     line-height: 1rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
+}
+
+.project-card__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: none;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: rgb(var(--v-theme-text-disabled, 148, 157, 173));
+    cursor: pointer;
+    transition:
+        background-color 0.12s ease,
+        color 0.12s ease;
+}
+
+.project-card__icon-btn:hover {
+    background: rgb(var(--v-theme-surface));
+    color: rgb(var(--v-theme-on-surface));
+}
+
+.project-card__icon-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.125rem rgba(var(--v-theme-primary), 0.15);
 }
 
 .project-card__description {
