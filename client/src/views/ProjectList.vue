@@ -1,9 +1,68 @@
+<script setup>
+import { useRouter } from "vue-router";
+import { onMounted } from "vue";
+import NoActiveProject from "@/components/projects/NoActiveProject.vue";
+import ProjectCard from "@/components/projects/ProjectCard.vue";
+import ProjectHeader from "@/components/projects/ProjectHeader.vue";
+import { useActiveProject } from "@/composables/useActiveProject";
+import { useProjectsStore } from "@/stores/projects.store";
+
+const projectsStore = useProjectsStore();
+
+const { projectId: activeProjectId } = useActiveProject();
+
+const router = useRouter();
+
+onMounted(() => {
+    projectsStore.fetch();
+});
+
+function retry() {
+    projectsStore.fetch({ forceRefresh: true });
+}
+
+function switchProject() {}
+</script>
+
 <template>
-    <v-container fluid class="pa-6">
-        <div class="d-flex align-center mb-4">
-            <div>
-                <h1 class="text-h5 font-weight-medium">Projects</h1>
-            </div>
+    <v-container fluid class="project-page">
+        <ProjectHeader
+            title="Projects"
+            show-new-project
+            @new-project="router.push('/dashboard/project/new')"
+        />
+
+        <div v-if="activeProjectId" class="project-page__grid">
+            <ProjectCard
+                v-for="project in projectsStore.items"
+                :key="project.public_id"
+                :project="project"
+                :active-project-id="activeProjectId"
+                @switch="switchProject"
+            />
         </div>
+
+        <NoActiveProject v-else class="project-page__empty" />
     </v-container>
 </template>
+
+<style scoped>
+.project-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 1.5rem;
+}
+
+.project-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+    width: 100%;
+}
+
+.project-page__empty {
+    flex: 1;
+    min-height: 0;
+}
+</style>
