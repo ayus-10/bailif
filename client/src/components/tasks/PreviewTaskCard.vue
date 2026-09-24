@@ -1,8 +1,9 @@
 <script setup>
 import { computed } from "vue";
 import { PRIORITY_META } from "@/constants/tasks";
+import { formatDate } from "@/utils/dateFormatters";
 import { htmlPreview } from "@/utils/htmlFormatters";
-import { formatDate, parseTags } from "@/utils/taskFormatters";
+import { parseTags } from "@/utils/taskFormatters";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead

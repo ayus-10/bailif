@@ -2,8 +2,9 @@
 import { useRouter } from "vue-router";
 import { computed, ref } from "vue";
 import { PRIORITY_META } from "@/constants/tasks";
+import { formatDate } from "@/utils/dateFormatters";
 import { htmlPreview } from "@/utils/htmlFormatters";
-import { formatDate, isTaskOverdue, parseTags } from "@/utils/taskFormatters";
+import { isTaskOverdue, parseTags } from "@/utils/taskFormatters";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
