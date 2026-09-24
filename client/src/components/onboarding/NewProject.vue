@@ -1,7 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { computed } from "vue";
-import NewProjectForm from "@/components/projects/NewProjectForm.vue";
+import OnboardingProjectForm from "@/components/onboarding/OnboardingProjectForm.vue";
 import { useToast } from "@/composables/useToast";
 import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects.store";
@@ -41,7 +41,10 @@ async function handleCreateProject(project) {
 
 <template>
     <div class="new-project-wrapper">
-        <NewProjectForm :is-loading="isLoading" @submit="handleCreateProject" />
+        <OnboardingProjectForm
+            :is-loading="isLoading"
+            @submit="handleCreateProject"
+        />
     </div>
 </template>
 

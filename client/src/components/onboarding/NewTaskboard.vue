@@ -1,8 +1,8 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { computed } from "vue";
+import OnboardingTaskboardForm from "@/components/onboarding/OnboardingTaskboardForm.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
-import NewTaskboardForm from "@/components/taskboards/NewTaskboardForm.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
@@ -49,7 +49,7 @@ async function handleCreateTaskboard(form) {
 
 <template>
     <div class="new-taskboard-wrapper">
-        <NewTaskboardForm
+        <OnboardingTaskboardForm
             v-if="projectId"
             :is-loading="isLoading"
             @submit="handleCreateTaskboard"

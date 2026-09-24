@@ -43,8 +43,8 @@
 }
 
 .ql-editor li[data-list="checked"] > .ql-ui {
-    border: 0.125rem solid rgb(var(--v-theme-success, 76, 175, 80));
-    background: rgb(var(--v-theme-success, 76, 175, 80));
+    border: 0.125rem solid rgb(var(--v-theme-primary, 33, 150, 243));
+    background: rgb(var(--v-theme-primary, 33, 150, 243));
 }
 
 .ql-editor li[data-list="checked"] > .ql-ui::after {
