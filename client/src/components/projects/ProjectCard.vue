@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { formatDate } from "@/utils/taskFormatters";
+import { formatDate } from "@/utils/dateFormatters";
 
 /**
  * @typedef {import("@/types/project").ProjectRead} ProjectRead

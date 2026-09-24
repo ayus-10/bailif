@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate } from "@/utils/taskFormatters";
+import { formatDate } from "@/utils/dateFormatters";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
