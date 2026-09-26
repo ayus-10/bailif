@@ -68,12 +68,12 @@ const routes = [
                 component: () => import("@/views/ProjectOverview.vue"),
                 props: true,
             },
-            {
-                path: "project/:id/settings",
-                name: "project-settings",
-                component: () => import("@/views/ProjectSettings.vue"),
-                props: true,
-            },
+            // {
+            //     path: "project/:id/settings",
+            //     name: "project-settings",
+            //     component: () => import("@/views/ProjectSettings.vue"),
+            //     props: true,
+            // },
 
             {
                 path: "taskboards/all",
