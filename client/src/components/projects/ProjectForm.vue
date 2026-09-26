@@ -360,9 +360,6 @@ async function onSubmit() {
     border-top: none;
 }
 
-/* "More" + "Schedule" live as two columns inside one section, so the
-   section itself owns a single top border/padding, and the columns
-   stay borderless and stack on narrow screens. */
 .project-form__section--split {
     gap: 1.5rem;
 }
