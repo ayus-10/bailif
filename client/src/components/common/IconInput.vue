@@ -22,9 +22,17 @@ const props = defineProps({
         type: String,
         default: "Icon",
     },
-    size: {
-        type: [Number, String],
-        default: 42,
+    labelColor: {
+        type: String,
+        default: "primary",
+        validator: (/** @type {string} */ value) =>
+            ["primary", "secondary"].includes(value),
+    },
+    variant: {
+        type: String,
+        default: "icon-only",
+        validator: (/** @type {string} */ value) =>
+            ["icon-only", "icon-and-label"].includes(value),
     },
     disabled: {
         type: Boolean,
@@ -34,23 +42,46 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
-const selectedIcon = computed(() =>
-    props.icons.find((icon) => icon.value === props.modelValue)
-);
+const selectedIcon = computed(() => {
+    if (!props.modelValue) return null;
+    return props.icons.find(
+        (icon) =>
+            (typeof icon === "string" ? icon : icon.value) === props.modelValue
+    );
+});
 
 /**
  * @param {string} icon
  */
 function selectIcon(icon) {
     if (props.disabled) return;
-
     emit("update:modelValue", icon);
+}
+
+/**
+ * @param {IconOption} icon
+ */
+function getIconValue(icon) {
+    return typeof icon === "string" ? icon : icon.value;
+}
+
+/**
+ * @param {IconOption} icon
+ */
+function getIconLabel(icon) {
+    return typeof icon === "string" ? icon : icon.label || icon.value;
 }
 </script>
 
 <template>
     <div class="icon-input-wrapper">
-        <label v-if="label" class="field-label">{{ label }}</label>
+        <label
+            v-if="label"
+            class="field-label"
+            :class="`field-label__${labelColor}`"
+        >
+            {{ label }}
+        </label>
 
         <v-menu
             :disabled="disabled"
@@ -63,24 +94,35 @@ function selectIcon(icon) {
                     v-bind="menuProps"
                     :disabled="disabled"
                     class="icon-trigger-btn"
+                    :class="{
+                        'icon-trigger-btn--with-label':
+                            variant === 'icon-and-label',
+                    }"
                     :aria-label="
                         selectedIcon
-                            ? `Selected icon: ${selectedIcon.label}`
+                            ? `Selected icon: ${getIconLabel(selectedIcon)}`
                             : 'Choose an icon'
                     "
                 >
                     <v-icon
-                        v-if="selectedIcon"
-                        :icon="selectedIcon.value"
-                        size="20"
-                        color="primary"
+                        v-if="modelValue"
+                        :icon="modelValue"
+                        size="18"
+                        class="icon-preview"
                     />
                     <v-icon
                         v-else
                         icon="mdi-shape-outline"
                         size="18"
-                        class="text-medium-emphasis"
+                        class="icon-preview-placeholder text-medium-emphasis"
                     />
+
+                    <span
+                        v-if="variant === 'icon-and-label' && selectedIcon"
+                        class="icon-trigger-label"
+                    >
+                        {{ getIconLabel(selectedIcon) }}
+                    </span>
 
                     <v-icon
                         icon="mdi-chevron-down"
@@ -91,21 +133,26 @@ function selectIcon(icon) {
             </template>
 
             <v-card class="icon-picker-card" variant="outlined">
-                <div class="icon-grid">
+                <div class="icon-grid" role="radiogroup" :aria-label="label">
                     <button
                         v-for="icon in icons"
-                        :key="icon.value"
+                        :key="getIconValue(icon)"
                         type="button"
                         class="icon-grid-item"
                         :class="{
                             'icon-grid-item--selected':
-                                modelValue === icon.value,
+                                modelValue === getIconValue(icon),
                         }"
-                        :aria-label="icon.label"
-                        :aria-pressed="modelValue === icon.value"
-                        @click="selectIcon(icon.value)"
+                        :aria-label="`Select ${getIconLabel(icon)}`"
+                        :aria-checked="modelValue === getIconValue(icon)"
+                        role="radio"
+                        @click="selectIcon(getIconValue(icon))"
                     >
-                        <v-icon :icon="icon.value" size="20" />
+                        <v-icon
+                            :icon="getIconValue(icon)"
+                            size="18"
+                            class="icon-item-symbol"
+                        />
                     </button>
                 </div>
             </v-card>
@@ -131,8 +178,15 @@ function selectIcon(icon) {
 .field-label {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--v-theme-on-surface-variant, #344054);
     margin-bottom: 0.375rem;
+}
+
+.field-label__primary {
+    color: var(--v-theme-on-surface-variant, #344054);
+}
+
+.field-label__secondary {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
 }
 
 .icon-trigger-btn {
@@ -150,6 +204,25 @@ function selectIcon(icon) {
     transition: border-color 0.15s ease;
 }
 
+.icon-trigger-btn--with-label {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0 0.625rem;
+}
+
+.icon-trigger-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .icon-trigger-btn:hover:not(:disabled) {
     border-color: var(--v-theme-outline-dark, #98a2b3);
 }
@@ -163,6 +236,19 @@ function selectIcon(icon) {
     background-color: var(--v-theme-surface-disabled, #f2f4f7);
     border-color: var(--v-theme-outline-disabled, #eaecf0);
     cursor: not-allowed;
+}
+
+.icon-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(var(--v-theme-on-surface));
+}
+
+.icon-preview-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .icon-picker-card.v-card {
@@ -179,10 +265,11 @@ function selectIcon(icon) {
     grid-template-columns: repeat(5, 1fr);
     gap: 0.25rem;
     width: 100%;
-    max-width: 12.5rem;
+    max-width: 18rem;
 }
 
 .icon-grid-item {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -191,8 +278,12 @@ function selectIcon(icon) {
     border-radius: 0.25rem;
     border: 0.0625rem solid transparent;
     background: transparent;
-    color: var(--v-theme-on-surface-variant, #475467);
     cursor: pointer;
+    color: var(--v-theme-on-surface-variant, #475467);
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .icon-grid-item:hover {
@@ -200,9 +291,15 @@ function selectIcon(icon) {
     color: var(--v-theme-on-surface, #101828);
 }
 
+.icon-item-symbol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .icon-grid-item--selected {
+    border-color: var(--v-theme-outline-dark, #98a2b3);
+    background-color: var(--v-theme-surface-variant, #f8f9fa);
     color: var(--v-theme-primary, #1976d2);
-    background-color: rgba(var(--v-theme-primary, 25, 118, 210), 0.08);
-    border-color: rgba(var(--v-theme-primary, 25, 118, 210), 0.3);
 }
 </style>

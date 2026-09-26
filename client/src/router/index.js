@@ -63,13 +63,13 @@ const routes = [
                 component: () => import("@/views/CreateProject.vue"),
             },
             {
-                path: "project/:projectId",
+                path: "project/:id",
                 name: "project-overview",
                 component: () => import("@/views/ProjectOverview.vue"),
                 props: true,
             },
             {
-                path: "project/:projectId/settings",
+                path: "project/:id/settings",
                 name: "project-settings",
                 component: () => import("@/views/ProjectSettings.vue"),
                 props: true,

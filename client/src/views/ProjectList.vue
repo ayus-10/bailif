@@ -22,6 +22,13 @@ function retry() {
 }
 
 function switchProject() {}
+
+/**
+ * @param {string} action
+ */
+function handleNavigate(action) {
+    router.push({ name: action });
+}
 </script>
 
 <template>
@@ -29,7 +36,8 @@ function switchProject() {}
         <ProjectHeader
             title="Projects"
             show-new-project
-            @new-project="router.push('/dashboard/project/new')"
+            @new-project="handleNavigate('project-new')"
+            @navigate="handleNavigate"
         />
 
         <div v-if="activeProjectId" class="project-page__grid">

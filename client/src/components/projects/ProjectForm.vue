@@ -141,17 +141,6 @@ async function onSubmit() {
                 />
             </div>
 
-            <div class="project-form__row">
-                <div class="project-form__field">
-                    <span class="project-form__label">Icon</span>
-                    <IconInput v-model="form.icon" />
-                </div>
-                <div class="project-form__field">
-                    <span class="project-form__label">Color</span>
-                    <ColorInput v-model="form.color" />
-                </div>
-            </div>
-
             <div class="project-form__field">
                 <label class="project-form__label" for="project-description"
                     >Description</label
@@ -170,29 +159,44 @@ async function onSubmit() {
             </div>
         </section>
 
-        <section class="project-form__section">
-            <h3 class="project-form__title">Status</h3>
+        <section class="project-form__section project-form__section--split">
+            <div class="project-form__col">
+                <h3 class="project-form__title">More</h3>
 
-            <div class="project-form__field">
-                <label class="project-form__label" for="project-status"
-                    >Status</label
-                >
-                <v-select
-                    id="project-status"
-                    v-model="form.status"
-                    class="project-form__input"
-                    :items="STATUS_ITEMS"
-                    variant="outlined"
-                    density="compact"
-                    hide-details="auto"
-                />
+                <div class="project-form__field">
+                    <IconInput
+                        v-model="form.icon"
+                        variant="icon-and-label"
+                        label-color="secondary"
+                    />
+                </div>
+                <div class="project-form__field">
+                    <ColorInput
+                        v-model="form.color"
+                        variant="icon-and-label"
+                        label-color="secondary"
+                    />
+                </div>
+
+                <div class="project-form__field">
+                    <label class="project-form__label" for="project-status"
+                        >Status</label
+                    >
+                    <v-select
+                        id="project-status"
+                        v-model="form.status"
+                        class="project-form__input"
+                        :items="STATUS_ITEMS"
+                        variant="outlined"
+                        density="compact"
+                        hide-details="auto"
+                    />
+                </div>
             </div>
-        </section>
 
-        <section class="project-form__section">
-            <h3 class="project-form__title">Schedule</h3>
+            <div class="project-form__col">
+                <h3 class="project-form__title">Schedule</h3>
 
-            <div class="project-form__row">
                 <div class="project-form__field">
                     <label class="project-form__label" for="project-start"
                         >Start</label
@@ -208,6 +212,7 @@ async function onSubmit() {
                         hide-details="auto"
                     />
                 </div>
+
                 <div class="project-form__field">
                     <label class="project-form__label" for="project-target-end"
                         >Target end</label
@@ -225,40 +230,40 @@ async function onSubmit() {
                         hide-details="auto"
                     />
                 </div>
-            </div>
 
-            <div v-if="showActualEnd" class="project-form__field">
-                <label class="project-form__label" for="project-actual-end"
-                    >Actual end</label
-                >
-                <v-text-field
-                    id="project-actual-end"
-                    ref="actualEndRef"
-                    v-model="form.actual_end_date"
-                    class="project-form__input"
-                    type="datetime-local"
-                    variant="outlined"
-                    density="compact"
-                    :rules="actualEndRules"
-                    clearable
-                    hide-details="auto"
-                />
-            </div>
+                <div v-if="showActualEnd" class="project-form__field">
+                    <label class="project-form__label" for="project-actual-end"
+                        >Actual end</label
+                    >
+                    <v-text-field
+                        id="project-actual-end"
+                        ref="actualEndRef"
+                        v-model="form.actual_end_date"
+                        class="project-form__input"
+                        type="datetime-local"
+                        variant="outlined"
+                        density="compact"
+                        :rules="actualEndRules"
+                        clearable
+                        hide-details="auto"
+                    />
+                </div>
 
-            <div class="project-form__field">
-                <label class="project-form__label" for="project-timezone"
-                    >Timezone</label
-                >
-                <v-autocomplete
-                    id="project-timezone"
-                    v-model="form.timezone"
-                    class="project-form__input"
-                    :items="TIMEZONE_ITEMS"
-                    variant="outlined"
-                    density="compact"
-                    clearable
-                    hide-details="auto"
-                />
+                <div class="project-form__field">
+                    <label class="project-form__label" for="project-timezone"
+                        >Timezone</label
+                    >
+                    <v-autocomplete
+                        id="project-timezone"
+                        v-model="form.timezone"
+                        class="project-form__input"
+                        :items="TIMEZONE_ITEMS"
+                        variant="outlined"
+                        density="compact"
+                        clearable
+                        hide-details="auto"
+                    />
+                </div>
             </div>
         </section>
 
@@ -353,6 +358,21 @@ async function onSubmit() {
 .project-form__section:first-child {
     padding-top: 0;
     border-top: none;
+}
+
+/* "More" + "Schedule" live as two columns inside one section, so the
+   section itself owns a single top border/padding, and the columns
+   stay borderless and stack on narrow screens. */
+.project-form__section--split {
+    gap: 1.5rem;
+}
+
+.project-form__col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 .project-form__title {
@@ -492,6 +512,13 @@ async function onSubmit() {
 :deep(.project-form__input .v-field__input::placeholder) {
     color: rgb(var(--v-theme-text-disabled, 148, 157, 173));
     opacity: 1;
+}
+
+@media (min-width: 48rem) {
+    .project-form__section--split {
+        flex-direction: row;
+        align-items: flex-start;
+    }
 }
 
 @media (max-width: 30rem) {

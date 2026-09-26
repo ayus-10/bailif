@@ -29,7 +29,10 @@ async function handleSubmit(project) {
 
         const projectId = createdProject.public_id;
 
-        await router.push(`/dashboard/project/${projectId}`);
+        router.push({
+            name: "project-overview",
+            params: { id: projectId },
+        });
     } catch (err) {
         showApiError(err, toast);
     }

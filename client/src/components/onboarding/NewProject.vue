@@ -32,7 +32,7 @@ async function handleCreateProject(project) {
 
         authStore.refreshCurrentUser();
 
-        router.push("/onboarding/taskboard");
+        router.push({ name: "taskboard" });
     } catch (err) {
         showApiError(err, toast);
     }
