@@ -67,7 +67,10 @@ function openContextMenu(e) {
 }
 
 function goToTask() {
-    router.push(`/dashboard/tasks/${props.task.public_id}`);
+    router.push({
+        name: "task",
+        params: { id: props.task.public_id },
+    });
 }
 
 /**

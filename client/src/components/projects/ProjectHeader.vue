@@ -36,13 +36,13 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["action"]);
+const emit = defineEmits(["navigate"]);
 
 /**
- * @param {string} action
+ * * @param {string} action
  */
-function handleAction(action) {
-    emit("action", action);
+function handleNavigate(action) {
+    emit("navigate", action);
 }
 </script>
 
@@ -90,7 +90,7 @@ function handleAction(action) {
                     type="button"
                     class="project-header__icon-button"
                     aria-label="Project settings"
-                    @click="handleAction('settings')"
+                    @click="() => handleNavigate('settings')"
                 >
                     <v-icon size="1.125rem"> mdi-cog-outline </v-icon>
                 </button>
@@ -100,7 +100,7 @@ function handleAction(action) {
                     type="button"
                     class="project-header__icon-button"
                     aria-label="Project members"
-                    @click="handleAction('members')"
+                    @click="() => handleNavigate('members')"
                 >
                     <v-icon size="1.125rem"> mdi-account-group-outline </v-icon>
                 </button>
@@ -113,7 +113,7 @@ function handleAction(action) {
                 variant="flat"
                 density="comfortable"
                 class="text-none project-header__new-project"
-                @click="handleAction('new-project')"
+                @click="() => handleNavigate('project-new')"
             >
                 New project
             </v-btn>

@@ -34,7 +34,7 @@ const currentStepConfig = computed(() => {
 function handleSkip() {
     const nextStep = steps[currentStep.value];
 
-    if (!nextStep) router.push("/dashboard");
+    if (!nextStep) router.push({ name: "dashboard" });
 
     router.push({
         name: nextStep.name,

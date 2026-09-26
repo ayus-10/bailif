@@ -127,7 +127,6 @@ async function handleSubmit() {
                             density="compact"
                             class="text-none px-0"
                             type="button"
-                            @click="router.push('/forgot-password')"
                         >
                             Forgot password?
                         </v-btn>
@@ -160,7 +159,6 @@ async function handleSubmit() {
                     color="primary"
                     density="compact"
                     class="text-none font-weight-medium ml-1"
-                    @click="router.push('/register')"
                 >
                     Create an account
                 </v-btn>

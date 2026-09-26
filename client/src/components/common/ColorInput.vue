@@ -22,6 +22,18 @@ const props = defineProps({
         type: String,
         default: "Color",
     },
+    labelColor: {
+        type: String,
+        default: "primary",
+        validator: (/** @type {string} */ value) =>
+            ["primary", "secondary"].includes(value),
+    },
+    variant: {
+        type: String,
+        default: "icon-only",
+        validator: (/** @type {string} */ value) =>
+            ["icon-only", "icon-and-label"].includes(value),
+    },
     disabled: {
         type: Boolean,
         default: false,
@@ -62,7 +74,13 @@ function getColorLabel(color) {
 
 <template>
     <div class="color-input-wrapper">
-        <label v-if="label" class="field-label">{{ label }}</label>
+        <label
+            v-if="label"
+            class="field-label"
+            :class="`field-label__${labelColor}`"
+        >
+            {{ label }}
+        </label>
 
         <v-menu
             :disabled="disabled"
@@ -75,6 +93,10 @@ function getColorLabel(color) {
                     v-bind="menuProps"
                     :disabled="disabled"
                     class="color-trigger-btn"
+                    :class="{
+                        'color-trigger-btn--with-label':
+                            variant === 'icon-and-label',
+                    }"
                     :aria-label="
                         selectedColor
                             ? `Selected color: ${getColorLabel(selectedColor)}`
@@ -87,6 +109,13 @@ function getColorLabel(color) {
                         :style="{ backgroundColor: modelValue }"
                     />
                     <span v-else class="color-preview-placeholder" />
+
+                    <span
+                        v-if="variant === 'icon-and-label' && selectedColor"
+                        class="color-trigger-label"
+                    >
+                        {{ getColorLabel(selectedColor) }}
+                    </span>
 
                     <v-icon
                         icon="mdi-chevron-down"
@@ -145,8 +174,15 @@ function getColorLabel(color) {
 .field-label {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--v-theme-on-surface-variant, #344054);
     margin-bottom: 0.375rem;
+}
+
+.field-label__primary {
+    color: var(--v-theme-on-surface-variant, #344054);
+}
+
+.field-label__secondary {
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
 }
 
 .color-trigger-btn {
@@ -162,6 +198,25 @@ function getColorLabel(color) {
     cursor: pointer;
     padding: 0 0.375rem;
     transition: border-color 0.15s ease;
+}
+
+.color-trigger-btn--with-label {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0 0.625rem;
+}
+
+.color-trigger-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: rgb(var(--v-theme-on-surface));
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .color-trigger-btn:hover:not(:disabled) {
@@ -208,7 +263,7 @@ function getColorLabel(color) {
     grid-template-columns: repeat(5, 1fr);
     gap: 0.25rem;
     width: 100%;
-    max-width: 12.5rem;
+    max-width: 18rem;
 }
 
 .color-grid-item {

@@ -40,7 +40,7 @@ async function handleCreateTaskboard(form) {
 
         await taskboardsStore.create(payload);
 
-        router.push("/dashboard");
+        router.push({ name: "dashboard" });
     } catch (err) {
         showApiError(err, toast);
     }

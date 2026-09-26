@@ -29,7 +29,7 @@ const isActive = computed(
 const overviewRoute = computed(() => ({
     name: "project-overview",
     params: {
-        projectId: props.project.public_id,
+        id: props.project.public_id,
     },
 }));
 
