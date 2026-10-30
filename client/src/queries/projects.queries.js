@@ -53,6 +53,7 @@ export function useProjectsList(params = {}, options = {}) {
         initialPageParam: /** @type {string | null} */ (null),
         getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
         ...options,
+        meta: { sessionGeneration: getSessionGeneration() },
     });
 
     return {
@@ -77,6 +78,7 @@ export function useProject(id, options = {}) {
             getProject(/** @type {number} */ (projectId.value), signal),
         enabled: computed(() => projectId.value != null),
         ...options,
+        meta: { sessionGeneration: getSessionGeneration() },
     });
 }
 
@@ -91,6 +93,7 @@ export function useProjectSummary(id, options = {}) {
             getProjectSummary(/** @type {number} */ (projectId.value), signal),
         enabled: computed(() => projectId.value != null),
         ...options,
+        meta: { sessionGeneration: getSessionGeneration() },
     });
 }
 

@@ -9,6 +9,7 @@ const BASE_URL = "/api/v1";
 let refreshPromise = null;
 
 /**
+ * @param {number} sessionGeneration
  * @returns {Promise<string | null>}
  */
 async function performRefresh(sessionGeneration) {
@@ -34,11 +35,14 @@ async function performRefresh(sessionGeneration) {
 }
 
 /**
+ * @param {number} sessionGeneration
  * @returns {Promise<string | null>}
  */
 function refreshAccessToken(sessionGeneration) {
-    if (refreshPromise?.generation === sessionGeneration) {
-        return refreshPromise.promise;
+    const existingRefresh = refreshPromise;
+
+    if (existingRefresh?.generation === sessionGeneration) {
+        return existingRefresh.promise;
     }
 
     const promise = performRefresh(sessionGeneration).finally(() => {

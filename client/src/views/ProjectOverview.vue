@@ -31,8 +31,10 @@ const { projectId: activeProjectId } = useActiveProject();
 
 const projectId = computed(() => Number(props.id));
 
-const projectQuery = useProject(projectId);
-const summaryQuery = useProjectSummary(projectId);
+const projectQuery = useProject(projectId, { refetchOnMount: "always" });
+const summaryQuery = useProjectSummary(projectId, {
+    refetchOnMount: "always",
+});
 const project = computed(() => projectQuery.data.value ?? null);
 const summary = computed(() => summaryQuery.data.value ?? null);
 
@@ -106,13 +108,8 @@ const details = computed(() => {
     ];
 });
 
-/**
- * @param {boolean} [forceRefresh]
- */
-function load(forceRefresh = false) {
-    Promise.all([projectQuery.refetch(), summaryQuery.refetch()]).catch((err) =>
-        showApiError(err, toast)
-    );
+function load() {
+    Promise.all([projectQuery.refetch(), summaryQuery.refetch()]);
 }
 
 async function setActive() {
@@ -159,7 +156,7 @@ function handleNavigate(action) {
                     color="primary"
                     variant="flat"
                     class="text-none"
-                    @click="load(true)"
+                    @click="load"
                 >
                     Try again
                 </v-btn>

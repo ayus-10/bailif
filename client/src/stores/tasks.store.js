@@ -6,6 +6,10 @@ import {
     listTasks,
     updateTask,
 } from "@/api/tasks.api";
+import { getSessionGeneration, queryClient } from "@/queries/client";
+import { dashboardKeys } from "@/queries/dashboard.queries";
+import { projectKeys } from "@/queries/projects.queries";
+import { taskboardKeys } from "@/queries/taskboards.queries";
 import { cachedRequest, invalidateRequestCache } from "./cache";
 
 /**
@@ -60,6 +64,19 @@ function collectionKey(projectPublicId, options = {}) {
  */
 function mutationKey(operation, taskPublicId) {
     return `${operation}:${taskPublicId ?? "new"}`;
+}
+
+/**
+ * @param {number} projectPublicId
+ */
+function invalidateProjectTaskAggregates(projectPublicId) {
+    void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    void queryClient.invalidateQueries({
+        queryKey: taskboardKeys.list(projectPublicId),
+    });
+    void queryClient.invalidateQueries({
+        queryKey: projectKeys.summary(projectPublicId),
+    });
 }
 
 export const useTasksStore = defineStore("tasks", {
@@ -131,6 +148,7 @@ export const useTasksStore = defineStore("tasks", {
                 return;
             }
 
+            const requestGeneration = getSessionGeneration();
             this.fetchStatus[key] = "loading";
             this.fetchErrors[key] = null;
 
@@ -157,6 +175,8 @@ export const useTasksStore = defineStore("tasks", {
                     { forceRefresh }
                 );
 
+                if (requestGeneration !== getSessionGeneration()) return;
+
                 const existing = this.items[key] ?? [];
 
                 this.items[key] = append
@@ -169,6 +189,7 @@ export const useTasksStore = defineStore("tasks", {
 
                 return data;
             } catch (err) {
+                if (requestGeneration !== getSessionGeneration()) return;
                 this.fetchErrors[key] = err;
                 this.fetchStatus[key] = "error";
                 throw err;
@@ -209,6 +230,7 @@ export const useTasksStore = defineStore("tasks", {
                 return;
             }
 
+            const requestGeneration = getSessionGeneration();
             this.fetchStatus[key] = "loading";
             this.fetchErrors[key] = null;
 
@@ -219,11 +241,14 @@ export const useTasksStore = defineStore("tasks", {
                     { forceRefresh }
                 );
 
+                if (requestGeneration !== getSessionGeneration()) return;
+
                 this.currentTask = task;
                 this.fetchStatus[key] = "success";
 
                 return task;
             } catch (err) {
+                if (requestGeneration !== getSessionGeneration()) return;
                 this.fetchErrors[key] = err;
                 this.fetchStatus[key] = "error";
                 throw err;
@@ -246,6 +271,7 @@ export const useTasksStore = defineStore("tasks", {
                 const projectPublicId = task.project_public_id;
 
                 invalidateRequestCache(`tasks:${projectPublicId}:`);
+                invalidateProjectTaskAggregates(projectPublicId);
 
                 const rootKey = collectionKey(projectPublicId, {
                     queryMode: task.parent_public_id
@@ -306,6 +332,7 @@ export const useTasksStore = defineStore("tasks", {
 
                 invalidateRequestCache(`task:${taskPublicId}`);
                 invalidateRequestCache(`tasks:${task.project_public_id}:`);
+                invalidateProjectTaskAggregates(task.project_public_id);
 
                 this.mutationStatus[key] = "success";
 
@@ -347,6 +374,7 @@ export const useTasksStore = defineStore("tasks", {
 
                 invalidateRequestCache(`task:${taskPublicId}`);
                 invalidateRequestCache(`tasks:${projectPublicId}:`);
+                invalidateProjectTaskAggregates(projectPublicId);
 
                 this.mutationStatus[key] = "success";
             } catch (err) {

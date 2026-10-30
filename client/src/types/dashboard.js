@@ -2,7 +2,6 @@
  * @typedef {import("@/types/task").TaskStatus} TaskStatus
  * @typedef {import("@/types/task").TaskPriority} TaskPriority
  * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
- * @typedef {import("@/types/shared").RequestStatus} RequestStatus
  */
 
 /**
@@ -49,13 +48,6 @@
  * @property {DashboardTaskRead[]} upcoming_deadlines
  * @property {DashboardTaskRead[]} recent_activity
  * @property {TaskboardListRead[]} taskboards
- */
-
-/**
- * @typedef {Object} DashboardState
- * @property {Dashboard | null} data
- * @property {RequestStatus | null} status
- * @property {unknown} error
  */
 
 export {};

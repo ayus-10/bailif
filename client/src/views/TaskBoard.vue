@@ -316,13 +316,24 @@ function openNewTask() {
 function handleClear() {
     pendingTask.value = null;
 }
+
+function refreshTaskList() {
+    if (!projectId.value) return;
+
+    tasksStore
+        .fetch(projectId.value, {
+            ...query.value,
+            forceRefresh: true,
+        })
+        .catch((err) => showApiError(err, toast));
+}
 </script>
 
 <template>
     <v-container v-if="projectId" fluid class="task-board">
         <BoardHeader
-            :board-name="String(taskboard?.name ?? '')"
-            :board-description="String(taskboard?.description ?? '')"
+            :board-name="taskboard?.name"
+            :board-description="taskboard?.description"
             :editable="currentBoard.type === 'single' && !!boardSummary"
             @edit="showEditBoard = true"
             @delete="showDeleteBoard = true"
@@ -372,6 +383,7 @@ function handleClear() {
                     @drop="dropTask"
                     @complete="toggleComplete"
                     @delete="taskToDelete = $event"
+                    @task-created="refreshTaskList"
                     @clear-pending-task="handleClear"
                 />
             </div>

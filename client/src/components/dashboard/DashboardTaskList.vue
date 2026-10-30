@@ -42,7 +42,9 @@ function isOverdue(task) {
  * @param {DashboardTaskRead} task
  */
 function taskDate(task) {
-    return props.dateField === "due_date" ? task.due_date : task.updated_at;
+    return /** @type {Record<string, string | null | undefined>} */ (
+        /** @type {unknown} */ (task)
+    )[props.dateField];
 }
 </script>
 

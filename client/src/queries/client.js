@@ -1,4 +1,7 @@
-import { QueryClient } from "@tanstack/vue-query";
+import { QueryCache, QueryClient } from "@tanstack/vue-query";
+import { ApiError as ApiErrorClass } from "@/api/shared.api";
+import { toast } from "@/composables/useToast";
+import { showApiError } from "@/utils/errorHandlers";
 
 /**
  * @typedef {import("@/api/shared.api").ApiError} ApiError
@@ -16,9 +19,24 @@ export function advanceSessionGeneration() {
 }
 
 export const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+        onError: (error, query) => {
+            if (error instanceof ApiErrorClass && error.status === 401) return;
+
+            const meta =
+                /** @type {{ sessionGeneration?: number } | undefined} */ (
+                    query.meta
+                );
+            if (meta?.sessionGeneration !== getSessionGeneration()) return;
+
+            showApiError(error, toast);
+        },
+    }),
     defaultOptions: {
         queries: {
             staleTime: 30_000,
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
             retry: (failureCount, error) => {
                 /**
                  * @type {ApiError}

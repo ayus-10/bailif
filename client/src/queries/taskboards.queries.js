@@ -56,6 +56,7 @@ export function useTaskboardsList(projectPublicId, options = {}) {
             ),
         enabled: computed(() => toValue(projectPublicId) != null),
         ...options,
+        meta: { sessionGeneration: getSessionGeneration() },
     });
 
     const items = computed(() => query.data.value?.items ?? []);
@@ -80,6 +81,7 @@ export function useTaskboard(boardPublicId, options = {}) {
             ),
         enabled: computed(() => toValue(boardPublicId) != null),
         ...options,
+        meta: { sessionGeneration: getSessionGeneration() },
     });
 }
 

@@ -1,4 +1,5 @@
 <script setup>
+import { useQueryClient } from "@tanstack/vue-query";
 import { useRouter } from "vue-router";
 import { computed } from "vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
@@ -6,7 +7,7 @@ import ProjectCard from "@/components/projects/ProjectCard.vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
-import { useProjectsList } from "@/queries/projects.queries";
+import { projectKeys, useProjectsList } from "@/queries/projects.queries";
 import { useAuthStore } from "@/stores/auth";
 import { showApiError } from "@/utils/errorHandlers";
 
@@ -21,7 +22,8 @@ const { projectId: activeProjectId } = useActiveProject();
 
 const router = useRouter();
 
-const projectsQuery = useProjectsList();
+const queryClient = useQueryClient();
+const projectsQuery = useProjectsList({}, { refetchOnMount: "always" });
 const { items, hasNextPage } = projectsQuery;
 const status = computed(() =>
     projectsQuery.isFetching.value
@@ -39,11 +41,14 @@ const hasError = computed(
 );
 
 function load() {
-    projectsQuery.refetch().catch((err) => showApiError(err, toast));
+    queryClient.resetQueries({
+        queryKey: projectKeys.list({}),
+        exact: true,
+    });
 }
 
 function loadMore() {
-    projectsQuery.fetchNextPage().catch((err) => showApiError(err, toast));
+    projectsQuery.fetchNextPage();
 }
 
 /**

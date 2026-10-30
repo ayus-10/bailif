@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import { useToast } from "@/composables/useToast";
@@ -32,49 +32,61 @@ const router = useRouter();
 
 const tasksStore = useTasksStore();
 
-const subtasks = tasksStore.tasksByQuery(props.projectId, {
-    parentId: props.taskId,
-});
-const fetchStatus = tasksStore.fetchListStatus(props.projectId, {
-    parentId: props.taskId,
-});
-const fetchError = tasksStore.fetchListError(props.projectId, {
-    parentId: props.taskId,
-});
+const subtasks = computed(() =>
+    tasksStore.tasksByQuery(props.projectId, {
+        queryMode: "child-tasks",
+        parentId: props.taskId,
+    })
+);
+const fetchStatus = computed(() =>
+    tasksStore.fetchListStatus(props.projectId, {
+        queryMode: "child-tasks",
+        parentId: props.taskId,
+    })
+);
+const fetchError = computed(() =>
+    tasksStore.fetchListError(props.projectId, {
+        queryMode: "child-tasks",
+        parentId: props.taskId,
+    })
+);
 
-const hasSubtasks = computed(() => subtasks.length > 0);
+const hasSubtasks = computed(() => subtasks.value.length > 0);
 
-const isLoading = computed(() => fetchStatus === "loading");
+const isLoading = computed(() => fetchStatus.value === "loading");
 
 /**
  * @type {import("vue").Ref<TaskCreate | null>}
  */
 const pendingSubTask = ref(null);
 
-const showSubtasks = computed(
-    () => !isLoading.value && !fetchError && hasSubtasks.value
-);
+const showSubtasks = computed(() => !fetchError.value && hasSubtasks.value);
 const showEmptyMessage = computed(
-    () => !showSubtasks.value && !pendingSubTask.value
+    () =>
+        !isLoading.value &&
+        !fetchError.value &&
+        !hasSubtasks.value &&
+        !pendingSubTask.value
 );
 
-onMounted(() => {
-    fetchSubtasks();
-});
+watch(
+    () => [props.projectId, props.taskId],
+    () => fetchSubtasks(),
+    { immediate: true }
+);
 
-function fetchSubtasks() {
-    tasksStore.fetch(props.projectId, {
-        queryMode: "child-tasks",
-        parentId: props.taskId,
-    });
+function fetchSubtasks(forceRefresh = false) {
+    tasksStore
+        .fetch(props.projectId, {
+            queryMode: "child-tasks",
+            parentId: props.taskId,
+            forceRefresh,
+        })
+        .catch((err) => showApiError(err, toast));
 }
 
 function retry() {
-    tasksStore.fetch(props.projectId, {
-        queryMode: "child-tasks",
-        parentId: props.taskId,
-        forceRefresh: true,
-    });
+    fetchSubtasks(true);
 }
 
 /**

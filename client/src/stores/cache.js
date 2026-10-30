@@ -1,4 +1,5 @@
 const requestCache = new Map();
+let requestCacheGeneration = 0;
 
 const DEFAULT_TTL = 60_000;
 
@@ -28,17 +29,22 @@ export function cachedRequest(
         }
     }
 
+    const generation = requestCacheGeneration;
     const promise = fn()
         .then((result) => {
-            requestCache.set(key, {
-                promise: Promise.resolve(result),
-                status: "resolved",
-                ts: Date.now(),
-            });
+            if (generation === requestCacheGeneration) {
+                requestCache.set(key, {
+                    promise: Promise.resolve(result),
+                    status: "resolved",
+                    ts: Date.now(),
+                });
+            }
             return result;
         })
         .catch((err) => {
-            requestCache.delete(key);
+            if (generation === requestCacheGeneration) {
+                requestCache.delete(key);
+            }
             throw err;
         });
 
@@ -48,6 +54,7 @@ export function cachedRequest(
 }
 
 export function clearRequestCache() {
+    requestCacheGeneration += 1;
     requestCache.clear();
 }
 

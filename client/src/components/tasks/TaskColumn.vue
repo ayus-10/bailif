@@ -61,6 +61,7 @@ const emit = defineEmits([
     "drop",
     "complete",
     "delete",
+    "task-created",
     "clear-pending-task",
 ]);
 
@@ -127,6 +128,7 @@ async function handleCreate(payload) {
                 payload: { task_public_id: task.public_id },
             });
 
+        emit("task-created");
         emit("clear-pending-task");
     } catch (err) {
         showApiError(err, toast);
