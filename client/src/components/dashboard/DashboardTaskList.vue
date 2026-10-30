@@ -8,7 +8,9 @@ import { formatDate } from "@/utils/dateFormatters";
 
 const props = defineProps({
     tasks: {
-        type: Array,
+        type: /** @type {import("vue").PropType<DashboardTaskRead[]>} */ (
+            Array
+        ),
         default: /** @returns {DashboardTaskRead[]} */ () => [],
     },
     dateField: {
@@ -34,6 +36,15 @@ function isOverdue(task) {
         !!task.due_date &&
         new Date(task.due_date) < new Date()
     );
+}
+
+/**
+ * @param {DashboardTaskRead} task
+ */
+function taskDate(task) {
+    return /** @type {Record<string, string | null | undefined>} */ (
+        /** @type {unknown} */ (task)
+    )[props.dateField];
 }
 </script>
 
@@ -68,7 +79,7 @@ function isOverdue(task) {
                         'dashboard-task-list__date--overdue': isOverdue(task),
                     }"
                 >
-                    {{ formatDate(task[dateField]) }}
+                    {{ formatDate(taskDate(task)) }}
                 </span>
             </template>
         </v-list-item>

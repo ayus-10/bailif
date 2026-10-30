@@ -3,7 +3,10 @@ import { computed, reactive, watch } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS } from "@/constants/globals";
-import { useTaskboardsStore } from "@/stores/taskboards.store";
+import {
+    useCreateTaskboard,
+    useUpdateTaskboard,
+} from "@/queries/taskboards.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -43,17 +46,15 @@ const form = reactive({
 
 const toast = useToast();
 
-const taskboardsStore = useTaskboardsStore();
+const createMutation = useCreateTaskboard();
+const updateMutation = useUpdateTaskboard();
 
 const isEditing = computed(() => props.taskboard !== null);
 
 const isLoading = computed(() =>
     props.taskboard
-        ? taskboardsStore.taskboardMutationStatus(
-              "update",
-              props.taskboard.public_id
-          ) === "loading"
-        : taskboardsStore.taskboardMutationStatus("create") === "loading"
+        ? updateMutation.isPending.value
+        : createMutation.isPending.value
 );
 
 watch(
@@ -91,8 +92,11 @@ async function submit() {
 
     try {
         if (props.taskboard) {
-            await taskboardsStore.update(props.taskboard.public_id, {
-                ...form,
+            await updateMutation.mutateAsync({
+                id: props.taskboard.public_id,
+                payload: {
+                    ...form,
+                },
             });
         } else {
             /**
@@ -103,7 +107,7 @@ async function submit() {
                 project_public_id: props.projectId,
             };
 
-            await taskboardsStore.create(payload);
+            await createMutation.mutateAsync(payload);
         }
 
         close();

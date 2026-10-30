@@ -1,16 +1,18 @@
+import { getSessionGeneration } from "@/queries/client";
 import { useAuthStore } from "@/stores/auth";
 
 const BASE_URL = "/api/v1";
 
 /**
- * @type {Promise<string | null> | null}
+ * @type {{ generation: number, promise: Promise<string | null> } | null}
  */
 let refreshPromise = null;
 
 /**
+ * @param {number} sessionGeneration
  * @returns {Promise<string | null>}
  */
-async function performRefresh() {
+async function performRefresh(sessionGeneration) {
     const authStore = useAuthStore();
 
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
@@ -18,27 +20,38 @@ async function performRefresh() {
         credentials: "include",
     });
 
+    if (sessionGeneration !== getSessionGeneration()) return null;
+
     if (!res.ok) {
-        authStore.clearSession();
+        await authStore.clearSession();
         return null;
     }
 
     const data = await res.json();
+    if (sessionGeneration !== getSessionGeneration()) return null;
+
     authStore.setAccessToken(data.token);
     return data.token;
 }
 
 /**
+ * @param {number} sessionGeneration
  * @returns {Promise<string | null>}
  */
-function refreshAccessToken() {
-    if (!refreshPromise) {
-        refreshPromise = performRefresh().finally(() => {
-            refreshPromise = null;
-        });
+function refreshAccessToken(sessionGeneration) {
+    const existingRefresh = refreshPromise;
+
+    if (existingRefresh?.generation === sessionGeneration) {
+        return existingRefresh.promise;
     }
 
-    return refreshPromise;
+    const promise = performRefresh(sessionGeneration).finally(() => {
+        if (refreshPromise?.promise === promise) {
+            refreshPromise = null;
+        }
+    });
+    refreshPromise = { generation: sessionGeneration, promise };
+    return promise;
 }
 
 /**
@@ -53,6 +66,7 @@ function refreshAccessToken() {
  * @returns {Promise<Response>}
  */
 export async function apiFetch(path, options = {}) {
+    const requestSessionGeneration = getSessionGeneration();
     const authStore = useAuthStore();
     const { skipAuth, _isRetry, headers, ...rest } = options;
 
@@ -68,16 +82,26 @@ export async function apiFetch(path, options = {}) {
         credentials: "include",
     });
 
-    if (res.status === 401 && !skipAuth && !_isRetry) {
+    if (
+        res.status === 401 &&
+        !skipAuth &&
+        !_isRetry &&
+        requestSessionGeneration === getSessionGeneration()
+    ) {
         const body = await res
             .clone()
             .json()
             .catch(() => null);
 
-        if (body?.error_code === "access_token_expired") {
-            const newToken = await refreshAccessToken();
+        if (requestSessionGeneration !== getSessionGeneration()) return res;
 
-            if (newToken) {
+        if (body?.error_code === "access_token_expired") {
+            const newToken = await refreshAccessToken(requestSessionGeneration);
+
+            if (
+                newToken &&
+                requestSessionGeneration === getSessionGeneration()
+            ) {
                 return apiFetch(path, {
                     ...options,
                     _isRetry: true,
@@ -85,8 +109,9 @@ export async function apiFetch(path, options = {}) {
             }
         }
 
-        // refresh itself failed, no point retrying
-        authStore.clearSession();
+        if (requestSessionGeneration === getSessionGeneration()) {
+            await authStore.clearSession();
+        }
     }
 
     return res;

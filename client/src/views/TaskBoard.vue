@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import BoardHeader from "@/components/taskboards/BoardHeader.vue";
@@ -10,8 +10,16 @@ import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
 import { STATUS_META } from "@/constants/tasks";
-import { useTaskboardsStore } from "@/stores/taskboards.store";
-import { useTasksStore } from "@/stores/tasks.store";
+import {
+    useDeleteTaskboard,
+    useTaskboard,
+    useTaskboardsList,
+} from "@/queries/taskboards.queries";
+import {
+    useDeleteTask,
+    useTasksList,
+    useUpdateTask,
+} from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -70,28 +78,21 @@ const query = computed(() => ({
         currentBoard.value.type === "single" ? currentBoard.value.id : null,
 }));
 
-const taskboardsStore = useTaskboardsStore();
-const tasksStore = useTasksStore();
+const tasksQuery = useTasksList(projectId, query);
+const updateTaskMutation = useUpdateTask();
+const deleteTaskMutation = useDeleteTask();
 
-watch(
-    [projectId, query],
-    ([id, currentQuery]) => {
-        if (!id) return;
-
-        tasksStore
-            .fetch(id, currentQuery)
-            .catch((err) => showApiError(err, toast));
-    },
-    { immediate: true }
+const boardId = computed(() =>
+    currentBoard.value.type === "single" ? currentBoard.value.id : null
 );
-
-watch(currentBoard, fetchCurrentBoard, { immediate: true });
-
-const taskboard = computed(() => taskboardsStore.currentTaskboard);
+const taskboardQuery = useTaskboard(boardId);
+const taskboardsQuery = useTaskboardsList(projectId);
+const deleteTaskboardMutation = useDeleteTaskboard();
+const taskboard = computed(() => taskboardQuery.data.value ?? null);
 
 const boardSummary = computed(() =>
     currentBoard.value.type === "single"
-        ? (taskboardsStore.items.find(
+        ? (taskboardsQuery.items.value.find(
               (item) =>
                   item.public_id ===
                   /** @type {SingleBoardSelection} */ (currentBoard.value).id
@@ -99,29 +100,15 @@ const boardSummary = computed(() =>
         : null
 );
 
-const tasks = computed(() =>
-    projectId.value ? tasksStore.tasksByQuery(projectId.value, query.value) : []
-);
-
-const listStatus = computed(() =>
-    projectId.value
-        ? tasksStore.fetchListStatus(projectId.value, query.value)
-        : null
-);
-
+const tasks = tasksQuery.items;
 const isLoading = computed(
-    () => listStatus.value === "loading" && tasks.value.length === 0
+    () => tasksQuery.isLoading.value && tasks.value.length === 0
 );
-
 const hasError = computed(
-    () => listStatus.value === "error" && tasks.value.length === 0
+    () => tasksQuery.isError.value && tasks.value.length === 0
 );
-
-const nextCursor = computed(() =>
-    projectId.value
-        ? tasksStore.nextCursorByQuery(projectId.value, query.value)
-        : null
-);
+const hasNextPage = tasksQuery.hasNextPage;
+const isFetchingNextPage = tasksQuery.isFetchingNextPage;
 
 const searchText = ref("");
 
@@ -175,49 +162,21 @@ const taskToDelete = ref(/** @type {TaskRead | null} */ (null));
 const isDeletingBoard = computed(
     () =>
         currentBoard.value.type === "single" &&
-        taskboardsStore.taskboardMutationStatus(
-            "delete",
-            currentBoard.value.id
-        ) === "loading"
+        deleteTaskboardMutation.isPending.value
 );
 
 const isDeletingTask = computed(
-    () =>
-        taskToDelete.value !== null &&
-        tasksStore.taskMutationStatus(
-            "delete",
-            taskToDelete.value.public_id
-        ) === "loading"
+    () => taskToDelete.value !== null && deleteTaskMutation.isPending.value
 );
 
-/**
- * @param {BoardSelection} board
- */
-function fetchCurrentBoard(board) {
-    if (board.type === "single") {
-        taskboardsStore.get(board.id).catch((err) => showApiError(err, toast));
-        return;
-    }
-    taskboardsStore.currentTaskboard = null;
-}
-
 function retry() {
-    if (!projectId.value) return;
-
-    tasksStore
-        .fetch(projectId.value, {
-            ...query.value,
-            forceRefresh: true,
-        })
-        .catch((err) => showApiError(err, toast));
+    void tasksQuery.refetch();
 }
 
 function loadMore() {
-    if (!projectId.value) return;
+    if (!hasNextPage.value || isFetchingNextPage.value) return;
 
-    tasksStore
-        .loadMore(projectId.value, query.value)
-        .catch((err) => showApiError(err, toast));
+    void tasksQuery.fetchNextPage();
 }
 
 /**
@@ -260,7 +219,10 @@ function isDroppable(status) {
  */
 async function changeStatus(task, status) {
     try {
-        await tasksStore.update(task.public_id, { status });
+        await updateTaskMutation.mutateAsync({
+            taskPublicId: task.public_id,
+            payload: { status },
+        });
     } catch (err) {
         showApiError(err, toast);
     }
@@ -292,7 +254,10 @@ async function confirmDeleteTask() {
     if (!taskToDelete.value || !projectId.value) return;
 
     try {
-        await tasksStore.remove(taskToDelete.value.public_id, projectId.value);
+        await deleteTaskMutation.mutateAsync({
+            taskPublicId: taskToDelete.value.public_id,
+            projectPublicId: projectId.value,
+        });
 
         taskToDelete.value = null;
     } catch (err) {
@@ -304,7 +269,7 @@ async function confirmDeleteBoard() {
     if (currentBoard.value.type !== "single") return;
 
     try {
-        await taskboardsStore.remove(currentBoard.value.id);
+        await deleteTaskboardMutation.mutateAsync(currentBoard.value.id);
 
         showDeleteBoard.value = false;
         router.push({ name: "taskboards-all" });
@@ -323,6 +288,10 @@ function openNewTask() {
 function handleClear() {
     pendingTask.value = null;
 }
+
+function refreshTaskList() {
+    void tasksQuery.refetch();
+}
 </script>
 
 <template>
@@ -337,8 +306,8 @@ function handleClear() {
 
         <BoardToolbar
             v-model:search="searchText"
-            :status="statusFilter"
-            :priority="priorityFilter"
+            :status="statusFilter ?? undefined"
+            :priority="priorityFilter ?? undefined"
             @update:status="setFilter('status', $event)"
             @update:priority="setFilter('priority', $event)"
             @new-task="openNewTask"
@@ -379,16 +348,17 @@ function handleClear() {
                     @drop="dropTask"
                     @complete="toggleComplete"
                     @delete="taskToDelete = $event"
+                    @task-created="refreshTaskList"
                     @clear-pending-task="handleClear"
                 />
             </div>
 
-            <div v-if="nextCursor" class="task-board__more">
+            <div v-if="hasNextPage" class="task-board__more">
                 <v-btn
                     variant="tonal"
                     color="primary"
                     class="text-none"
-                    :loading="listStatus === 'loading'"
+                    :loading="isFetchingNextPage"
                     @click="loadMore"
                 >
                     Load more tasks

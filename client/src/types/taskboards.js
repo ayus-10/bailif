@@ -1,8 +1,4 @@
 /**
- * @typedef {import("@/types/shared").RequestStatus} RequestStatus
- */
-
-/**
  * @typedef {import("@/types/task").TaskRead} TaskRead
  */
 
@@ -73,16 +69,6 @@
 /**
  * @typedef {Object} TaskboardListResponse
  * @property {TaskboardListRead[]} items
- */
-
-/**
- * @typedef {Object} TaskboardsState
- * @property {TaskboardListRead[]} items
- * @property {TaskboardRead | null} currentTaskboard
- * @property {Record<string, RequestStatus>} fetchStatus
- * @property {Record<string, any>} fetchErrors
- * @property {Record<string, RequestStatus>} mutationStatus
- * @property {Record<string, any>} mutationErrors
  */
 
 export {};

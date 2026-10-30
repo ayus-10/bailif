@@ -5,7 +5,7 @@
 
 defineProps({
     metrics: {
-        type: Array,
+        type: /** @type {import("vue").PropType<DashboardMetric[]>} */ (Array),
         default: /** @returns {DashboardMetric[]} */ () => [],
     },
 });

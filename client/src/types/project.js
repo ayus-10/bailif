@@ -1,5 +1,4 @@
 /**
- * @typedef {import("@/types/shared").RequestStatus} RequestStatus
  * @typedef {import("@/types/dashboard").DashboardTaskStats} DashboardTaskStats
  * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
  */
@@ -82,18 +81,6 @@
  * @typedef {Object} ProjectSummary
  * @property {DashboardTaskStats} tasks
  * @property {TaskboardListRead[]} taskboards
- */
-
-/**
- * @typedef {Object} ProjectsState
- * @property {ProjectRead[]} items
- * @property {string | null} nextCursor
- * @property {ProjectRead | null} currentProject
- * @property {Record<number, ProjectSummary>} summaries
- * @property {Record<string, RequestStatus>} fetchStatus
- * @property {Record<string, any>} fetchErrors
- * @property {Record<string, RequestStatus>} mutationStatus
- * @property {Record<string, any>} mutationErrors
  */
 
 export {};

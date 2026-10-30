@@ -1,18 +1,21 @@
 import { getActivePinia } from "pinia";
-import { clearRequestCache } from "@/stores/cache";
+import { advanceSessionGeneration, queryClient } from "@/queries/client";
 
 const AUTH_STORE_ID = "auth";
 
-export function resetSessionData() {
+export async function resetSessionData() {
+    advanceSessionGeneration();
+
+    await queryClient.cancelQueries();
+    queryClient.clear();
+
     const pinia = getActivePinia();
 
     if (!pinia) return;
 
-    // Pinia keeps every registered store in the internal `_s` map.
-    // @ts-ignore
     for (const store of pinia._s.values()) {
-        if (store.$id !== AUTH_STORE_ID) store.$reset();
+        if (store.$id !== AUTH_STORE_ID && typeof store.$reset === "function") {
+            store.$reset();
+        }
     }
-
-    clearRequestCache();
 }

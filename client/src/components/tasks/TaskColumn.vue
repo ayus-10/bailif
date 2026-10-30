@@ -2,8 +2,8 @@
 import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { useToast } from "@/composables/useToast";
-import { useTaskboardsStore } from "@/stores/taskboards.store";
-import { useTasksStore } from "@/stores/tasks.store";
+import { useAddTaskToBoard } from "@/queries/taskboards.queries";
+import { useCreateTask } from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 import TaskCard from "./TaskCard.vue";
 
@@ -52,8 +52,8 @@ const props = defineProps({
 
 const toast = useToast();
 
-const tasksStore = useTasksStore();
-const taskboardsStore = useTaskboardsStore();
+const createTaskMutation = useCreateTask();
+const addTaskMutation = useAddTaskToBoard();
 
 const emit = defineEmits([
     "drag-start",
@@ -61,6 +61,7 @@ const emit = defineEmits([
     "drop",
     "complete",
     "delete",
+    "task-created",
     "clear-pending-task",
 ]);
 
@@ -119,13 +120,15 @@ function handleDragEnd() {
  */
 async function handleCreate(payload) {
     try {
-        const task = await tasksStore.create(payload);
+        const task = await createTaskMutation.mutateAsync(payload);
 
         if (props.taskboardId)
-            await taskboardsStore.addTask(props.taskboardId, {
-                task_public_id: task.public_id,
+            await addTaskMutation.mutateAsync({
+                boardPublicId: props.taskboardId,
+                payload: { task_public_id: task.public_id },
             });
 
+        emit("task-created");
         emit("clear-pending-task");
     } catch (err) {
         showApiError(err, toast);

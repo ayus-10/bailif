@@ -1,11 +1,10 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { computed } from "vue";
 import OnboardingTaskboardForm from "@/components/onboarding/OnboardingTaskboardForm.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
-import { useTaskboardsStore } from "@/stores/taskboards.store";
+import { useCreateTaskboard } from "@/queries/taskboards.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -14,13 +13,10 @@ import { showApiError } from "@/utils/errorHandlers";
 
 const { projectId } = useActiveProject();
 
-const taskboardsStore = useTaskboardsStore();
+const { mutateAsync: createTaskboard, isPending: isLoading } =
+    useCreateTaskboard();
 const router = useRouter();
 const toast = useToast();
-
-const isLoading = computed(
-    () => taskboardsStore.taskboardMutationStatus("create") === "loading"
-);
 
 /**
  * @param {TaskboardForm} form
@@ -38,7 +34,7 @@ async function handleCreateTaskboard(form) {
             project_public_id: projectId.value,
         };
 
-        await taskboardsStore.create(payload);
+        await createTaskboard(payload);
 
         router.push({ name: "dashboard" });
     } catch (err) {

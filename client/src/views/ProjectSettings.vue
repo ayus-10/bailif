@@ -1,12 +1,16 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import ProjectForm from "@/components/projects/ProjectForm.vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
-import { useProjectsStore } from "@/stores/projects.store";
+import {
+    useDeleteProject,
+    useProject,
+    useUpdateProject,
+} from "@/queries/projects.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -22,38 +26,32 @@ const props = defineProps({
 
 const router = useRouter();
 const toast = useToast();
-const projectsStore = useProjectsStore();
 
 const { projectId: activeProjectId } = useActiveProject();
 
 const projectId = computed(() => Number(props.id));
 
-const project = computed(() =>
-    projectsStore.currentProject?.public_id === projectId.value
-        ? projectsStore.currentProject
-        : null
+const projectQuery = useProject(projectId, { refetchOnMount: "always" });
+const project = computed(() => projectQuery.data.value ?? null);
+const hasLoadError = computed(
+    () => projectQuery.isError.value && !project.value
 );
+const hasRefreshError = computed(
+    () => projectQuery.isError.value && !!project.value
+);
+const updateMutation = useUpdateProject();
+const deleteMutation = useDeleteProject();
 
 const isActive = computed(() => activeProjectId.value === projectId.value);
 
-const isSaving = computed(
-    () =>
-        projectsStore.projectMutationStatus("update", projectId.value) ===
-        "loading"
-);
+const isSaving = computed(() => updateMutation.isPending.value);
 
-const isDeleting = computed(
-    () =>
-        projectsStore.projectMutationStatus("delete", projectId.value) ===
-        "loading"
-);
+const isDeleting = computed(() => deleteMutation.isPending.value);
 
 const showDeleteDialog = ref(false);
 
-watch(projectId, load, { immediate: true });
-
 function load() {
-    projectsStore.get(projectId.value).catch((err) => showApiError(err, toast));
+    projectQuery.refetch();
 }
 
 /**
@@ -63,7 +61,7 @@ async function handleSubmit(payload) {
     if (isSaving.value) return;
 
     try {
-        await projectsStore.update(projectId.value, payload);
+        await updateMutation.mutateAsync({ id: projectId.value, payload });
 
         toast.success("Project updated");
         router.push({
@@ -77,7 +75,7 @@ async function handleSubmit(payload) {
 
 async function handleDelete() {
     try {
-        await projectsStore.remove(projectId.value);
+        await deleteMutation.mutateAsync(projectId.value);
 
         showDeleteDialog.value = false;
         router.push({ name: "project-list" });
@@ -93,9 +91,54 @@ function handleCancel() {
 
 <template>
     <v-container fluid class="project-settings">
-        <v-skeleton-loader v-if="!project" type="article, article" />
+        <v-skeleton-loader
+            v-if="!project && projectQuery.isLoading.value"
+            type="article, article"
+        />
 
-        <template v-else>
+        <div v-else-if="hasLoadError" class="project-settings__message">
+            <v-icon icon="mdi-alert-circle-outline" size="32" />
+
+            <p>We couldn't load this project's settings.</p>
+
+            <div class="d-flex ga-2">
+                <v-btn
+                    color="primary"
+                    variant="flat"
+                    class="text-none"
+                    @click="load"
+                >
+                    Try again
+                </v-btn>
+
+                <v-btn variant="text" class="text-none" @click="handleCancel">
+                    Back
+                </v-btn>
+            </div>
+        </div>
+
+        <template v-else-if="project">
+            <v-alert
+                v-if="hasRefreshError"
+                type="error"
+                variant="tonal"
+                class="project-settings__load-error"
+            >
+                <div class="d-flex align-center justify-space-between ga-2">
+                    <span>We couldn't refresh this project's settings.</span>
+                    <div class="d-flex ga-2">
+                        <v-btn size="small" @click="load">Retry</v-btn>
+                        <v-btn
+                            size="small"
+                            variant="text"
+                            @click="handleCancel"
+                        >
+                            Back
+                        </v-btn>
+                    </div>
+                </div>
+            </v-alert>
+
             <ProjectHeader title="Project settings" :project="project" />
 
             <div class="project-settings__form">
@@ -152,6 +195,20 @@ function handleCancel() {
     flex-direction: column;
     gap: 1rem;
     padding: 1.5rem;
+}
+
+.project-settings__message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
+    font-size: 0.8125rem;
+}
+
+.project-settings__load-error {
+    max-width: 35rem;
 }
 
 .project-settings__form {

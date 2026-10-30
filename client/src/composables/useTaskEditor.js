@@ -1,6 +1,6 @@
 import { computed, reactive, ref, watch } from "vue";
 import { useToast } from "@/composables/useToast";
-import { useTasksStore } from "@/stores/tasks.store";
+import { useUpdateTask } from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 import {
     isTaskOverdue,
@@ -19,7 +19,7 @@ import {
  * @param {import("vue").Ref<TaskRead | null>} task
  */
 export function useTaskEditor(task) {
-    const tasksStore = useTasksStore();
+    const updateTaskMutation = useUpdateTask();
     const toast = useToast();
 
     const editMode = ref(/** @type {EditMode} */ ("none"));
@@ -133,7 +133,10 @@ export function useTaskEditor(task) {
         try {
             const payload = buildUpdatePayload(draft, initialDraft);
 
-            await tasksStore.update(task.value.public_id, payload);
+            await updateTaskMutation.mutateAsync({
+                taskPublicId: task.value.public_id,
+                payload,
+            });
 
             copyDraftValues(initialDraft, draft);
 
@@ -159,8 +162,9 @@ export function useTaskEditor(task) {
         savingRef.value = true;
 
         try {
-            await tasksStore.update(task.value.public_id, {
-                [field]: item.value,
+            await updateTaskMutation.mutateAsync({
+                taskPublicId: task.value.public_id,
+                payload: { [field]: item.value },
             });
         } catch (err) {
             localRef.value = previousValue;
