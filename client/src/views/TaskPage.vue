@@ -12,7 +12,7 @@ import TaskTags from "@/components/tasks/TaskTags.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useTaskEditor } from "@/composables/useTaskEditor";
 import { useToast } from "@/composables/useToast";
-import { useTasksStore } from "@/stores/tasks.store";
+import { useDeleteTask, useTask } from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 const route = useRoute();
@@ -25,40 +25,25 @@ const currentTaskId = computed(() => {
 
 const { projectId } = useActiveProject();
 
-const tasksStore = useTasksStore();
 const toast = useToast();
+const taskQuery = useTask(currentTaskId);
+const deleteTaskMutation = useDeleteTask();
 
-watch(
-    currentTaskId,
-    (id) => {
-        tasksStore.get(id).catch((err) => showApiError(err, toast));
-    },
-    { immediate: true }
-);
-
-const currentTask = computed(() =>
-    tasksStore.currentTask?.public_id === currentTaskId.value
-        ? tasksStore.currentTask
-        : null
-);
-
-const isLoading = computed(
-    () => tasksStore.fetchStatus[`task:${currentTaskId.value}`] === "loading"
-);
+const currentTask = computed(() => taskQuery.data.value ?? null);
+const isLoading = computed(() => taskQuery.isLoading.value);
 
 const showDeleteDialog = ref(false);
 
-const isDeleting = computed(
-    () =>
-        tasksStore.taskMutationStatus("delete", currentTaskId.value) ===
-        "loading"
-);
+const isDeleting = computed(() => deleteTaskMutation.isPending.value);
 
 async function handleDelete() {
     if (!projectId.value) return;
 
     try {
-        await tasksStore.remove(currentTaskId.value, projectId.value);
+        await deleteTaskMutation.mutateAsync({
+            taskPublicId: currentTaskId.value,
+            projectPublicId: projectId.value,
+        });
 
         showDeleteDialog.value = false;
         router.push({ name: "taskboards-all" });

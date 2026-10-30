@@ -3,7 +3,7 @@ import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { useToast } from "@/composables/useToast";
 import { useAddTaskToBoard } from "@/queries/taskboards.queries";
-import { useTasksStore } from "@/stores/tasks.store";
+import { useCreateTask } from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 import TaskCard from "./TaskCard.vue";
 
@@ -52,7 +52,7 @@ const props = defineProps({
 
 const toast = useToast();
 
-const tasksStore = useTasksStore();
+const createTaskMutation = useCreateTask();
 const addTaskMutation = useAddTaskToBoard();
 
 const emit = defineEmits([
@@ -120,7 +120,7 @@ function handleDragEnd() {
  */
 async function handleCreate(payload) {
     try {
-        const task = await tasksStore.create(payload);
+        const task = await createTaskMutation.mutateAsync(payload);
 
         if (props.taskboardId)
             await addTaskMutation.mutateAsync({

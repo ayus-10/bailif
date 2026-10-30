@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import BoardHeader from "@/components/taskboards/BoardHeader.vue";
@@ -15,7 +15,11 @@ import {
     useTaskboard,
     useTaskboardsList,
 } from "@/queries/taskboards.queries";
-import { useTasksStore } from "@/stores/tasks.store";
+import {
+    useDeleteTask,
+    useTasksList,
+    useUpdateTask,
+} from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -74,19 +78,9 @@ const query = computed(() => ({
         currentBoard.value.type === "single" ? currentBoard.value.id : null,
 }));
 
-const tasksStore = useTasksStore();
-
-watch(
-    [projectId, query],
-    ([id, currentQuery]) => {
-        if (!id) return;
-
-        tasksStore
-            .fetch(id, currentQuery)
-            .catch((err) => showApiError(err, toast));
-    },
-    { immediate: true }
-);
+const tasksQuery = useTasksList(projectId, query);
+const updateTaskMutation = useUpdateTask();
+const deleteTaskMutation = useDeleteTask();
 
 const boardId = computed(() =>
     currentBoard.value.type === "single" ? currentBoard.value.id : null
@@ -106,29 +100,15 @@ const boardSummary = computed(() =>
         : null
 );
 
-const tasks = computed(() =>
-    projectId.value ? tasksStore.tasksByQuery(projectId.value, query.value) : []
-);
-
-const listStatus = computed(() =>
-    projectId.value
-        ? tasksStore.fetchListStatus(projectId.value, query.value)
-        : null
-);
-
+const tasks = tasksQuery.items;
 const isLoading = computed(
-    () => listStatus.value === "loading" && tasks.value.length === 0
+    () => tasksQuery.isLoading.value && tasks.value.length === 0
 );
-
 const hasError = computed(
-    () => listStatus.value === "error" && tasks.value.length === 0
+    () => tasksQuery.isError.value && tasks.value.length === 0
 );
-
-const nextCursor = computed(() =>
-    projectId.value
-        ? tasksStore.nextCursorByQuery(projectId.value, query.value)
-        : null
-);
+const hasNextPage = tasksQuery.hasNextPage;
+const isFetchingNextPage = tasksQuery.isFetchingNextPage;
 
 const searchText = ref("");
 
@@ -186,31 +166,17 @@ const isDeletingBoard = computed(
 );
 
 const isDeletingTask = computed(
-    () =>
-        taskToDelete.value !== null &&
-        tasksStore.taskMutationStatus(
-            "delete",
-            taskToDelete.value.public_id
-        ) === "loading"
+    () => taskToDelete.value !== null && deleteTaskMutation.isPending.value
 );
 
 function retry() {
-    if (!projectId.value) return;
-
-    tasksStore
-        .fetch(projectId.value, {
-            ...query.value,
-            forceRefresh: true,
-        })
-        .catch((err) => showApiError(err, toast));
+    void tasksQuery.refetch();
 }
 
 function loadMore() {
-    if (!projectId.value) return;
+    if (!hasNextPage.value || isFetchingNextPage.value) return;
 
-    tasksStore
-        .loadMore(projectId.value, query.value)
-        .catch((err) => showApiError(err, toast));
+    void tasksQuery.fetchNextPage();
 }
 
 /**
@@ -253,7 +219,10 @@ function isDroppable(status) {
  */
 async function changeStatus(task, status) {
     try {
-        await tasksStore.update(task.public_id, { status });
+        await updateTaskMutation.mutateAsync({
+            taskPublicId: task.public_id,
+            payload: { status },
+        });
     } catch (err) {
         showApiError(err, toast);
     }
@@ -285,7 +254,10 @@ async function confirmDeleteTask() {
     if (!taskToDelete.value || !projectId.value) return;
 
     try {
-        await tasksStore.remove(taskToDelete.value.public_id, projectId.value);
+        await deleteTaskMutation.mutateAsync({
+            taskPublicId: taskToDelete.value.public_id,
+            projectPublicId: projectId.value,
+        });
 
         taskToDelete.value = null;
     } catch (err) {
@@ -318,14 +290,7 @@ function handleClear() {
 }
 
 function refreshTaskList() {
-    if (!projectId.value) return;
-
-    tasksStore
-        .fetch(projectId.value, {
-            ...query.value,
-            forceRefresh: true,
-        })
-        .catch((err) => showApiError(err, toast));
+    void tasksQuery.refetch();
 }
 </script>
 
@@ -388,12 +353,12 @@ function refreshTaskList() {
                 />
             </div>
 
-            <div v-if="nextCursor" class="task-board__more">
+            <div v-if="hasNextPage" class="task-board__more">
                 <v-btn
                     variant="tonal"
                     color="primary"
                     class="text-none"
-                    :loading="listStatus === 'loading'"
+                    :loading="isFetchingNextPage"
                     @click="loadMore"
                 >
                     Load more tasks

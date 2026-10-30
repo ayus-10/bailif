@@ -1,17 +1,17 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import TaskCard from "@/components/tasks/TaskCard.vue";
 import { useToast } from "@/composables/useToast";
-import { useTasksStore } from "@/stores/tasks.store";
+import { useCreateTask, useTasksList } from "@/queries/tasks.queries";
 import { showApiError } from "@/utils/errorHandlers";
 import EmptyPanel from "./EmptyPanel.vue";
 
 /**
  * @typedef {import("@/types/task").TaskRead} TaskRead
  * @typedef {import("@/types/task").TaskCreate} TaskCreate
- * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/task").TaskFetchOptions} TaskFetchOptions
  */
 
 const props = defineProps({
@@ -30,37 +30,33 @@ const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 
-const tasksStore = useTasksStore();
-
-const subtasks = computed(() =>
-    tasksStore.tasksByQuery(props.projectId, {
-        queryMode: "child-tasks",
-        parentId: props.taskId,
-    })
+/**
+ * @type {import("vue").ComputedRef<TaskFetchOptions>}
+ */
+const taskFilters = computed(() => ({
+    queryMode: "child-tasks",
+    parentId: props.taskId,
+}));
+const subtasksQuery = useTasksList(
+    computed(() => props.projectId),
+    taskFilters
 );
-const fetchStatus = computed(() =>
-    tasksStore.fetchListStatus(props.projectId, {
-        queryMode: "child-tasks",
-        parentId: props.taskId,
-    })
-);
-const fetchError = computed(() =>
-    tasksStore.fetchListError(props.projectId, {
-        queryMode: "child-tasks",
-        parentId: props.taskId,
-    })
-);
+const subtasks = subtasksQuery.items;
+const createTaskMutation = useCreateTask();
 
 const hasSubtasks = computed(() => subtasks.value.length > 0);
 
-const isLoading = computed(() => fetchStatus.value === "loading");
+const isLoading = computed(() => subtasksQuery.isLoading.value);
+const fetchError = computed(
+    () => subtasksQuery.isError.value && !subtasksQuery.data.value
+);
 
 /**
  * @type {import("vue").Ref<TaskCreate | null>}
  */
 const pendingSubTask = ref(null);
 
-const showSubtasks = computed(() => !fetchError.value && hasSubtasks.value);
+const showSubtasks = computed(() => hasSubtasks.value);
 const showEmptyMessage = computed(
     () =>
         !isLoading.value &&
@@ -69,24 +65,8 @@ const showEmptyMessage = computed(
         !pendingSubTask.value
 );
 
-watch(
-    () => [props.projectId, props.taskId],
-    () => fetchSubtasks(),
-    { immediate: true }
-);
-
-function fetchSubtasks(forceRefresh = false) {
-    tasksStore
-        .fetch(props.projectId, {
-            queryMode: "child-tasks",
-            parentId: props.taskId,
-            forceRefresh,
-        })
-        .catch((err) => showApiError(err, toast));
-}
-
 function retry() {
-    fetchSubtasks(true);
+    subtasksQuery.refetch();
 }
 
 /**
@@ -106,7 +86,7 @@ async function handleCreateSubtask(task) {
     if (!pendingSubTask.value) return;
 
     try {
-        await tasksStore.create(task);
+        await createTaskMutation.mutateAsync(task);
         pendingSubTask.value = null;
     } catch (err) {
         showApiError(err, toast);
