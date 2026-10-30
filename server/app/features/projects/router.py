@@ -7,6 +7,7 @@ from app.features.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
     ProjectListResponse,
+    ProjectSummaryRead,
     ProjectUpdate,
 )
 from app.models.db import Project, User
@@ -50,6 +51,18 @@ def get_project(
     project: Project = Depends(get_owned_project),
 ) -> Project:
     return project
+
+
+@router.get(
+    "/{project_public_id}/summary",
+    response_model=ProjectSummaryRead,
+)
+def get_project_summary(
+    project: Project = Depends(get_owned_project),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ProjectSummaryRead:
+    return services.get_project_summary(db, user, project)
 
 
 @router.patch(

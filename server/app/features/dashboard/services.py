@@ -29,7 +29,7 @@ def get_dashboard(db: Session, user: User) -> DashboardRead:
 
     return DashboardRead(
         projects=_project_stats(db, user),
-        tasks=_task_stats(db, user),
+        tasks=get_task_stats(db, user),
         upcoming_deadlines=_upcoming_deadlines(db, user),
         recent_activity=_recent_activity(db, user),
         taskboards=taskboards,
@@ -51,8 +51,16 @@ def _project_stats(db: Session, user: User) -> DashboardProjectStats:
     )
 
 
-def _task_stats(db: Session, user: User) -> DashboardTaskStats:
+def get_task_stats(
+    db: Session,
+    user: User,
+    project: Project | None = None,
+) -> DashboardTaskStats:
     is_overdue = Task.due_date < datetime.now(UTC)
+    conditions = _owned_task_conditions(user)
+
+    if project is not None:
+        conditions = (*conditions, Task.project_id == project.id)
 
     rows = db.execute(
         select(
@@ -61,7 +69,7 @@ def _task_stats(db: Session, user: User) -> DashboardTaskStats:
             func.count(Task.id).filter(is_overdue),
         )
         .join(Project, Task.project_id == Project.id)
-        .where(*_owned_task_conditions(user))
+        .where(*conditions)
         .group_by(Task.status)
     ).all()
 

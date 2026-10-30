@@ -7,6 +7,7 @@ import { parseJson } from "./shared.api";
  * @typedef {import("@/types/project").ProjectUpdate} ProjectUpdate
  * @typedef {import("@/types/project").ProjectFilterParams} ProjectFilterParams
  * @typedef {import("@/types/project").ProjectListResponse} ProjectListResponse
+ * @typedef {import("@/types/project").ProjectSummary} ProjectSummary
  */
 
 /**
@@ -37,6 +38,19 @@ export async function listProjects(params = {}, signal) {
  */
 export async function getProject(publicId, signal) {
     const response = await apiFetch(`/projects/${publicId}`, {
+        signal,
+    });
+
+    return parseJson(response);
+}
+
+/**
+ * @param {number} publicId
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<ProjectSummary>}
+ */
+export async function getProjectSummary(publicId, signal) {
+    const response = await apiFetch(`/projects/${publicId}/summary`, {
         signal,
     });
 

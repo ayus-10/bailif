@@ -332,7 +332,7 @@ async function onSubmit() {
                 density="comfortable"
                 :loading="loading"
             >
-                Create Project
+                {{ submitLabel }}
             </v-btn>
         </footer>
     </v-form>

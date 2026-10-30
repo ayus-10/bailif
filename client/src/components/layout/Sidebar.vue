@@ -1,5 +1,5 @@
 <script setup>
-import { onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 
 /**
  * @typedef {import("@/stores/taskboards.store").TaskboardListRead} TaskboardListRead
@@ -16,6 +16,10 @@ const props = defineProps({
     unreadNotifications: {
         type: Number,
         default: 0,
+    },
+    rail: {
+        type: Boolean,
+        default: false,
     },
 });
 
@@ -68,7 +72,8 @@ const sidebar = {
 
     railToggle: {
         ariaLabel: "Toggle rail mode",
-        icon: "mdi-chevron-left",
+        expandedIcon: "mdi-chevron-left",
+        railIcon: "mdi-chevron-right",
     },
 
     boards: {
@@ -87,6 +92,12 @@ const sidebar = {
         },
     },
 };
+
+const railToggleIcon = computed(() =>
+    props.rail
+        ? sidebar.railToggle.railIcon
+        : sidebar.railToggle.expandedIcon
+);
 
 const navigation = {
     main: [
@@ -140,8 +151,10 @@ const navigation = {
 <template>
     <v-navigation-drawer
         class="sidebar-drawer"
+        :class="{ 'sidebar-drawer--rail': props.rail }"
         elevation="0"
         :width="drawerWidth"
+        :rail="props.rail"
         rail-width="56"
     >
         <div class="sidebar-header">
@@ -165,7 +178,7 @@ const navigation = {
                 :aria-label="sidebar.railToggle.ariaLabel"
                 @click="emit('toggle-rail')"
             >
-                <v-icon :icon="sidebar.railToggle.icon" size="1.125rem" />
+                <v-icon :icon="railToggleIcon" size="1.125rem" />
             </button>
         </div>
 
@@ -341,7 +354,11 @@ const navigation = {
             </v-list-item>
         </v-list>
 
-        <div class="resize-handle" @mousedown="startResize" />
+        <div
+            v-if="!props.rail"
+            class="resize-handle"
+            @mousedown="startResize"
+        />
     </v-navigation-drawer>
 </template>
 
@@ -360,6 +377,18 @@ const navigation = {
     justify-content: space-between;
     height: 3rem;
     padding: 0 0.75rem;
+}
+
+.sidebar-drawer--rail .sidebar-header {
+    justify-content: center;
+    padding: 0;
+}
+
+.sidebar-drawer--rail .brand-container,
+.sidebar-drawer--rail .nav-title,
+.sidebar-drawer--rail .sub-item,
+.sidebar-drawer--rail .unread-badge {
+    display: none;
 }
 
 .brand-container {

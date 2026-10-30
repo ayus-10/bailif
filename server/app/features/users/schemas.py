@@ -15,6 +15,10 @@ class UserCreate(BaseModel):
     )
 
 
+class UserUpdate(BaseModel):
+    active_project_public_id: int
+
+
 class UserRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

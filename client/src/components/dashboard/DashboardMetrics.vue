@@ -39,7 +39,7 @@ defineProps({
 <style scoped>
 .dashboard-metrics {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
     gap: 1rem;
 }
 
@@ -102,9 +102,4 @@ defineProps({
     line-height: 1rem;
 }
 
-@media (min-width: 960px) {
-    .dashboard-metrics {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-}
 </style>

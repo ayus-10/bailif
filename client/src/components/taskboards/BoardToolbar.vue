@@ -1,19 +1,44 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed } from "vue";
+import { PRIORITY_META, STATUS_META } from "@/constants/tasks";
 
-const emit = defineEmits(["action", "new-task"]);
+const props = defineProps({
+    search: {
+        type: String,
+        default: "",
+    },
+    status: {
+        type: String,
+        default: null,
+    },
+    priority: {
+        type: String,
+        default: null,
+    },
+});
 
-const searchQuery = ref("");
-const activeFilterCount = ref(0);
+const emit = defineEmits([
+    "update:search",
+    "update:status",
+    "update:priority",
+    "new-task",
+]);
+
+const statusItems = STATUS_META.map((meta) => ({
+    title: meta.label,
+    value: meta.status,
+}));
+
+const priorityItems = Object.entries(PRIORITY_META).map(([value, meta]) => ({
+    title: meta.label,
+    value,
+}));
+
+const activeFilterCount = computed(
+    () => Number(!!props.status) + Number(!!props.priority)
+);
 
 const hasActiveFilters = computed(() => activeFilterCount.value > 0);
-
-/**
- * @param {String} action
- */
-function handleAction(action) {
-    emit("action", action);
-}
 
 function handleNewTask() {
     emit("new-task");
@@ -24,65 +49,65 @@ function handleNewTask() {
     <div class="board-toolbar">
         <div class="board-toolbar__left">
             <v-text-field
-                v-model="searchQuery"
+                :model-value="search"
                 placeholder="Search tasks"
                 prepend-inner-icon="mdi-magnify"
                 density="compact"
                 hide-details
+                clearable
                 variant="outlined"
                 class="board-toolbar__search"
-            >
-                <template #append-inner>
-                    <span
-                        class="board-toolbar__search-shortcut"
-                        aria-label="Command S"
+                @update:model-value="emit('update:search', $event ?? '')"
+            />
+
+            <v-menu :close-on-content-click="false" location="bottom start">
+                <template #activator="{ props: menuProps }">
+                    <button
+                        v-bind="menuProps"
+                        v-ripple
+                        type="button"
+                        class="board-toolbar__button"
+                        :class="{
+                            'board-toolbar__button--active': hasActiveFilters,
+                        }"
                     >
-                        <kbd>⌘</kbd><kbd>S</kbd>
-                    </span>
+                        <v-icon size="1rem"> mdi-filter-variant </v-icon>
+
+                        <span>Filter</span>
+
+                        <span
+                            v-if="activeFilterCount > 0"
+                            class="board-toolbar__count"
+                        >
+                            {{ activeFilterCount }}
+                        </span>
+                    </button>
                 </template>
-            </v-text-field>
 
-            <button
-                v-ripple
-                type="button"
-                class="board-toolbar__button"
-                :class="{
-                    'board-toolbar__button--active': hasActiveFilters,
-                }"
-                @click="handleAction('filter')"
-            >
-                <v-icon size="1rem"> mdi-filter-variant </v-icon>
+                <v-card class="board-toolbar__filters" variant="outlined">
+                    <v-select
+                        :model-value="status"
+                        :items="statusItems"
+                        label="Status"
+                        density="compact"
+                        variant="outlined"
+                        clearable
+                        hide-details
+                        @update:model-value="emit('update:status', $event)"
+                    />
 
-                <span>Filter</span>
-
-                <span v-if="activeFilterCount > 0" class="board-toolbar__count">
-                    {{ activeFilterCount }}
-                </span>
-            </button>
-
-            <button
-                v-ripple
-                type="button"
-                class="board-toolbar__button"
-                @click="handleAction('sort')"
-            >
-                <v-icon size="1rem"> mdi-sort-variant </v-icon>
-
-                <span>Sort</span>
-            </button>
-
-            <button
-                v-ripple
-                type="button"
-                class="board-toolbar__button"
-                @click="handleAction('view')"
-            >
-                <v-icon size="1rem"> mdi-view-grid-outline </v-icon>
-
-                <span>View</span>
-
-                <v-icon size="0.875rem"> mdi-chevron-down </v-icon>
-            </button>
+                    <v-select
+                        :model-value="priority"
+                        :items="priorityItems"
+                        label="Priority"
+                        density="compact"
+                        variant="outlined"
+                        clearable
+                        hide-details
+                        @update:model-value="emit('update:priority', $event)"
+                    />
+                </v-card>
+            </v-menu>
         </div>
 
         <v-btn
@@ -278,29 +303,11 @@ function handleNewTask() {
         opacity 0.15s ease;
 }
 
-.board-toolbar__search-shortcut {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.1875rem;
-    margin-right: 0.125rem;
-    pointer-events: none;
-}
-
-.board-toolbar__search-shortcut kbd {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    padding: 0 0.25rem;
-    border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
-    border-radius: 0.3125rem;
-    background: rgb(var(--v-theme-grey-lighten-4, 245, 246, 248));
-    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
-    font-family: inherit;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    line-height: 1;
-    opacity: 0.85;
+.board-toolbar__filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 15rem;
+    padding: 0.75rem;
 }
 </style>

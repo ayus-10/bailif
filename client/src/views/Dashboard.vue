@@ -13,6 +13,7 @@ const taskboardsStore = useTaskboardsStore();
 const toast = useToast();
 
 const showTaskboardModal = ref(false);
+const isRail = ref(false);
 
 watch(
     projectId,
@@ -39,6 +40,8 @@ function closeTaskboardModal() {
     <aside v-if="projectId">
         <Sidebar
             :task-boards="taskboardsStore.items"
+            :rail="isRail"
+            @toggle-rail="isRail = !isRail"
             @new-board="openTaskboardModal"
         />
 

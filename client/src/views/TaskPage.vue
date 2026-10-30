@@ -1,6 +1,7 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { computed, onMounted } from "vue";
+import { computed, ref, watch } from "vue";
+import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import NoCurrentTask from "@/components/tasks/NoCurrentTask.vue";
 import SubtaskPanel from "@/components/tasks/SubtaskPanel.vue";
@@ -10,7 +11,9 @@ import TaskPageHeader from "@/components/tasks/TaskPageHeader.vue";
 import TaskTags from "@/components/tasks/TaskTags.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useTaskEditor } from "@/composables/useTaskEditor";
+import { useToast } from "@/composables/useToast";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 
 const route = useRoute();
 const router = useRouter();
@@ -23,12 +26,45 @@ const currentTaskId = computed(() => {
 const { projectId } = useActiveProject();
 
 const tasksStore = useTasksStore();
+const toast = useToast();
 
-onMounted(() => {
-    tasksStore.get(currentTaskId.value);
-});
+watch(
+    currentTaskId,
+    (id) => {
+        tasksStore.get(id).catch((err) => showApiError(err, toast));
+    },
+    { immediate: true }
+);
 
-const currentTask = computed(() => tasksStore.currentTask);
+const currentTask = computed(() =>
+    tasksStore.currentTask?.public_id === currentTaskId.value
+        ? tasksStore.currentTask
+        : null
+);
+
+const isLoading = computed(
+    () => tasksStore.fetchStatus[`task:${currentTaskId.value}`] === "loading"
+);
+
+const showDeleteDialog = ref(false);
+
+const isDeleting = computed(
+    () =>
+        tasksStore.taskMutationStatus("delete", currentTaskId.value) === "loading"
+);
+
+async function handleDelete() {
+    if (!projectId.value) return;
+
+    try {
+        await tasksStore.remove(currentTaskId.value, projectId.value);
+
+        showDeleteDialog.value = false;
+        router.push({ name: "taskboards-all" });
+    } catch (err) {
+        showApiError(err, toast);
+    }
+}
 
 const {
     editMode,
@@ -56,15 +92,17 @@ const {
 
     beginEdit,
     cancelChanges,
-    saveChanges, // TODO: handle errors
+    saveChanges,
 
-    onStatusChange, // TODO: handle errors
-    onPriorityChange, // TODO: handle errors
-} = useTaskEditor(currentTask, currentTaskId.value);
+    onStatusChange,
+    onPriorityChange,
+} = useTaskEditor(currentTask);
 </script>
 
 <template>
     <NoActiveProject v-if="!projectId" />
+
+    <v-skeleton-loader v-else-if="isLoading" type="article, article" />
 
     <NoCurrentTask v-else-if="!currentTask" />
 
@@ -87,6 +125,7 @@ const {
             @save="saveChanges"
             @status-change="onStatusChange"
             @priority-change="onPriorityChange"
+            @delete="showDeleteDialog = true"
         />
 
         <div class="task-page__body">
@@ -130,6 +169,14 @@ const {
                 />
             </aside>
         </div>
+
+        <ConfirmDialog
+            v-model="showDeleteDialog"
+            title="Delete task"
+            :message="`Delete ${currentTask.title}?`"
+            :loading="isDeleting"
+            @confirm="handleDelete"
+        />
     </div>
 </template>
 

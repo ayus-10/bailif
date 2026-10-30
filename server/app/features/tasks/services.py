@@ -15,6 +15,7 @@ from app.features.tasks.schemas import (
     TaskUpdate,
 )
 from app.models.db import Project, Task, Taskboard, TaskboardTask, User
+from app.shared.enums import ApprovalStatus, CreatedBy, TaskStatus
 from app.shared.exceptions import ProjectNotFoundError
 from app.utils.date_validation import validate_datetime_range
 from app.utils.model_to_read import task_to_read
@@ -124,6 +125,15 @@ def update_task(
                 )
                 .scalar_subquery()
             )
+
+    if (
+        updates.get("status") == TaskStatus.DONE
+        and task.created_by == CreatedBy.AGENT
+        and task.approval_status != ApprovalStatus.APPROVED
+    ):
+        raise TaskValidationError(
+            "Agent-created tasks must be approved before they can be completed."
+        )
 
     try:
         _validate_task_dates(task, updates)

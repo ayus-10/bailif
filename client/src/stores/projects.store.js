@@ -3,6 +3,7 @@ import {
     createProject,
     deleteProject,
     getProject,
+    getProjectSummary,
     listProjects,
     updateProject,
 } from "@/api/projects.api";
@@ -58,7 +59,9 @@ export const useProjectsStore = defineStore("projects", {
      */
     state: () => ({
         items: [],
+        nextCursor: null,
         currentProject: null,
+        summaries: {},
         fetchStatus: {},
         fetchErrors: {},
         mutationStatus: {},
@@ -70,9 +73,16 @@ export const useProjectsStore = defineStore("projects", {
          * @param {Object} [options]
          * @param {ProjectFilterParams} [options.params]
          * @param {boolean} [options.forceRefresh=false]
+         * @param {string | null} [options.cursor]
+         * @param {boolean} [options.append=false]
          * @throws {ApiError}
          */
-        async fetch({ params = {}, forceRefresh = false } = {}) {
+        async fetch({
+            params = {},
+            forceRefresh = false,
+            cursor = null,
+            append = false,
+        } = {}) {
             const filterKey = createFilterKey(params);
             const key = `list:${filterKey}`;
 
@@ -83,19 +93,68 @@ export const useProjectsStore = defineStore("projects", {
             this.fetchStatus[key] = "loading";
             this.fetchErrors[key] = null;
 
-            const cacheKey = `projects:all${filterKey ? `:${filterKey}` : ""}`;
+            const cacheKey = `projects:all:${filterKey}:${cursor ?? "first"}`;
 
             try {
                 const data = await cachedRequest(
                     cacheKey,
-                    () => listProjects(params),
+                    () => listProjects({ ...params, cursor }),
                     { forceRefresh }
                 );
 
-                this.items = data.items;
+                this.items = append ? [...this.items, ...data.items] : data.items;
+                this.nextCursor = data.next_cursor;
                 this.fetchStatus[key] = "success";
 
                 return data;
+            } catch (err) {
+                this.fetchErrors[key] = err;
+                this.fetchStatus[key] = "error";
+                throw err;
+            }
+        },
+
+        /**
+         * @param {Object} [options]
+         * @param {ProjectFilterParams} [options.params]
+         * @throws {ApiError}
+         */
+        async loadMore({ params = {} } = {}) {
+            if (!this.nextCursor) {
+                return;
+            }
+
+            await this.fetch({ params, cursor: this.nextCursor, append: true });
+        },
+
+        /**
+         * @param {number} projectPublicId
+         * @param {Object} [options]
+         * @param {boolean} [options.forceRefresh=false]
+         * @returns {Promise<import("@/types/project").ProjectSummary | undefined>}
+         * @throws {ApiError}
+         */
+        async getSummary(projectPublicId, { forceRefresh = false } = {}) {
+            const key = `summary:${projectPublicId}`;
+
+            if (this.fetchStatus[key] === "loading" && !forceRefresh) {
+                return;
+            }
+
+            this.fetchStatus[key] = "loading";
+            this.fetchErrors[key] = null;
+
+            try {
+                const summary = await cachedRequest(
+                    `project:${projectPublicId}:summary`,
+                    () => getProjectSummary(projectPublicId),
+                    { forceRefresh }
+                );
+
+                this.summaries[projectPublicId] = summary;
+                this.fetchStatus[key] = "success";
+
+                return summary;
             } catch (err) {
                 this.fetchErrors[key] = err;
                 this.fetchStatus[key] = "error";
@@ -152,7 +211,7 @@ export const useProjectsStore = defineStore("projects", {
             try {
                 const project = await createProject(payload);
 
-                this.items = [...this.items, project];
+                this.items = [project, ...this.items];
 
                 invalidateRequestCache(`projects:all`);
 

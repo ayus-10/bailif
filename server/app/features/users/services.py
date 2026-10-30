@@ -7,8 +7,9 @@ from app.features.users.exceptions import (
     UserAlreadyExistsError,
     UserPasswordHashError,
 )
-from app.features.users.schemas import UserCreate, UserRead
-from app.models.db import User
+from app.features.users.schemas import UserCreate, UserRead, UserUpdate
+from app.models.db import Project, User
+from app.shared.exceptions import ProjectNotFoundError
 from app.utils.model_to_read import user_to_read
 
 password_hash = PasswordHash.recommended()
@@ -38,5 +39,29 @@ def create_user(
     db.add(user)
     db.flush()
     db.refresh(user)
+
+    return user_to_read(user)
+
+
+def update_user(
+    db: Session,
+    user: User,
+    payload: UserUpdate,
+) -> UserRead:
+    project = db.execute(
+        select(Project).where(
+            Project.public_id == payload.active_project_public_id,
+            Project.user_id == user.id,
+            Project.deleted_at.is_(None),
+        )
+    ).scalar_one_or_none()
+
+    if project is None:
+        raise ProjectNotFoundError(
+            f"Project with public_id {payload.active_project_public_id} not found"
+        )
+
+    user.active_project = project
+    db.flush()
 
     return user_to_read(user)

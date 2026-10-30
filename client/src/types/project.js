@@ -1,5 +1,7 @@
 /**
  * @typedef {import("@/types/shared").RequestStatus} RequestStatus
+ * @typedef {import("@/types/dashboard").DashboardTaskStats} DashboardTaskStats
+ * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
  */
 
 /**
@@ -66,17 +68,28 @@
  * @property {string | null} [start_date_after] ISO datetime
  * @property {string | null} [target_end_date_before] ISO datetime
  * @property {string | null} [target_end_date_after] ISO datetime
+ * @property {string | null} [cursor]
+ * @property {number | null} [limit]
  */
 
 /**
  * @typedef {Object} ProjectListResponse
  * @property {ProjectRead[]} items
+ * @property {string | null} next_cursor
+ */
+
+/**
+ * @typedef {Object} ProjectSummary
+ * @property {DashboardTaskStats} tasks
+ * @property {TaskboardListRead[]} taskboards
  */
 
 /**
  * @typedef {Object} ProjectsState
  * @property {ProjectRead[]} items
+ * @property {string | null} nextCursor
  * @property {ProjectRead | null} currentProject
+ * @property {Record<number, ProjectSummary>} summaries
  * @property {Record<string, RequestStatus>} fetchStatus
  * @property {Record<string, any>} fetchErrors
  * @property {Record<string, RequestStatus>} mutationStatus

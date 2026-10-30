@@ -44,6 +44,10 @@ const props = defineProps({
         type: Object,
         default: null,
     },
+    droppable: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const toast = useToast();
@@ -51,7 +55,14 @@ const toast = useToast();
 const tasksStore = useTasksStore();
 const taskboardsStore = useTaskboardsStore();
 
-const emit = defineEmits(["drag-start", "drop", "clear-pending-task"]);
+const emit = defineEmits([
+    "drag-start",
+    "drag-end",
+    "drop",
+    "complete",
+    "delete",
+    "clear-pending-task",
+]);
 
 const isDragOver = ref(false);
 
@@ -59,13 +70,9 @@ const isDragOver = ref(false);
  * @param {DragEvent} event
  */
 function handleDragOver(event) {
-    const sourceStatus = event.dataTransfer?.getData("task-status");
+    if (!props.droppable) return;
 
-    if (sourceStatus === props.column.status) {
-        isDragOver.value = false;
-        return;
-    }
-
+    event.preventDefault();
     isDragOver.value = true;
 }
 
@@ -85,19 +92,12 @@ function handleDragLeave(event) {
     }
 }
 
-/**
- * @param {DragEvent} event
- */
-function handleDrop(event) {
+function handleDrop() {
     isDragOver.value = false;
 
-    const sourceStatus = event.dataTransfer?.getData("task-status");
-
-    if (sourceStatus === props.column.status) {
-        return;
+    if (props.droppable) {
+        emit("drop", props.column.status);
     }
-
-    emit("drop", props.column.status);
 }
 
 /**
@@ -111,6 +111,7 @@ function handleDragStart(event, task) {
 
 function handleDragEnd() {
     isDragOver.value = false;
+    emit("drag-end");
 }
 
 /**
@@ -152,12 +153,6 @@ function handleCancel() {
                     {{ tasks.length }}
                 </span>
             </div>
-            <v-btn
-                icon="mdi-dots-horizontal"
-                size="small"
-                variant="text"
-                class="task-column__menu-btn"
-            />
         </div>
 
         <v-divider />
@@ -165,7 +160,7 @@ function handleCancel() {
         <div
             class="task-column__body"
             :class="{ 'task-column__body--drag-over': isDragOver }"
-            @dragover.prevent="handleDragOver"
+            @dragover="handleDragOver"
             @dragleave="handleDragLeave"
             @drop="handleDrop"
         >
@@ -184,6 +179,8 @@ function handleCancel() {
                 draggable="true"
                 @dragstart="handleDragStart($event, task)"
                 @dragend="handleDragEnd"
+                @complete="emit('complete', $event)"
+                @delete="emit('delete', $event)"
             />
             <v-sheet
                 v-if="
@@ -201,12 +198,6 @@ function handleCancel() {
                 </span>
             </v-sheet>
         </div>
-
-        <div
-            class="task-column__resize-handle"
-            role="separator"
-            aria-label="Resize column"
-        />
     </v-sheet>
 </template>
 
@@ -276,13 +267,6 @@ function handleCancel() {
     -webkit-user-select: none;
 }
 
-.task-column__menu-btn {
-    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
-}
-
-.task-column__menu-btn:hover {
-    color: rgb(var(--v-theme-primary));
-}
 
 .task-column__body {
     flex: 1 1 auto;
@@ -331,31 +315,4 @@ function handleCancel() {
     line-height: 1rem;
 }
 
-.task-column__resize-handle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 0.375rem;
-    cursor: col-resize;
-    user-select: none;
-    touch-action: none;
-}
-
-.task-column__resize-handle::after {
-    content: "";
-    position: absolute;
-    top: 0.5rem;
-    bottom: 0.5rem;
-    right: 0.1875rem;
-    width: 0.125rem;
-    border-radius: 999px;
-    background: rgb(var(--v-theme-outline-variant, 234, 236, 240));
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.task-column__resize-handle:hover::after {
-    opacity: 1;
-}
 </style>
