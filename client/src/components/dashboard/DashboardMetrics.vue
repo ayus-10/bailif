@@ -101,5 +101,4 @@ defineProps({
     font-size: 0.75rem;
     line-height: 1rem;
 }
-
 </style>

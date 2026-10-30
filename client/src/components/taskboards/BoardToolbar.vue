@@ -55,6 +55,7 @@ function handleNewTask() {
                 density="compact"
                 hide-details
                 clearable
+                persistent-placeholder
                 variant="outlined"
                 class="board-toolbar__search"
                 @update:model-value="emit('update:search', $event ?? '')"
@@ -87,22 +88,26 @@ function handleNewTask() {
                 <v-card class="board-toolbar__filters" variant="outlined">
                     <v-select
                         :model-value="status"
+                        class="board-toolbar__select"
                         :items="statusItems"
                         label="Status"
                         density="compact"
                         variant="outlined"
                         clearable
+                        persistent-placeholder
                         hide-details
                         @update:model-value="emit('update:status', $event)"
                     />
 
                     <v-select
                         :model-value="priority"
+                        class="board-toolbar__select"
                         :items="priorityItems"
                         label="Priority"
                         density="compact"
                         variant="outlined"
                         clearable
+                        persistent-placeholder
                         hide-details
                         @update:model-value="emit('update:priority', $event)"
                     />
@@ -304,10 +309,31 @@ function handleNewTask() {
 }
 
 .board-toolbar__filters {
+    background-color: #fff;
+    border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
+    border-radius: 0.5rem;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    width: 15rem;
     padding: 0.75rem;
+}
+
+.board-toolbar__select {
+    min-width: 14rem;
+}
+
+:deep(.v-field) {
+    background-color: #fff;
+    border-radius: 0.375rem;
+}
+
+:deep(.v-field--outlined .v-field__outline) {
+    --v-field-border-opacity: 1;
+    color: #d0d5dd;
+}
+
+:deep(.v-field--focused .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
 }
 </style>

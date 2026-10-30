@@ -184,8 +184,10 @@ const isDeletingBoard = computed(
 const isDeletingTask = computed(
     () =>
         taskToDelete.value !== null &&
-        tasksStore.taskMutationStatus("delete", taskToDelete.value.public_id) ===
-            "loading"
+        tasksStore.taskMutationStatus(
+            "delete",
+            taskToDelete.value.public_id
+        ) === "loading"
 );
 
 /**
@@ -193,9 +195,7 @@ const isDeletingTask = computed(
  */
 function fetchCurrentBoard(board) {
     if (board.type === "single") {
-        taskboardsStore
-            .get(board.id)
-            .catch((err) => showApiError(err, toast));
+        taskboardsStore.get(board.id).catch((err) => showApiError(err, toast));
         return;
     }
     taskboardsStore.currentTaskboard = null;

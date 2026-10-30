@@ -147,7 +147,6 @@ function handleDelete(e) {
             {{ htmlPreview(task.description) }}
         </p>
 
-
         <div class="task-card__footer">
             <div v-if="tagCount" class="task-card__meta">
                 <v-icon icon="mdi-tag-outline" size="12" />
@@ -353,6 +352,4 @@ function handleDelete(e) {
     line-clamp: 2;
     -webkit-box-orient: vertical;
 }
-
-
 </style>

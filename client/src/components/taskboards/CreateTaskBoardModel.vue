@@ -91,7 +91,9 @@ async function submit() {
 
     try {
         if (props.taskboard) {
-            await taskboardsStore.update(props.taskboard.public_id, { ...form });
+            await taskboardsStore.update(props.taskboard.public_id, {
+                ...form,
+            });
         } else {
             /**
              * @type {TaskboardPayload}

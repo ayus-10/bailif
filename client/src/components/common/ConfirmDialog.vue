@@ -61,3 +61,22 @@ const emit = defineEmits(["update:modelValue", "confirm"]);
         </v-card>
     </v-dialog>
 </template>
+
+<style scoped>
+.v-card {
+    background-color: #fff;
+    border: 1px solid rgb(var(--v-theme-outline, 225, 228, 232));
+    box-shadow: none;
+}
+
+.text-h6 {
+    color: rgb(var(--v-theme-on-surface));
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+:deep(.v-btn) {
+    border-radius: 0.375rem;
+    box-shadow: none;
+}
+</style>

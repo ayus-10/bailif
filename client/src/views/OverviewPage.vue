@@ -4,7 +4,6 @@ import DashboardMetrics from "@/components/dashboard/DashboardMetrics.vue";
 import DashboardSection from "@/components/dashboard/DashboardSection.vue";
 import DashboardTaskList from "@/components/dashboard/DashboardTaskList.vue";
 import { useToast } from "@/composables/useToast";
-import { DASHBOARD_SHORTCUTS } from "@/constants/dashboard";
 import { STATUS_META } from "@/constants/tasks";
 import { useDashboardStore } from "@/stores/dashboard.store";
 import { showApiError } from "@/utils/errorHandlers";
@@ -137,10 +136,7 @@ onMounted(load);
                     />
                 </DashboardSection>
 
-                <DashboardSection
-                    title="Recent activity"
-                    icon="mdi-history"
-                >
+                <DashboardSection title="Recent activity" icon="mdi-history">
                     <DashboardTaskList
                         :tasks="dashboard.recent_activity"
                         empty-icon="mdi-history"
@@ -184,7 +180,11 @@ onMounted(load);
                                 <span>{{ meta.label }}</span>
 
                                 <span class="overview-progress__count">
-                                    {{ dashboard.tasks.by_status[meta.status] ?? 0 }}
+                                    {{
+                                        dashboard.tasks.by_status[
+                                            meta.status
+                                        ] ?? 0
+                                    }}
                                 </span>
                             </li>
                         </ul>
@@ -225,7 +225,11 @@ onMounted(load);
                             <template #append>
                                 <span class="overview-progress__count">
                                     {{ board.task_count }}
-                                    {{ board.task_count === 1 ? "task" : "tasks" }}
+                                    {{
+                                        board.task_count === 1
+                                            ? "task"
+                                            : "tasks"
+                                    }}
                                 </span>
                             </template>
                         </v-list-item>
@@ -238,22 +242,6 @@ onMounted(load);
                     </div>
                 </DashboardSection>
             </div>
-
-            <DashboardSection title="Shortcuts" icon="mdi-lightning-bolt-outline">
-                <div class="overview-shortcuts">
-                    <v-btn
-                        v-for="shortcut in DASHBOARD_SHORTCUTS"
-                        :key="shortcut.routeName"
-                        :to="{ name: shortcut.routeName }"
-                        :prepend-icon="shortcut.icon"
-                        variant="tonal"
-                        color="primary"
-                        class="text-none"
-                    >
-                        {{ shortcut.title }}
-                    </v-btn>
-                </div>
-            </DashboardSection>
         </template>
     </v-container>
 </template>

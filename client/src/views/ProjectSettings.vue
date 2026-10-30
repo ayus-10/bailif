@@ -53,9 +53,7 @@ const showDeleteDialog = ref(false);
 watch(projectId, load, { immediate: true });
 
 function load() {
-    projectsStore
-        .get(projectId.value)
-        .catch((err) => showApiError(err, toast));
+    projectsStore.get(projectId.value).catch((err) => showApiError(err, toast));
 }
 
 /**

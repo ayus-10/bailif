@@ -38,7 +38,9 @@ const project = computed(() =>
         : null
 );
 
-const summary = computed(() => projectsStore.summaries[projectId.value] ?? null);
+const summary = computed(
+    () => projectsStore.summaries[projectId.value] ?? null
+);
 
 const isActive = computed(() => activeProjectId.value === projectId.value);
 
@@ -197,7 +199,10 @@ function handleNavigate(action) {
             <DashboardMetrics :metrics="metrics" />
 
             <div class="project-overview__grid">
-                <DashboardSection title="Details" icon="mdi-information-outline">
+                <DashboardSection
+                    title="Details"
+                    icon="mdi-information-outline"
+                >
                     <dl class="project-overview__details">
                         <div
                             v-for="detail in details"

@@ -50,7 +50,8 @@ const showDeleteDialog = ref(false);
 
 const isDeleting = computed(
     () =>
-        tasksStore.taskMutationStatus("delete", currentTaskId.value) === "loading"
+        tasksStore.taskMutationStatus("delete", currentTaskId.value) ===
+        "loading"
 );
 
 async function handleDelete() {

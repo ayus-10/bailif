@@ -56,7 +56,6 @@ const formattedStartDate = computed(() => {
     return formatDate(props.project.start_date);
 });
 
-
 /**
  * @type {import("vue").Ref<[number, number] | HTMLElement>}
  */

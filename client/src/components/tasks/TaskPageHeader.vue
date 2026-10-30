@@ -67,7 +67,6 @@ const emit = defineEmits([
         <v-spacer />
 
         <div class="task-page__actions">
-
             <v-menu>
                 <template #activator="{ props: menuProps }">
                     <v-btn

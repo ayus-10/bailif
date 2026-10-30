@@ -267,7 +267,6 @@ function handleCancel() {
     -webkit-user-select: none;
 }
 
-
 .task-column__body {
     flex: 1 1 auto;
     min-height: 0;
@@ -314,5 +313,4 @@ function handleCancel() {
     font-weight: 600;
     line-height: 1rem;
 }
-
 </style>

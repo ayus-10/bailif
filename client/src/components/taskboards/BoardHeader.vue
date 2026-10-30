@@ -25,7 +25,6 @@ const emit = defineEmits(["edit", "delete"]);
                     <h1 class="board-header__title">
                         {{ props.boardName }}
                     </h1>
-
                 </div>
 
                 <p class="board-header__description">
@@ -113,7 +112,6 @@ const emit = defineEmits(["edit", "delete"]);
     white-space: nowrap;
 }
 
-
 .board-header__description {
     margin: 0.125rem 0 0;
     overflow: hidden;
@@ -158,5 +156,4 @@ const emit = defineEmits(["edit", "delete"]);
     outline: none;
     box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
 }
-
 </style>

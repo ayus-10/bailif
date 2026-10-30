@@ -102,7 +102,9 @@ export const useProjectsStore = defineStore("projects", {
                     { forceRefresh }
                 );
 
-                this.items = append ? [...this.items, ...data.items] : data.items;
+                this.items = append
+                    ? [...this.items, ...data.items]
+                    : data.items;
                 this.nextCursor = data.next_cursor;
                 this.fetchStatus[key] = "success";
 

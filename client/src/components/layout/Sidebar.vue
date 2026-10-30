@@ -94,9 +94,7 @@ const sidebar = {
 };
 
 const railToggleIcon = computed(() =>
-    props.rail
-        ? sidebar.railToggle.railIcon
-        : sidebar.railToggle.expandedIcon
+    props.rail ? sidebar.railToggle.railIcon : sidebar.railToggle.expandedIcon
 );
 
 const navigation = {
