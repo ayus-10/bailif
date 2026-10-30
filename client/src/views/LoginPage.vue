@@ -1,5 +1,5 @@
 <script setup>
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { reactive, ref } from "vue";
 import { useToast } from "@/composables/useToast";
 import { useAuthStore } from "@/stores/auth";
@@ -9,6 +9,7 @@ import { showApiError } from "@/utils/errorHandlers";
  * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
  */
 
+const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const toast = useToast();
@@ -35,6 +36,16 @@ const rules = {
     password: (/** @type {string} */ v) => !!v || "Password is required",
 };
 
+function resolveRedirect() {
+    const redirect = route.query.redirect;
+
+    return typeof redirect === "string" &&
+        redirect.startsWith("/") &&
+        !redirect.startsWith("//")
+        ? redirect
+        : { name: "dashboard" };
+}
+
 async function handleSubmit() {
     if (!formRef.value) return;
 
@@ -49,7 +60,7 @@ async function handleSubmit() {
             password: form.password,
         });
 
-        router.push("/");
+        router.push(resolveRedirect());
     } catch (err) {
         showApiError(err, toast);
     } finally {

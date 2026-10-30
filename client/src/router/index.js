@@ -5,7 +5,7 @@ const routes = [
     {
         path: "/",
         redirect: {
-            name: "onboarding",
+            name: "dashboard",
         },
     },
 
@@ -41,6 +41,7 @@ const routes = [
     {
         path: "/dashboard",
         name: "dashboard",
+        redirect: { name: "overview" },
         component: () => import("@/views/Dashboard.vue"),
         meta: { requiresAuth: true },
 
@@ -150,7 +151,7 @@ router.beforeEach((to) => {
         return { name: "dashboard" };
     }
 
-    if (to.meta.isOnboardingRoute && isAuthenticated && isOnboardingComplete) {
+    if (to.name === "project" && isAuthenticated && isOnboardingComplete) {
         return { name: "dashboard" };
     }
 

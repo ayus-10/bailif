@@ -1,6 +1,7 @@
 import { computed, reactive, ref, watch } from "vue";
-import { ApiError } from "@/api/shared.api";
+import { useToast } from "@/composables/useToast";
 import { useTasksStore } from "@/stores/tasks.store";
+import { showApiError } from "@/utils/errorHandlers";
 import {
     isTaskOverdue,
     parseTags,
@@ -16,10 +17,10 @@ import {
 
 /**
  * @param {import("vue").Ref<TaskRead | null>} task
- * @param {Number} taskPublicId
  */
-export function useTaskEditor(task, taskPublicId) {
+export function useTaskEditor(task) {
     const tasksStore = useTasksStore();
+    const toast = useToast();
 
     const editMode = ref(/** @type {EditMode} */ ("none"));
 
@@ -121,9 +122,6 @@ export function useTaskEditor(task, taskPublicId) {
         editMode.value = "none";
     }
 
-    /**
-     * @throws {ApiError}
-     */
     async function saveChanges() {
         if (!task.value || !hasPendingChanges.value) {
             editMode.value = "none";
@@ -135,13 +133,13 @@ export function useTaskEditor(task, taskPublicId) {
         try {
             const payload = buildUpdatePayload(draft, initialDraft);
 
-            await tasksStore.update(taskPublicId, payload);
+            await tasksStore.update(task.value.public_id, payload);
 
             copyDraftValues(initialDraft, draft);
 
             editMode.value = "none";
         } catch (err) {
-            throw err;
+            showApiError(err, toast);
         } finally {
             isSaving.value = false;
         }
@@ -152,7 +150,6 @@ export function useTaskEditor(task, taskPublicId) {
      * @param {{ value: string }} item
      * @param {import("vue").Ref<string | null>} localRef
      * @param {import("vue").Ref<boolean>} savingRef
-     * @throws {ApiError}
      */
     async function updateTaskField(field, item, localRef, savingRef) {
         if (!task.value) return;
@@ -162,12 +159,12 @@ export function useTaskEditor(task, taskPublicId) {
         savingRef.value = true;
 
         try {
-            await tasksStore.update(taskPublicId, {
+            await tasksStore.update(task.value.public_id, {
                 [field]: item.value,
             });
         } catch (err) {
             localRef.value = previousValue;
-            throw err;
+            showApiError(err, toast);
         } finally {
             savingRef.value = false;
         }
@@ -175,7 +172,6 @@ export function useTaskEditor(task, taskPublicId) {
 
     /**
      * @param {{ value: string }} item
-     * @throws {ApiError}
      */
     function onStatusChange(item) {
         return updateTaskField("status", item, selectedStatus, isSavingStatus);
@@ -183,7 +179,6 @@ export function useTaskEditor(task, taskPublicId) {
 
     /**
      * @param {{ value: string }} item
-     * @throws {ApiError}
      */
     function onPriorityChange(item) {
         return updateTaskField(

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { apiFetch } from "@/api/client";
-import { ApiError } from "@/api/shared.api";
+import { ApiError, parseJson } from "@/api/shared.api";
+import { resetSessionData } from "@/utils/sessionReset";
 
 /**
  * @typedef {Object} User
@@ -44,6 +45,23 @@ export const useAuthStore = defineStore("auth", {
         clearSession() {
             this.accessToken = null;
             this.currentUser = null;
+            resetSessionData();
+        },
+
+        /**
+         * @param {number} projectPublicId
+         * @throws {ApiError}
+         */
+        async setActiveProject(projectPublicId) {
+            const res = await apiFetch("/users/me", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    active_project_public_id: projectPublicId,
+                }),
+            });
+
+            this.currentUser = await parseJson(res);
         },
 
         /**
@@ -72,6 +90,12 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = data.token;
 
             await this.fetchCurrentUser();
+
+            if (!this.isAuthenticated) {
+                throw new ApiError("Unable to load your account", {
+                    status: 401,
+                });
+            }
         },
 
         async fetchCurrentUser() {

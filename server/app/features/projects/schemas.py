@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from app.features.dashboard.schemas import DashboardTaskStats
+from app.features.taskboards.schemas import TaskboardListRead
 from app.models.enums.project import ProjectStatus
 from app.shared.enums import AgentPermissionLevel
 from app.shared.schemas import ProjectRead
@@ -112,7 +114,15 @@ class ProjectFilterParams(BaseModel):
     start_date_after: datetime | None = None
     target_end_date_before: datetime | None = None
     target_end_date_after: datetime | None = None
+    cursor: str | None = None
+    limit: int = Field(default=20, ge=1, le=100)
 
 
 class ProjectListResponse(BaseModel):
     items: list[ProjectRead]
+    next_cursor: str | None = None
+
+
+class ProjectSummaryRead(BaseModel):
+    tasks: DashboardTaskStats
+    taskboards: list[TaskboardListRead]

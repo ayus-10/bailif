@@ -1,17 +1,21 @@
-from sqlalchemy import select, update
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ValidationError
+from app.features.dashboard.services import get_task_stats
 from app.features.projects.exceptions import ActiveProjectConflictError
 from app.features.projects.schemas import (
     ProjectCreate,
     ProjectFilterParams,
     ProjectListResponse,
+    ProjectSummaryRead,
     ProjectUpdate,
 )
+from app.features.taskboards.services import list_taskboards
 from app.models.db import Project, Task, Taskboard, User
 from app.utils.date_validation import validate_datetime_range
 from app.utils.model_to_read import project_to_read
+from app.utils.pagination import decode_cursor, encode_cursor
 
 
 def create_project(db: Session, user: User, payload: ProjectCreate) -> Project:
@@ -119,16 +123,46 @@ def list_projects(
     if filters.target_end_date_after is not None:
         stmt = stmt.where(Project.target_end_date >= filters.target_end_date_after)
 
+    if filters.cursor is not None:
+        cursor_created_at, cursor_public_id = decode_cursor(filters.cursor)
+        stmt = stmt.where(
+            or_(
+                Project.created_at < cursor_created_at,
+                and_(
+                    Project.created_at == cursor_created_at,
+                    Project.public_id < cursor_public_id,
+                ),
+            )
+        )
+
     stmt = stmt.order_by(
         Project.created_at.desc(),
         Project.public_id.desc(),
     )
-    stmt = stmt.limit(5)
+    stmt = stmt.limit(filters.limit + 1)
 
     rows = list(db.execute(stmt).scalars().all())
 
+    next_cursor = None
+    if len(rows) > filters.limit:
+        rows = rows[: filters.limit]
+        last = rows[-1]
+        next_cursor = encode_cursor(last.created_at, last.public_id)
+
     return ProjectListResponse(
         items=[project_to_read(row) for row in rows],
+        next_cursor=next_cursor,
+    )
+
+
+def get_project_summary(
+    db: Session,
+    user: User,
+    project: Project,
+) -> ProjectSummaryRead:
+    return ProjectSummaryRead(
+        tasks=get_task_stats(db, user, project),
+        taskboards=list_taskboards(db, project).items,
     )
 
 

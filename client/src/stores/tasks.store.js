@@ -372,6 +372,18 @@ export const useTasksStore = defineStore("tasks", {
 
         /**
          * @param {TasksState} state
+         * @returns {(projectPublicId: number, options?: TaskFetchOptions) => string | null}
+         */
+        nextCursorByQuery:
+            (state) =>
+            (projectPublicId, options = {}) => {
+                const key = collectionKey(projectPublicId, options);
+
+                return state.nextCursor[key] ?? null;
+            },
+
+        /**
+         * @param {TasksState} state
          * @returns {(projectPublicId: number, options?: TaskFetchOptions) => RequestStatus | null}
          */
         fetchListStatus:

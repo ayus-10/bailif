@@ -3,18 +3,26 @@ import { ref, watch } from "vue";
 import Sidebar from "@/components/layout/Sidebar.vue";
 import CreateTaskBoardModel from "@/components/taskboards/CreateTaskBoardModel.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
+import { useToast } from "@/composables/useToast";
 import { useTaskboardsStore } from "@/stores/taskboards.store";
+import { showApiError } from "@/utils/errorHandlers";
 
 const { projectId } = useActiveProject();
 
 const taskboardsStore = useTaskboardsStore();
+const toast = useToast();
 
 const showTaskboardModal = ref(false);
+const isRail = ref(false);
 
 watch(
     projectId,
     (id) => {
-        if (id) taskboardsStore.fetch({ projectPublicId: id });
+        if (id) {
+            taskboardsStore
+                .fetch({ projectPublicId: id })
+                .catch((err) => showApiError(err, toast));
+        }
     },
     { immediate: true }
 );
@@ -32,6 +40,8 @@ function closeTaskboardModal() {
     <aside v-if="projectId">
         <Sidebar
             :task-boards="taskboardsStore.items"
+            :rail="isRail"
+            @toggle-rail="isRail = !isRail"
             @new-board="openTaskboardModal"
         />
 

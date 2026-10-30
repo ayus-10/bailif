@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, watch } from "vue";
 import ColorInput from "@/components/common/ColorInput.vue";
 import { useToast } from "@/composables/useToast";
 import { DEFAULT_COLORS } from "@/constants/globals";
@@ -9,6 +9,7 @@ import { showApiError } from "@/utils/errorHandlers";
 /**
  * @typedef {import("@/types/taskboards").TaskboardForm} TaskboardForm
  * @typedef {import("@/types/taskboards").TaskboardPayload} TaskboardPayload
+ * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
  */
 
 const props = defineProps({
@@ -19,6 +20,13 @@ const props = defineProps({
     projectId: {
         type: Number,
         required: true,
+    },
+    taskboard: {
+        /**
+         * @type {import("vue").PropType<TaskboardListRead | null>}
+         */
+        type: Object,
+        default: null,
     },
 });
 
@@ -37,8 +45,30 @@ const toast = useToast();
 
 const taskboardsStore = useTaskboardsStore();
 
-const isLoading = computed(
-    () => taskboardsStore.taskboardMutationStatus("create") === "loading"
+const isEditing = computed(() => props.taskboard !== null);
+
+const isLoading = computed(() =>
+    props.taskboard
+        ? taskboardsStore.taskboardMutationStatus(
+              "update",
+              props.taskboard.public_id
+          ) === "loading"
+        : taskboardsStore.taskboardMutationStatus("create") === "loading"
+);
+
+watch(
+    () => props.modelValue,
+    (isOpen) => {
+        if (!isOpen) return;
+
+        if (props.taskboard) {
+            form.name = props.taskboard.name;
+            form.description = props.taskboard.description;
+            form.color = props.taskboard.color ?? DEFAULT_COLORS[0].value;
+        } else {
+            resetForm();
+        }
+    }
 );
 
 const rules = {
@@ -59,18 +89,23 @@ function resetForm() {
 async function submit() {
     if (!form.name.trim()) return;
 
-    /**
-     * @type {TaskboardPayload}
-     */
-    const payload = {
-        ...form,
-        project_public_id: props.projectId,
-    };
-
     try {
-        await taskboardsStore.create(payload);
+        if (props.taskboard) {
+            await taskboardsStore.update(props.taskboard.public_id, {
+                ...form,
+            });
+        } else {
+            /**
+             * @type {TaskboardPayload}
+             */
+            const payload = {
+                ...form,
+                project_public_id: props.projectId,
+            };
 
-        resetForm();
+            await taskboardsStore.create(payload);
+        }
+
         close();
     } catch (err) {
         showApiError(err, toast);
@@ -87,7 +122,7 @@ async function submit() {
         <v-card class="taskboard-dialog" variant="outlined">
             <div class="card-header">
                 <h2 class="text-h6 font-weight-bold card-title">
-                    Create Taskboard
+                    {{ isEditing ? "Edit Taskboard" : "Create Taskboard" }}
                 </h2>
 
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">
@@ -156,7 +191,7 @@ async function submit() {
                     :disabled="isLoading"
                     :loading="isLoading"
                 >
-                    Create Taskboard
+                    {{ isEditing ? "Save changes" : "Create Taskboard" }}
                 </v-btn>
             </v-card-actions>
         </v-card>

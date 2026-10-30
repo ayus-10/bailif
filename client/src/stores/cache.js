@@ -47,6 +47,10 @@ export function cachedRequest(
     return promise;
 }
 
+export function clearRequestCache() {
+    requestCache.clear();
+}
+
 /**
  * @param {String} prefix
  */

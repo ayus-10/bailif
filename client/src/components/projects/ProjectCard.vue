@@ -20,7 +20,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["switch", "rename", "duplicate", "delete"]);
+const emit = defineEmits(["switch"]);
 
 const isActive = computed(
     () => props.project.public_id === props.activeProjectId
@@ -28,6 +28,13 @@ const isActive = computed(
 
 const overviewRoute = computed(() => ({
     name: "project-overview",
+    params: {
+        id: props.project.public_id,
+    },
+}));
+
+const settingsRoute = computed(() => ({
+    name: "project-settings",
     params: {
         id: props.project.public_id,
     },
@@ -48,14 +55,6 @@ const formattedStartDate = computed(() => {
 
     return formatDate(props.project.start_date);
 });
-
-function handleClick() {
-    if (isActive.value) {
-        return;
-    }
-
-    emit("switch", props.project);
-}
 
 /**
  * @type {import("vue").Ref<[number, number] | HTMLElement>}
@@ -84,22 +83,7 @@ function openContextMenuFromButton(event) {
 
 function handleSetActive() {
     contextMenuOpen.value = false;
-    handleClick();
-}
-
-function handleRename() {
-    contextMenuOpen.value = false;
-    emit("rename", props.project);
-}
-
-function handleDuplicate() {
-    contextMenuOpen.value = false;
-    emit("duplicate", props.project);
-}
-
-function handleDelete() {
-    contextMenuOpen.value = false;
-    emit("delete", props.project);
+    emit("switch", props.project);
 }
 </script>
 
@@ -114,10 +98,9 @@ function handleDelete() {
         :aria-label="
             isActive
                 ? `${project.name}, currently active project`
-                : `Switch to ${project.name}`
+                : `Open ${project.name}`
         "
         :aria-current="isActive ? 'page' : undefined"
-        @click="handleClick"
         @contextmenu="openContextMenuAtCursor"
     >
         <div class="project-card__header">
@@ -201,27 +184,9 @@ function handleDelete() {
                 </template>
             </v-list-item>
 
-            <v-list-item title="Rename" @click="handleRename">
+            <v-list-item title="Project settings" :to="settingsRoute">
                 <template #prepend>
-                    <v-icon icon="mdi-pencil-outline" size="1.125rem" />
-                </template>
-            </v-list-item>
-
-            <v-list-item title="Duplicate" @click="handleDuplicate">
-                <template #prepend>
-                    <v-icon icon="mdi-content-copy" size="1.125rem" />
-                </template>
-            </v-list-item>
-
-            <v-divider />
-
-            <v-list-item
-                title="Delete"
-                base-color="error"
-                @click="handleDelete"
-            >
-                <template #prepend>
-                    <v-icon icon="mdi-delete-outline" size="1.125rem" />
+                    <v-icon icon="mdi-cog-outline" size="1.125rem" />
                 </template>
             </v-list-item>
         </v-list>

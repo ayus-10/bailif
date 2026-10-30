@@ -56,7 +56,6 @@ const emit = defineEmits([
     "save",
     "status-change",
     "priority-change",
-    "duplicate",
     "delete",
 ]);
 </script>
@@ -68,14 +67,6 @@ const emit = defineEmits([
         <v-spacer />
 
         <div class="task-page__actions">
-            <v-btn
-                variant="plain"
-                density="comfortable"
-                prepend-icon="mdi-share-variant-outline"
-            >
-                Share
-            </v-btn>
-
             <v-menu>
                 <template #activator="{ props: menuProps }">
                     <v-btn
@@ -93,11 +84,7 @@ const emit = defineEmits([
                         title="Edit task"
                         @click="emit('edit', 'title')"
                     />
-                    <v-list-item
-                        prepend-icon="mdi-content-copy"
-                        title="Duplicate task"
-                        @click="emit('duplicate')"
-                    />
+
                     <v-divider />
                     <v-list-item
                         prepend-icon="mdi-delete-outline"

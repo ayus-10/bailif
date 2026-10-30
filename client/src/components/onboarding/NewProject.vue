@@ -30,7 +30,7 @@ async function handleCreateProject(project) {
     try {
         await projectsStore.create(project);
 
-        authStore.refreshCurrentUser();
+        await authStore.refreshCurrentUser();
 
         router.push({ name: "taskboard" });
     } catch (err) {

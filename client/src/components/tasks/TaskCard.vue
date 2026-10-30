@@ -33,24 +33,14 @@ const router = useRouter();
 const isOverdue = computed(() => isTaskOverdue(props.task));
 const tagCount = computed(() => parseTags(props.task.tags).length);
 
-// TODO: TaskRead doesn't define `progress` yet
-const progressValue = 67;
-
-const emit = defineEmits([
-    "complete",
-    "snooze",
-    "delete",
-    "duplicate",
-    "dragstart",
-    "dragend",
-]);
+const emit = defineEmits(["complete", "delete", "dragstart", "dragend"]);
 
 const isExpanded = ref(false);
 const isHovering = ref(false);
 const contextMenuOpen = ref(false);
 
 /**
- * @type {import("vue").Ref<[number, number]>}
+ * @type {import("vue").Ref<[number, number] | HTMLElement>}
  */
 const contextMenuTarget = ref([0, 0]);
 
@@ -63,6 +53,14 @@ function toggleDescription() {
  */
 function openContextMenu(e) {
     contextMenuTarget.value = [e.clientX, e.clientY];
+    contextMenuOpen.value = true;
+}
+
+/**
+ * @param {MouseEvent} e
+ */
+function openMenuFromButton(e) {
+    contextMenuTarget.value = /** @type {HTMLElement} */ (e.currentTarget);
     contextMenuOpen.value = true;
 }
 
@@ -84,25 +82,9 @@ function handleComplete(e) {
 /**
  * @param {MouseEvent} e
  */
-function handleSnooze(e) {
-    e.stopPropagation();
-    emit("snooze", props.task);
-}
-
-/**
- * @param {MouseEvent} e
- */
 function handleDelete(e) {
     e.stopPropagation();
     emit("delete", props.task);
-}
-
-/**
- * @param {MouseEvent} e
- */
-function handleDuplicate(e) {
-    e.stopPropagation();
-    emit("duplicate", props.task);
 }
 </script>
 
@@ -132,48 +114,15 @@ function handleDuplicate(e) {
             class="task-card__toolbar"
             :class="{ 'task-card__toolbar--visible': isHovering }"
         >
-            <v-menu location="bottom end">
-                <template #activator="{ props: menuProps }">
-                    <button
-                        v-bind="menuProps"
-                        type="button"
-                        class="task-card__icon-btn"
-                        v-ripple
-                        @click.stop
-                    >
-                        <v-icon icon="mdi-dots-horizontal" size="14" />
-                    </button>
-                </template>
-
-                <v-list density="compact">
-                    <v-list-item
-                        prepend-icon="mdi-check"
-                        :title="
-                            task.status === 'done'
-                                ? 'Mark incomplete'
-                                : 'Mark complete'
-                        "
-                        @click="handleComplete"
-                    />
-                    <v-list-item
-                        prepend-icon="mdi-clock-outline"
-                        title="Snooze"
-                        @click="handleSnooze"
-                    />
-                    <v-list-item
-                        prepend-icon="mdi-content-copy"
-                        title="Duplicate"
-                        @click="handleDuplicate"
-                    />
-                    <v-divider />
-                    <v-list-item
-                        prepend-icon="mdi-trash-can-outline"
-                        title="Delete"
-                        class="text-error"
-                        @click="handleDelete"
-                    />
-                </v-list>
-            </v-menu>
+            <button
+                type="button"
+                class="task-card__icon-btn"
+                aria-label="Task actions"
+                v-ripple
+                @click.stop="openMenuFromButton"
+            >
+                <v-icon icon="mdi-dots-horizontal" size="14" />
+            </button>
         </div>
 
         <div class="task-card__top">
@@ -197,18 +146,6 @@ function handleDuplicate(e) {
         <p v-if="task.description" class="task-card__description">
             {{ htmlPreview(task.description) }}
         </p>
-
-        <div class="task-card__progress-row">
-            <span class="task-card__progress-label">Progress</span>
-            <span class="task-card__progress-value">{{ progressValue }}%</span>
-        </div>
-
-        <div class="task-card__progress-track">
-            <div
-                class="task-card__progress-fill"
-                :style="{ width: progressValue + '%' }"
-            />
-        </div>
 
         <div class="task-card__footer">
             <div v-if="tagCount" class="task-card__meta">
@@ -243,16 +180,6 @@ function handleDuplicate(e) {
                             : 'Mark complete'
                     "
                     @click="handleComplete"
-                />
-                <v-list-item
-                    prepend-icon="mdi-clock-outline"
-                    title="Snooze"
-                    @click="handleSnooze"
-                />
-                <v-list-item
-                    prepend-icon="mdi-content-copy"
-                    title="Duplicate"
-                    @click="handleDuplicate"
                 />
                 <v-divider />
                 <v-list-item
@@ -424,45 +351,5 @@ function handleDuplicate(e) {
     -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
-}
-
-.task-card__progress-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.125rem;
-}
-
-.task-card__progress-label {
-    color: rgb(var(--v-theme-text-secondary, 71, 84, 103));
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.task-card__progress-value {
-    color: rgb(var(--v-theme-on-surface));
-    font-size: 0.75rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-
-.task-card__progress-track {
-    position: relative;
-    width: 100%;
-    height: 0.375rem;
-    border-radius: 999px;
-    background: rgb(var(--v-theme-grey-lighten-4, 245, 246, 248));
-    overflow: hidden;
-}
-
-.task-card__progress-fill {
-    height: 100%;
-    border-radius: 999px;
-    background: var(--task-accent);
-    transition: width 0.2s ease;
-}
-
-.task-card--complete .task-card__progress-fill {
-    background: rgb(var(--v-theme-success, 76, 175, 80));
 }
 </style>

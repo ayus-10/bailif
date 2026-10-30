@@ -1,15 +1,4 @@
 <script setup>
-/**
- * @typedef {Object} BoardHeaderProps
- * @property {string} [boardName]
- * @property {string} [boardDescription]
- * @property {string} [icon]
- * @property {string} [visibility]
- */
-
-/**
- * @type {BoardHeaderProps}
- */
 const props = defineProps({
     boardName: {
         type: String,
@@ -19,24 +8,13 @@ const props = defineProps({
         type: String,
         default: "Plan, prioritize, and track work across the project.",
     },
-    icon: {
-        type: String,
-        default: "mdi-view-dashboard-outline",
-    },
-    visibility: {
-        type: String,
-        default: "Private",
+    editable: {
+        type: Boolean,
+        default: false,
     },
 });
 
-const emit = defineEmits(["action"]);
-
-/**
- * @param {string} action
- */
-function handleAction(action) {
-    emit("action", action);
-}
+const emit = defineEmits(["edit", "delete"]);
 </script>
 
 <template>
@@ -47,10 +25,6 @@ function handleAction(action) {
                     <h1 class="board-header__title">
                         {{ props.boardName }}
                     </h1>
-
-                    <span class="board-header__visibility">
-                        {{ props.visibility }}
-                    </span>
                 </div>
 
                 <p class="board-header__description">
@@ -59,37 +33,26 @@ function handleAction(action) {
             </div>
         </div>
 
-        <div class="board-header__actions">
+        <div v-if="editable" class="board-header__actions">
             <button
                 v-ripple
                 type="button"
                 class="board-header__icon-button"
-                aria-label="Share board"
-                @click="handleAction('share')"
+                aria-label="Edit board"
+                @click="emit('edit')"
             >
-                <v-icon size="1.125rem"> mdi-share-variant-outline </v-icon>
+                <v-icon size="1.125rem"> mdi-pencil-outline </v-icon>
             </button>
 
             <button
                 v-ripple
                 type="button"
                 class="board-header__icon-button"
-                aria-label="Board settings"
-                @click="handleAction('settings')"
+                aria-label="Delete board"
+                @click="emit('delete')"
             >
-                <v-icon size="1.125rem"> mdi-cog-outline </v-icon>
+                <v-icon size="1.125rem"> mdi-delete-outline </v-icon>
             </button>
-
-            <v-btn
-                color="primary"
-                prepend-icon="mdi-account-plus-outline"
-                variant="flat"
-                density="comfortable"
-                class="text-none board-toolbar__invite"
-                @click="handleAction('invite')"
-            >
-                Invite people
-            </v-btn>
         </div>
     </header>
 </template>
@@ -149,21 +112,6 @@ function handleAction(action) {
     white-space: nowrap;
 }
 
-.board-header__visibility {
-    flex: 0 0 auto;
-    padding: 0.125rem 0.375rem;
-    border: 0.0625rem solid var(--v-theme-outline-variant, #eaecf0);
-    border-radius: 0.125rem;
-    color: var(--v-theme-text-secondary, #475467);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    line-height: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
 .board-header__description {
     margin: 0.125rem 0 0;
     overflow: hidden;
@@ -207,14 +155,5 @@ function handleAction(action) {
 .board-header__icon-button:focus-visible {
     outline: none;
     box-shadow: 0 0 0 0.1875rem rgba(var(--v-theme-primary), 0.15);
-}
-
-.board-toolbar__invite {
-    flex: 0 0 auto;
-    border-radius: 0.5rem;
-}
-
-.board-toolbar__invite :deep(.v-btn__content) {
-    user-select: none;
 }
 </style>
