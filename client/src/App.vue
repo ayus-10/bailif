@@ -1,6 +1,24 @@
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import ToastContainer from "./components/layout/ToastContainer.vue";
+import { useAuthStore } from "./stores/auth";
+
+const authStore = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+
+watch(
+    () => authStore.isAuthenticated,
+    (isAuthenticated) => {
+        if (!isAuthenticated && route.meta.requiresAuth) {
+            router.replace({
+                name: "login",
+                query: { redirect: route.fullPath },
+            });
+        }
+    }
+);
 
 /**
  * @param {MouseEvent} event

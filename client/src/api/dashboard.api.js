@@ -1,25 +1,16 @@
 import { apiFetch } from "./client";
+import { parseJson } from "./shared.api";
 
 /**
  * @typedef {import("@/types/dashboard").Dashboard} Dashboard
  */
 
 /**
- * @param {string} scopeId
  * @param {AbortSignal} [signal]
  * @returns {Promise<Dashboard>}
  */
-export async function fetchDashboard(scopeId, signal) {
-    const response = await apiFetch(`/dashboard/${scopeId}`, { signal });
+export async function fetchDashboard(signal) {
+    const response = await apiFetch("/dashboard", { signal });
 
-    if (!response.ok) {
-        throw new Error(`Failed to fetch dashboard (${response.status})`);
-    }
-
-    /**
-     * @type {Dashboard}
-     */
-    const data = await response.json();
-
-    return data;
+    return parseJson(response);
 }

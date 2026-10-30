@@ -8,6 +8,7 @@ import app.models
 from app.agent.router import router as ai_router
 from app.core.exceptions import CoreError
 from app.features.auth.router import router as auth_router
+from app.features.dashboard.router import router as dashboard_router
 from app.features.projects.router import router as projects_router
 from app.features.taskboards.router import router as taskboard_router
 from app.features.tasks.router import router as tasks_router
@@ -48,6 +49,10 @@ app.include_router(
 )
 app.include_router(
     taskboard_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    dashboard_router,
     prefix="/api/v1",
 )
 

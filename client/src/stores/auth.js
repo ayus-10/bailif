@@ -72,6 +72,12 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = data.token;
 
             await this.fetchCurrentUser();
+
+            if (!this.isAuthenticated) {
+                throw new ApiError("Unable to load your account", {
+                    status: 401,
+                });
+            }
         },
 
         async fetchCurrentUser() {
