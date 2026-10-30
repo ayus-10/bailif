@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import PendingTaskCard from "@/components/tasks/PendingTaskCard.vue";
 import { useToast } from "@/composables/useToast";
-import { useTaskboardsStore } from "@/stores/taskboards.store";
+import { useAddTaskToBoard } from "@/queries/taskboards.queries";
 import { useTasksStore } from "@/stores/tasks.store";
 import { showApiError } from "@/utils/errorHandlers";
 import TaskCard from "./TaskCard.vue";
@@ -53,7 +53,7 @@ const props = defineProps({
 const toast = useToast();
 
 const tasksStore = useTasksStore();
-const taskboardsStore = useTaskboardsStore();
+const addTaskMutation = useAddTaskToBoard();
 
 const emit = defineEmits([
     "drag-start",
@@ -122,8 +122,9 @@ async function handleCreate(payload) {
         const task = await tasksStore.create(payload);
 
         if (props.taskboardId)
-            await taskboardsStore.addTask(props.taskboardId, {
-                task_public_id: task.public_id,
+            await addTaskMutation.mutateAsync({
+                boardPublicId: props.taskboardId,
+                payload: { task_public_id: task.public_id },
             });
 
         emit("clear-pending-task");

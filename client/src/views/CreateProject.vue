@@ -5,7 +5,7 @@ import ProjectForm from "@/components/projects/ProjectForm.vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import ProjectTemplateList from "@/components/projects/ProjectTemplateList.vue";
 import { useToast } from "@/composables/useToast";
-import { useProjectsStore } from "@/stores/projects.store";
+import { useCreateProject } from "@/queries/projects.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -14,11 +14,8 @@ import { showApiError } from "@/utils/errorHandlers";
 
 const router = useRouter();
 const toast = useToast();
-const projectsStore = useProjectsStore();
-
-const isLoading = computed(
-    () => projectsStore.projectMutationStatus("create") === "loading"
-);
+const createMutation = useCreateProject();
+const isLoading = computed(() => createMutation.isPending.value);
 
 /**
  * @param {ProjectCreate} project
@@ -27,7 +24,7 @@ async function handleSubmit(project) {
     if (isLoading.value) return;
 
     try {
-        const createdProject = await projectsStore.create(project);
+        const createdProject = await createMutation.mutateAsync(project);
 
         const projectId = createdProject.public_id;
 

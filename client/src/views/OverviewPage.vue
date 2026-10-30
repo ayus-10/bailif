@@ -1,28 +1,27 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import DashboardMetrics from "@/components/dashboard/DashboardMetrics.vue";
 import DashboardSection from "@/components/dashboard/DashboardSection.vue";
 import DashboardTaskList from "@/components/dashboard/DashboardTaskList.vue";
 import { useToast } from "@/composables/useToast";
 import { STATUS_META } from "@/constants/tasks";
-import { useDashboardStore } from "@/stores/dashboard.store";
+import { useDashboard } from "@/queries/dashboard.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
  * @typedef {import("@/types/dashboard").DashboardMetric} DashboardMetric
  */
 
-const dashboardStore = useDashboardStore();
 const toast = useToast();
-
-const dashboard = computed(() => dashboardStore.data);
+const dashboardQuery = useDashboard();
+const dashboard = computed(() => dashboardQuery.data.value);
 
 const isLoading = computed(
-    () => dashboardStore.status === "loading" && !dashboard.value
+    () => dashboardQuery.isLoading.value && !dashboard.value
 );
 
 const hasError = computed(
-    () => dashboardStore.status === "error" && !dashboard.value
+    () => dashboardQuery.isError.value && !dashboard.value
 );
 
 /**
@@ -76,10 +75,8 @@ const completionPercent = computed(() => {
 });
 
 function load() {
-    dashboardStore.fetch().catch((err) => showApiError(err, toast));
+    dashboardQuery.refetch().catch((err) => showApiError(err, toast));
 }
-
-onMounted(load);
 </script>
 
 <template>
@@ -92,7 +89,7 @@ onMounted(load);
                 variant="text"
                 density="comfortable"
                 aria-label="Refresh overview"
-                :loading="dashboardStore.status === 'loading'"
+                :loading="dashboardQuery.isFetching.value"
                 @click="load"
             />
         </div>

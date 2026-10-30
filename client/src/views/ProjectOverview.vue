@@ -1,14 +1,14 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import DashboardMetrics from "@/components/dashboard/DashboardMetrics.vue";
 import DashboardSection from "@/components/dashboard/DashboardSection.vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
 import { PERMISSION_ITEMS, STATUS_ITEMS } from "@/constants/projects";
+import { useProject, useProjectSummary } from "@/queries/projects.queries";
 import { useAuthStore } from "@/stores/auth";
-import { useProjectsStore } from "@/stores/projects.store";
 import { formatDate } from "@/utils/dateFormatters";
 import { showApiError } from "@/utils/errorHandlers";
 
@@ -26,28 +26,20 @@ const props = defineProps({
 const router = useRouter();
 const toast = useToast();
 const authStore = useAuthStore();
-const projectsStore = useProjectsStore();
 
 const { projectId: activeProjectId } = useActiveProject();
 
 const projectId = computed(() => Number(props.id));
 
-const project = computed(() =>
-    projectsStore.currentProject?.public_id === projectId.value
-        ? projectsStore.currentProject
-        : null
-);
-
-const summary = computed(
-    () => projectsStore.summaries[projectId.value] ?? null
-);
+const projectQuery = useProject(projectId);
+const summaryQuery = useProjectSummary(projectId);
+const project = computed(() => projectQuery.data.value ?? null);
+const summary = computed(() => summaryQuery.data.value ?? null);
 
 const isActive = computed(() => activeProjectId.value === projectId.value);
 
 const isLoading = computed(
-    () =>
-        !project.value &&
-        projectsStore.fetchProjectStatus(projectId.value) !== "error"
+    () => projectQuery.isLoading.value || summaryQuery.isLoading.value
 );
 
 /**
@@ -114,16 +106,13 @@ const details = computed(() => {
     ];
 });
 
-watch(projectId, () => load(), { immediate: true });
-
 /**
  * @param {boolean} [forceRefresh]
  */
 function load(forceRefresh = false) {
-    Promise.all([
-        projectsStore.get(projectId.value, { forceRefresh }),
-        projectsStore.getSummary(projectId.value, { forceRefresh }),
-    ]).catch((err) => showApiError(err, toast));
+    Promise.all([projectQuery.refetch(), summaryQuery.refetch()]).catch((err) =>
+        showApiError(err, toast)
+    );
 }
 
 async function setActive() {

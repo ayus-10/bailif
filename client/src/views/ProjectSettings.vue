@@ -6,7 +6,11 @@ import ProjectForm from "@/components/projects/ProjectForm.vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
-import { useProjectsStore } from "@/stores/projects.store";
+import {
+    useDeleteProject,
+    useProject,
+    useUpdateProject,
+} from "@/queries/projects.queries";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -22,38 +26,26 @@ const props = defineProps({
 
 const router = useRouter();
 const toast = useToast();
-const projectsStore = useProjectsStore();
 
 const { projectId: activeProjectId } = useActiveProject();
 
 const projectId = computed(() => Number(props.id));
 
-const project = computed(() =>
-    projectsStore.currentProject?.public_id === projectId.value
-        ? projectsStore.currentProject
-        : null
-);
+const projectQuery = useProject(projectId);
+const project = computed(() => projectQuery.data.value ?? null);
+const updateMutation = useUpdateProject();
+const deleteMutation = useDeleteProject();
 
 const isActive = computed(() => activeProjectId.value === projectId.value);
 
-const isSaving = computed(
-    () =>
-        projectsStore.projectMutationStatus("update", projectId.value) ===
-        "loading"
-);
+const isSaving = computed(() => updateMutation.isPending.value);
 
-const isDeleting = computed(
-    () =>
-        projectsStore.projectMutationStatus("delete", projectId.value) ===
-        "loading"
-);
+const isDeleting = computed(() => deleteMutation.isPending.value);
 
 const showDeleteDialog = ref(false);
 
-watch(projectId, load, { immediate: true });
-
 function load() {
-    projectsStore.get(projectId.value).catch((err) => showApiError(err, toast));
+    projectQuery.refetch().catch((err) => showApiError(err, toast));
 }
 
 /**
@@ -63,7 +55,7 @@ async function handleSubmit(payload) {
     if (isSaving.value) return;
 
     try {
-        await projectsStore.update(projectId.value, payload);
+        await updateMutation.mutateAsync({ id: projectId.value, payload });
 
         toast.success("Project updated");
         router.push({
@@ -77,7 +69,7 @@ async function handleSubmit(payload) {
 
 async function handleDelete() {
     try {
-        await projectsStore.remove(projectId.value);
+        await deleteMutation.mutateAsync(projectId.value);
 
         showDeleteDialog.value = false;
         router.push({ name: "project-list" });

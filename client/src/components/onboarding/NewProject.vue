@@ -3,23 +3,21 @@ import { useRouter } from "vue-router";
 import { computed } from "vue";
 import OnboardingProjectForm from "@/components/onboarding/OnboardingProjectForm.vue";
 import { useToast } from "@/composables/useToast";
+import { useCreateProject } from "@/queries/projects.queries";
 import { useAuthStore } from "@/stores/auth";
-import { useProjectsStore } from "@/stores/projects.store";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
- * @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate
+ * @typedef {import("@/types/project").ProjectCreate} ProjectCreate
  * @typedef {ProjectCreate & { color?: string }} ProjectCreateForm
  */
 
 const authStore = useAuthStore();
-const projectsStore = useProjectsStore();
+const createMutation = useCreateProject();
 const router = useRouter();
 const toast = useToast();
 
-const isLoading = computed(
-    () => projectsStore.projectMutationStatus("create") === "loading"
-);
+const isLoading = computed(() => createMutation.isPending.value);
 
 /**
  * @param {ProjectCreateForm} project
@@ -28,7 +26,7 @@ async function handleCreateProject(project) {
     if (isLoading.value) return;
 
     try {
-        await projectsStore.create(project);
+        await createMutation.mutateAsync(project);
 
         await authStore.refreshCurrentUser();
 

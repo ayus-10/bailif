@@ -42,10 +42,10 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = token;
         },
 
-        clearSession() {
+        async clearSession() {
             this.accessToken = null;
             this.currentUser = null;
-            resetSessionData();
+            await resetSessionData();
         },
 
         /**
@@ -87,6 +87,7 @@ export const useAuthStore = defineStore("auth", {
             }
 
             const data = await res.json();
+            await this.clearSession();
             this.accessToken = data.token;
 
             await this.fetchCurrentUser();
@@ -103,7 +104,7 @@ export const useAuthStore = defineStore("auth", {
             if (res.ok) {
                 this.currentUser = await res.json();
             } else {
-                this.clearSession();
+                await this.clearSession();
             }
         },
 
@@ -114,7 +115,7 @@ export const useAuthStore = defineStore("auth", {
             const res = await apiFetch("/users/me");
 
             if (res.status === 401) {
-                this.clearSession();
+                await this.clearSession();
                 return;
             }
 
@@ -129,7 +130,7 @@ export const useAuthStore = defineStore("auth", {
 
         async logout() {
             await apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
-            this.clearSession();
+            await this.clearSession();
         },
 
         // Called once at app startup

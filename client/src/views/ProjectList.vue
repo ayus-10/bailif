@@ -1,13 +1,13 @@
 <script setup>
 import { useRouter } from "vue-router";
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import NoActiveProject from "@/components/projects/NoActiveProject.vue";
 import ProjectCard from "@/components/projects/ProjectCard.vue";
 import ProjectHeader from "@/components/projects/ProjectHeader.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
+import { useProjectsList } from "@/queries/projects.queries";
 import { useAuthStore } from "@/stores/auth";
-import { useProjectsStore } from "@/stores/projects.store";
 import { showApiError } from "@/utils/errorHandlers";
 
 /**
@@ -15,31 +15,35 @@ import { showApiError } from "@/utils/errorHandlers";
  */
 
 const authStore = useAuthStore();
-const projectsStore = useProjectsStore();
 const toast = useToast();
 
 const { projectId: activeProjectId } = useActiveProject();
 
 const router = useRouter();
 
-const status = computed(() => projectsStore.fetchListStatus());
+const projectsQuery = useProjectsList();
+const { items, hasNextPage } = projectsQuery;
+const status = computed(() =>
+    projectsQuery.isFetching.value
+        ? "loading"
+        : projectsQuery.isError.value
+          ? "error"
+          : "success"
+);
 const isLoadingFirstPage = computed(
-    () => status.value === "loading" && projectsStore.items.length === 0
+    () =>
+        projectsQuery.isLoading.value && projectsQuery.items.value.length === 0
 );
 const hasError = computed(
-    () => status.value === "error" && projectsStore.items.length === 0
+    () => projectsQuery.isError.value && projectsQuery.items.value.length === 0
 );
 
-onMounted(load);
-
 function load() {
-    projectsStore
-        .fetch({ forceRefresh: true })
-        .catch((err) => showApiError(err, toast));
+    projectsQuery.refetch().catch((err) => showApiError(err, toast));
 }
 
 function loadMore() {
-    projectsStore.loadMore().catch((err) => showApiError(err, toast));
+    projectsQuery.fetchNextPage().catch((err) => showApiError(err, toast));
 }
 
 /**
@@ -95,7 +99,7 @@ function handleNavigate(action) {
         <template v-else-if="activeProjectId">
             <div class="project-page__grid">
                 <ProjectCard
-                    v-for="project in projectsStore.items"
+                    v-for="project in items"
                     :key="project.public_id"
                     :project="project"
                     :active-project-id="activeProjectId"
@@ -103,7 +107,7 @@ function handleNavigate(action) {
                 />
             </div>
 
-            <div v-if="projectsStore.nextCursor" class="project-page__more">
+            <div v-if="hasNextPage" class="project-page__more">
                 <v-btn
                     variant="tonal"
                     color="primary"

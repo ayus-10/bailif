@@ -10,7 +10,11 @@ import TaskColumn from "@/components/tasks/TaskColumn.vue";
 import { useActiveProject } from "@/composables/useActiveProject";
 import { useToast } from "@/composables/useToast";
 import { STATUS_META } from "@/constants/tasks";
-import { useTaskboardsStore } from "@/stores/taskboards.store";
+import {
+    useDeleteTaskboard,
+    useTaskboard,
+    useTaskboardsList,
+} from "@/queries/taskboards.queries";
 import { useTasksStore } from "@/stores/tasks.store";
 import { showApiError } from "@/utils/errorHandlers";
 
@@ -70,7 +74,6 @@ const query = computed(() => ({
         currentBoard.value.type === "single" ? currentBoard.value.id : null,
 }));
 
-const taskboardsStore = useTaskboardsStore();
 const tasksStore = useTasksStore();
 
 watch(
@@ -85,13 +88,17 @@ watch(
     { immediate: true }
 );
 
-watch(currentBoard, fetchCurrentBoard, { immediate: true });
-
-const taskboard = computed(() => taskboardsStore.currentTaskboard);
+const boardId = computed(() =>
+    currentBoard.value.type === "single" ? currentBoard.value.id : null
+);
+const taskboardQuery = useTaskboard(boardId);
+const taskboardsQuery = useTaskboardsList(projectId);
+const deleteTaskboardMutation = useDeleteTaskboard();
+const taskboard = computed(() => taskboardQuery.data.value ?? null);
 
 const boardSummary = computed(() =>
     currentBoard.value.type === "single"
-        ? (taskboardsStore.items.find(
+        ? (taskboardsQuery.items.value.find(
               (item) =>
                   item.public_id ===
                   /** @type {SingleBoardSelection} */ (currentBoard.value).id
@@ -175,10 +182,7 @@ const taskToDelete = ref(/** @type {TaskRead | null} */ (null));
 const isDeletingBoard = computed(
     () =>
         currentBoard.value.type === "single" &&
-        taskboardsStore.taskboardMutationStatus(
-            "delete",
-            currentBoard.value.id
-        ) === "loading"
+        deleteTaskboardMutation.isPending.value
 );
 
 const isDeletingTask = computed(
@@ -189,17 +193,6 @@ const isDeletingTask = computed(
             taskToDelete.value.public_id
         ) === "loading"
 );
-
-/**
- * @param {BoardSelection} board
- */
-function fetchCurrentBoard(board) {
-    if (board.type === "single") {
-        taskboardsStore.get(board.id).catch((err) => showApiError(err, toast));
-        return;
-    }
-    taskboardsStore.currentTaskboard = null;
-}
 
 function retry() {
     if (!projectId.value) return;
@@ -304,7 +297,7 @@ async function confirmDeleteBoard() {
     if (currentBoard.value.type !== "single") return;
 
     try {
-        await taskboardsStore.remove(currentBoard.value.id);
+        await deleteTaskboardMutation.mutateAsync(currentBoard.value.id);
 
         showDeleteBoard.value = false;
         router.push({ name: "taskboards-all" });
@@ -328,8 +321,8 @@ function handleClear() {
 <template>
     <v-container v-if="projectId" fluid class="task-board">
         <BoardHeader
-            :board-name="taskboard?.name"
-            :board-description="taskboard?.description"
+            :board-name="String(taskboard?.name ?? '')"
+            :board-description="String(taskboard?.description ?? '')"
             :editable="currentBoard.type === 'single' && !!boardSummary"
             @edit="showEditBoard = true"
             @delete="showDeleteBoard = true"
@@ -337,8 +330,8 @@ function handleClear() {
 
         <BoardToolbar
             v-model:search="searchText"
-            :status="statusFilter"
-            :priority="priorityFilter"
+            :status="statusFilter ?? undefined"
+            :priority="priorityFilter ?? undefined"
             @update:status="setFilter('status', $event)"
             @update:priority="setFilter('priority', $event)"
             @new-task="openNewTask"

@@ -49,6 +49,11 @@ const props = defineProps({
     isEditingTitle: Boolean,
 });
 
+const priorityItems = Object.keys(PRIORITY_META).map((value) => ({
+    value,
+    ...PRIORITY_META[/** @type {TaskPriority} */ (value)],
+}));
+
 const emit = defineEmits([
     "back",
     "edit",
@@ -188,14 +193,7 @@ const emit = defineEmits([
 
             <EditableVChip
                 :model-value="selectedPriority ?? undefined"
-                :items="
-                    /** @type {TaskPriority[]} */ (
-                        Object.keys(PRIORITY_META)
-                    ).map((value) => ({
-                        value,
-                        ...PRIORITY_META[value],
-                    }))
-                "
+                :items="priorityItems"
                 :disabled="isSavingPriority"
                 size="default"
                 rounded="lg"

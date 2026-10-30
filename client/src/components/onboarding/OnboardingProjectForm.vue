@@ -5,7 +5,7 @@ import IconInput from "@/components/common/IconInput.vue";
 import { DEFAULT_COLORS, DEFAULT_ICONS } from "@/constants/globals";
 
 /**
- * @typedef {import("@/stores/projects.store").ProjectCreate} ProjectCreate
+ * @typedef {import("@/types/project").ProjectCreate} ProjectCreate
  * @typedef {import("vue").Ref<InstanceType<typeof import("vuetify/components").VForm> | null>} VFormRef
  * @typedef {ProjectCreate & { color?: string }} ProjectCreateForm
  */

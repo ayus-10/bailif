@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref } from "vue";
 
 /**
- * @typedef {import("@/stores/taskboards.store").TaskboardListRead} TaskboardListRead
+ * @typedef {import("@/types/taskboards").TaskboardListRead} TaskboardListRead
  */
 
 const props = defineProps({

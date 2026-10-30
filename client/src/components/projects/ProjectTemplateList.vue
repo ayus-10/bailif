@@ -1,7 +1,7 @@
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 import PreviewProjectCard from "@/components/projects/PreviewProjectCard.vue";
-import { useProjectsStore } from "@/stores/projects.store";
+import { useProjectsList } from "@/queries/projects.queries";
 
 /**
  * @typedef {import("@/types/project").ProjectRead} ProjectTemplate
@@ -28,14 +28,10 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "select"]);
 
-const projectsStore = useProjectsStore();
-
-onMounted(() => {
-    projectsStore.fetch();
-});
+const projectsQuery = useProjectsList();
 
 const templates = computed(() => {
-    const cached = projectsStore.items ?? [];
+    const cached = projectsQuery.items.value ?? [];
     return cached
         .sort(
             (a, b) =>
